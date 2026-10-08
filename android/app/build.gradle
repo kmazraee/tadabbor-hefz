@@ -1,0 +1,32 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "ir.tadabbor.hefz"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "ir.tadabbor.hefz"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "0.1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // keep woff2 fonts uncompressed-safe and readable from assets
+    androidResources {
+        noCompress += ["woff2"]
+    }
+}

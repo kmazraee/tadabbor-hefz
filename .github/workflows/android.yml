@@ -1,0 +1,65 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "android/**"
+      - "scripts/**"
+      - "data/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rebuild app page from template and data
+        run: python3 scripts/build_web.py
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Build APK
+        working-directory: android
+        run: gradle --no-daemon assembleDebug
+
+      - name: Name the APK
+        run: |
+          VERSION=$(grep -oP 'versionName "\K[^"]+' android/app/build.gradle)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "tadabbor-hefz-v$VERSION.apk"
+          ls -la *.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tadabbor-hefz-apk
+          path: tadabbor-hefz-v*.apk
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: حفظ تدبری v${{ env.VERSION }}
+          prerelease: true
+          files: tadabbor-hefz-v*.apk
+          body: |
+            نسخه آزمایشی اول اپلیکیشن حفظ تدبری (جزء ۳۰).
+            - کاملاً آفلاین؛ اینترنت فقط برای پخش صوت ترتیل لازم است.
+            - تقسیم سیاق‌ها آزمایشی است و از کتاب استاد صبوحی گرفته نشده.
+            - نسخه دیباگ (Debug) برای آزمایش؛ برای نصب، «نصب از منابع ناشناس» را برای مرورگر یا مدیر فایل فعال کنید.

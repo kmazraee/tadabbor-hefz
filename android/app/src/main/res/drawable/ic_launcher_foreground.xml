@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An open book with five stacked siyaq bands on its right page -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#F3F5F4"
+        android:pathData="M54,40 C47,35 38,34 30,35 L30,72 C38,71 47,72 54,77 Z" />
+    <path android:fillColor="#F3F5F4"
+        android:pathData="M54,40 C61,35 70,34 78,35 L78,72 C70,71 61,72 54,77 Z" />
+    <path android:fillColor="#B07A1E" android:pathData="M59,43 h14 v4 h-14 z" />
+    <path android:fillColor="#2E8B57" android:pathData="M59,50 h14 v4 h-14 z" />
+    <path android:fillColor="#2E8B57" android:pathData="M59,57 h10 v4 h-10 z" />
+    <path android:fillColor="#3A78C2" android:pathData="M59,64 h12 v4 h-12 z" />
+</vector>

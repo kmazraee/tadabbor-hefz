@@ -383,5 +383,13 @@ function stepRate() {
     }};
 }
 
+// Android back button: close an open sheet, else go to the dashboard
+window.__back = () => {
+  const box = document.getElementById("sheet");
+  if (box.innerHTML) { box.innerHTML = ""; render(); return true; }
+  if (tab !== "home") { tab = "home"; render(); return true; }
+  return false;
+};
+
 render();
 </script>

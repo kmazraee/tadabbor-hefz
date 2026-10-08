@@ -11,15 +11,21 @@
 | [`docs/PRD.md`](docs/PRD.md) | سند نیازمندی‌های محصول |
 | [`prototype/index.html`](prototype/index.html) | نمونه اولیه کلیک‌خور (جزء ۳۰)؛ فایل را در مرورگر باز کنید |
 | `data/juz30.json` | داده نمونه: متن جزء ۳۰ و تقسیم سیاق **آزمایشی** |
+| `android/` | پروژه اندروید نسخه ۰.۱ (نمونه اولیه به‌صورت برنامه آفلاین) |
+| `scripts/build_web.py` | ساخت نسخه وب و نسخه داخل برنامه از روی قالب |
 | `scripts/build_data.py` | ساخت داده و بررسی خودکار بازه‌های سیاق |
 | `scripts/prototype_src.html` | قالب نمونه اولیه، پیش از تزریق داده |
+
+## دانلود برنامه اندروید
+
+آخرین فایل APK در بخش [Releases](https://github.com/kmazraee/tadabbor-hefz/releases) است. هر تغییر در `android/`، `scripts/` یا `data/` به‌طور خودکار نسخه جدید می‌سازد.
 
 ## ساخت دوباره نمونه اولیه
 
 ```bash
 npm pack quran-json@3.1.2 && tar -xzf quran-json-3.1.2.tgz
 python3 scripts/build_data.py package/dist/chapters data/juz30.json
-python3 -c "t=open('scripts/prototype_src.html',encoding='utf-8').read();d=open('data/juz30.json',encoding='utf-8').read();open('prototype/index.html','w',encoding='utf-8').write(t.replace('/*DATA*/',d))"
+python3 scripts/build_web.py
 ```
 
 اسکریپت ساخت داده اگر آیه‌ای جا بیفتد، بازه‌ها همپوشانی داشته باشند یا تعداد آیات نخواند، با خطا متوقف می‌شود.
