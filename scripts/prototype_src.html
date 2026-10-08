@@ -1,0 +1,387 @@
+<title>حفظ تدبری</title>
+<meta name="description" content="نمونه اولیه اپلیکیشن حفظ سیاق‌محور قرآن">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Vazirmatn:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: one phone-width column, bottom tab bar, full-screen session sheet */
+:root{
+  --paper:#F3F5F4; --surface:#FFFFFF; --ink:#16231F; --muted:#5E6E68; --line:#DCE3E0;
+  --lapis:#1F4E79; --lapis-soft:#E3ECF5; --gold:#B07A1E; --gold-soft:#F6EBD6;
+  --st-new:#C9D1CE; --st-learn:#3A78C2; --st-solid:#2E8B57; --st-due:#D9822B;
+  --f-ui:"Vazirmatn",Tahoma,"Segoe UI",sans-serif; --f-q:"Amiri Quran","Amiri","Scheherazade New","Traditional Arabic",serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0F1715; --surface:#17221F; --ink:#E7EEEB; --muted:#93A39D; --line:#2A3834;
+  --lapis:#7FB0E3; --lapis-soft:#1B2C3D; --gold:#E0B25E; --gold-soft:#33291A;
+  --st-new:#3A4743; --st-learn:#5B98DD; --st-solid:#4DB37A; --st-due:#E89A4A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0F1715; --surface:#17221F; --ink:#E7EEEB; --muted:#93A39D; --line:#2A3834;
+  --lapis:#7FB0E3; --lapis-soft:#1B2C3D; --gold:#E0B25E; --gold-soft:#33291A;
+  --st-new:#3A4743; --st-learn:#5B98DD; --st-solid:#4DB37A; --st-due:#E89A4A; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);direction:rtl;font-size:15px;line-height:1.7}
+.app{max-width:440px;margin-inline:auto;min-height:100%;display:flex;flex-direction:column;position:relative}
+main{flex:1;padding-block:16px 96px;padding-inline:16px;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font-size:22px;font-weight:800}
+h2{font-size:17px;font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.hero{background:var(--lapis);color:#fff;border:none}
+.hero .muted{color:rgba(255,255,255,.78)}
+.hero .q{font-family:var(--f-q);font-size:24px;line-height:2;direction:rtl}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+button{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 14px}
+button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn-main{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:700}
+.hero .btn-main{background:#fff;color:var(--lapis);border-color:#fff}
+.btn-ghost{background:transparent}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-size:20px}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--st-solid)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px;background:var(--c)}
+.siyaq-strip{display:flex;gap:3px;direction:rtl}
+.siyaq-strip span{height:10px;border-radius:3px;background:var(--c)}
+.surah-row{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);background:none;border-inline:none;border-top:none;border-radius:0;text-align:right;width:100%}
+.surah-row .idx{font-size:12px;color:var(--muted);text-align:center}
+.surah-row .nm{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.tabs{position:fixed;bottom:0;inset-inline:0;max-width:440px;margin-inline:auto;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+.tabs button{border:none;border-radius:0;background:none;padding:10px 4px;font-size:12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabs button[aria-current="page"]{color:var(--lapis);font-weight:700}
+.tabs svg{width:22px;height:22px}
+.pill{display:inline-block;font-size:12px;padding:1px 9px;border-radius:99px;background:var(--c-soft,var(--lapis-soft));color:var(--ink)}
+.tag-test{background:var(--gold-soft);color:var(--ink);font-size:12px;padding:6px 10px;border-radius:10px}
+.siyaq-item{display:grid;grid-template-columns:6px 1fr auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-align:right;width:100%}
+.siyaq-item .stripe{align-self:stretch;border-radius:4px;background:var(--c)}
+/* Session sheet */
+.sheet{position:fixed;inset:0;background:var(--paper);z-index:10;display:flex;flex-direction:column;max-width:440px;margin-inline:auto;padding-top:env(safe-area-inset-top,0px)}
+.sheet header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.sheet header h2{flex:1;font-size:15px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:10px 16px 0}
+.steps span{height:4px;border-radius:2px;background:var(--line)}
+.steps span.on{background:var(--gold)}
+.steplabels{display:grid;grid-template-columns:repeat(5,1fr);padding:4px 16px 0;font-size:11px;color:var(--muted);text-align:center}
+.steplabels .on{color:var(--ink);font-weight:700}
+.sheet .body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.sheet footer{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface);display:flex;gap:10px}
+.sheet footer button{flex:1}
+.ayah{font-family:var(--f-q);font-size:26px;line-height:2.25;text-align:justify;direction:rtl;word-spacing:2px}
+.ayah .no{font-family:var(--f-ui);font-size:13px;display:inline-grid;place-items:center;width:28px;height:28px;border:1.5px solid var(--gold);border-radius:50%;color:var(--gold);margin-inline:6px;vertical-align:middle;line-height:1}
+.ayah-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.ayah-box.focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.w-hide{color:transparent;background:var(--line);border-radius:6px}
+.reveal{cursor:pointer}
+.levels{display:flex;gap:6px}
+.levels button{flex:1;padding:8px 6px;font-size:13px}
+.levels button[aria-pressed="true"]{background:var(--lapis);color:#fff;border-color:var(--lapis)}
+.rate{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rate button{display:flex;flex-direction:column;gap:2px;padding:12px 6px}
+.rate small{color:var(--muted);font-size:12px}
+.mushaf-siyaq{border-inline-start:4px solid var(--c);padding-inline-start:12px;display:flex;flex-direction:column;gap:6px}
+.mushaf-siyaq .lbl{font-size:12px;color:var(--muted)}
+select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.toast{position:fixed;bottom:84px;inset-inline:0;margin-inline:auto;width:max-content;max-width:90%;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:10px;font-size:13px;z-index:20}
+.steps-list{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px}
+footer.note{font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}}
+</style>
+
+<div class="app">
+  <main id="view"></main>
+  <nav class="tabs" aria-label="بخش‌ها">
+    <button data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>داشبورد</button>
+    <button data-tab="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/></svg>نقشه سیاق</button>
+    <button data-tab="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>مرور</button>
+    <button data-tab="mushaf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/><path d="M12 6v14.5"/></svg>مصحف</button>
+  </nav>
+</div>
+<div id="sheet"></div>
+
+<script>
+const DATA = /*DATA*/;
+const FA = n => String(n).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
+const AR = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
+const S = Object.fromEntries(DATA.surahs.map(s => [s.n, s]));
+const key = (sn, i) => sn + ":" + i;
+const STAGES = ["فهم", "شنیدن", "حفظ", "اتصال", "ثبت"];
+const COLORS = {new: "var(--st-new)", learn: "var(--st-learn)", solid: "var(--st-solid)", due: "var(--st-due)"};
+const LABELS = {new: "شروع‌نشده", learn: "در حال حفظ", solid: "تثبیت‌شده", due: "نیاز به مرور"};
+const RECITER = "Alafasy_128kbps";
+
+// Sample progress (example data, not real user data)
+const SAMPLE = () => ({day: 0, streak: 12, items: {
+  "78:1": {stage: 5, due: 4, ivl: 6}, "78:2": {stage: 5, due: 0, ivl: 3}, "78:3": {stage: 2},
+  "103:1": {stage: 5, due: 9, ivl: 12}, "108:1": {stage: 5, due: 0, ivl: 5}, "112:1": {stage: 5, due: 14, ivl: 20},
+  "113:1": {stage: 5, due: 7, ivl: 10}, "114:1": {stage: 5, due: 2, ivl: 8}, "87:1": {stage: 5, due: 0, ivl: 2}, "87:2": {stage: 1}
+}});
+let st;
+try { st = JSON.parse(localStorage.getItem("tadabbor-proto")) || SAMPLE(); } catch (e) { st = SAMPLE(); }
+const save = () => { try { localStorage.setItem("tadabbor-proto", JSON.stringify(st)); } catch (e) {} };
+
+function status(k) {
+  const it = st.items[k];
+  if (!it) return "new";
+  if (it.stage >= 5) return it.due <= st.day ? "due" : "solid";
+  return "learn";
+}
+const siyaqs = () => DATA.surahs.flatMap(s => s.siyaqs.map(q => ({s, q, k: key(s.n, q.n)})));
+const ayahCount = q => q.e - q.s + 1;
+const title = (s, q) => q.title || ("سیاق " + FA(q.n));
+
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2200);
+}
+function strip(s) {
+  return `<div class="siyaq-strip" aria-hidden="true">${s.siyaqs.map(q => `<span style="flex:${ayahCount(q)};--c:${COLORS[status(key(s.n, q.n))]}"></span>`).join("")}</div>`;
+}
+function verseHTML(s, i, mode = "full") {
+  const words = s.verses[i - 1].split(" ");
+  let inner;
+  if (mode === "full") inner = s.verses[i - 1];
+  else if (mode === "half") inner = words.map((w, j) => j % 2 ? `<span class="w-hide">${w}</span>` : w).join(" ");
+  else if (mode === "first") inner = words.map((w, j) => j === 0 ? w : `<span class="w-hide">${w}</span>`).join(" ");
+  else inner = words.map(w => `<span class="w-hide">${w}</span>`).join(" ");
+  return `${inner}<span class="no">${AR(i)}</span>`;
+}
+const legend = () => `<div class="legend">${Object.keys(LABELS).map(k => `<span style="--c:${COLORS[k]}">${LABELS[k]}</span>`).join("")}</div>`;
+const testNote = `<div class="tag-test">تقسیم سیاق‌ها و عنوان‌ها در این نمونه آزمایشی است و از کتاب استاد صبوحی گرفته نشده؛ پس از اخذ مجوز جایگزین می‌شود.</div>`;
+
+// ---------- Tabs ----------
+let tab = "home";
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => { tab = b.dataset.tab; render(); window.scrollTo(0, 0); }));
+
+function render() {
+  document.querySelectorAll(".tabs button").forEach(b => b.dataset.tab === tab ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  const v = document.getElementById("view");
+  v.innerHTML = ({home, map, review, mushaf})[tab]();
+  v.querySelectorAll("[data-open]").forEach(el => el.addEventListener("click", () => openSurah(+el.dataset.open)));
+  v.querySelectorAll("[data-start]").forEach(el => el.addEventListener("click", () => startSession(el.dataset.start, el.dataset.mode || "learn")));
+  if (tab === "mushaf") {
+    const sel = v.querySelector("#mushaf-surah");
+    sel.addEventListener("change", () => { mushafSurah = +sel.value; render(); });
+    v.querySelectorAll("[data-play]").forEach(el => el.addEventListener("click", () => play(+el.dataset.s, +el.dataset.play, el)));
+  }
+  const nd = v.querySelector("#next-day");
+  if (nd) nd.addEventListener("click", () => { st.day++; save(); render(); toast("یک روز جلو رفتیم"); });
+  const rs = v.querySelector("#reset");
+  if (rs) rs.addEventListener("click", () => { st = SAMPLE(); save(); render(); toast("داده نمونه بازنشانی شد"); });
+}
+
+function nextToLearn() {
+  const all = siyaqs();
+  return all.find(x => status(x.k) === "learn") || all.find(x => status(x.k) === "new");
+}
+
+function home() {
+  const all = siyaqs();
+  const due = all.filter(x => status(x.k) === "due");
+  const solidAyat = all.filter(x => (st.items[x.k] || {}).stage >= 5).reduce((a, x) => a + ayahCount(x.q), 0);
+  const totalAyat = DATA.surahs.reduce((a, s) => a + s.total, 0);
+  const nx = nextToLearn();
+  const it = st.items[nx.k] || {stage: 0};
+  return `
+  <div class="row between"><div><div class="muted small">جزء ۳۰ · داده نمونه</div><h1>حفظ تدبری</h1></div><span class="pill num" style="--c-soft:var(--gold-soft)">روز ${FA(st.day + 1)}</span></div>
+  <section class="card hero" aria-label="سیاق امروز">
+    <div class="muted small">ادامه حفظ · سوره ${nx.s.name} · آیات ${FA(nx.q.s)} تا ${FA(nx.q.e)}</div>
+    <h2>${title(nx.s, nx.q)}</h2>
+    <div class="q">${nx.s.verses[nx.q.s - 1]} …</div>
+    <div class="row between"><span class="small muted">مرحله ${FA(Math.min(it.stage + 1, 5))} از ۵: ${STAGES[Math.min(it.stage, 4)]}</span><button class="btn-main" data-start="${nx.k}">ادامه حفظ</button></div>
+  </section>
+  <div class="stats">
+    <div class="stat"><b class="num">${FA(due.length)}</b><span class="small muted">مرور امروز</span></div>
+    <div class="stat"><b class="num">${FA(st.streak)}</b><span class="small muted">روز پیوسته</span></div>
+    <div class="stat"><b class="num">${FA(all.filter(x => (st.items[x.k] || {}).stage >= 5).length)}</b><span class="small muted">سیاق حفظ‌شده</span></div>
+  </div>
+  <section class="card">
+    <div class="row between"><h2>صف مرور امروز</h2>${due.length ? `<button class="btn-ghost small" data-start="${due[0].k}" data-mode="review">شروع مرور</button>` : ""}</div>
+    ${due.length ? due.map(x => `<button class="siyaq-item" data-start="${x.k}" data-mode="review" style="--c:${COLORS.due}"><span class="stripe"></span><span><b>${x.s.name}</b> · ${title(x.s, x.q)}<br><span class="small muted">آیات ${FA(x.q.s)} تا ${FA(x.q.e)}</span></span><span class="small muted">${FA(ayahCount(x.q))} آیه</span></button>`).join("") : `<p class="muted small">مرور امروز تمام است.</p>`}
+  </section>
+  <section class="card">
+    <div class="row between"><h2>پیشرفت جزء</h2><span class="small muted num">${FA(solidAyat)} از ${FA(totalAyat)} آیه</span></div>
+    <div class="bar"><i style="width:${(solidAyat / totalAyat * 100).toFixed(1)}%"></i></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px">
+      ${DATA.surahs.map(s => `<button data-open="${s.n}" style="padding:6px;display:flex;flex-direction:column;gap:4px;align-items:stretch;font-size:12px">${s.name}${strip(s)}</button>`).join("")}
+    </div>
+    ${legend()}
+  </section>
+  <footer class="note row" style="justify-content:center"><button class="btn-ghost small" id="next-day">شبیه‌سازی روز بعد</button><button class="btn-ghost small" id="reset">بازنشانی داده نمونه</button></footer>`;
+}
+
+function map() {
+  return `<h1>نقشه سیاق‌ها</h1>${legend()}${testNote}
+  <section class="card" style="gap:0;padding-block:4px">
+  ${DATA.surahs.map(s => `<button class="surah-row" data-open="${s.n}"><span class="idx num">${FA(s.n)}</span><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span class="nm"><span>${s.name}</span><span class="small muted num">${FA(s.siyaqs.length)} سیاق · ${FA(s.total)} آیه</span></span>${strip(s)}</span></button>`).join("")}
+  </section>`;
+}
+
+function review() {
+  const all = siyaqs();
+  const due = all.filter(x => status(x.k) === "due");
+  const soon = all.filter(x => status(x.k) === "solid").sort((a, b) => st.items[a.k].due - st.items[b.k].due);
+  return `<h1>مرور</h1>
+  <p class="muted small">مرور فاصله‌دار: هر سیاق درست قبل از فراموش شدن دوباره برمی‌گردد. ارزیابی شما فاصله مرور بعدی را تعیین می‌کند.</p>
+  <section class="card"><h2>سررسید امروز (${FA(due.length)})</h2>
+  ${due.length ? due.map(x => `<button class="siyaq-item" data-start="${x.k}" data-mode="review" style="--c:${COLORS.due}"><span class="stripe"></span><span><b>${x.s.name}</b> · ${title(x.s, x.q)}<br><span class="small muted">آیات ${FA(x.q.s)} تا ${FA(x.q.e)}</span></span><span class="pill">مرور</span></button>`).join("") : `<p class="muted small">چیزی برای مرور نمانده.</p>`}</section>
+  <section class="card"><h2>مرورهای آینده</h2>
+  ${soon.map(x => `<div class="row between small"><span>${x.s.name} · ${title(x.s, x.q)}</span><span class="muted num">${FA(st.items[x.k].due - st.day)} روز دیگر</span></div>`).join("")}</section>`;
+}
+
+let mushafSurah = 78;
+function mushaf() {
+  const s = S[mushafSurah];
+  return `<div class="row between"><h1>مصحف</h1><label class="small muted" for="mushaf-surah">سوره</label>
+  <select id="mushaf-surah">${DATA.surahs.map(x => `<option value="${x.n}" ${x.n === s.n ? "selected" : ""}>${FA(x.n)}. ${x.name}</option>`).join("")}</select></div>
+  <p class="muted small">مرز سیاق‌ها در حاشیه مصحف دیده می‌شود. روی شماره هر آیه بزنید تا ترتیل آن پخش شود.</p>
+  ${s.siyaqs.map(q => `<section class="mushaf-siyaq" style="--c:${COLORS[status(key(s.n, q.n))]}"><div class="lbl">${title(s, q)} · ${LABELS[status(key(s.n, q.n))]}</div>
+  <div class="ayah">${range(q).map(i => `${s.verses[i - 1]}<span class="no reveal" role="button" tabindex="0" aria-label="پخش آیه ${FA(i)}" data-play="${i}" data-s="${s.n}">${AR(i)}</span>`).join(" ")}</div></section>`).join("")}
+  <p class="small muted">متن قرآن: نسخه عثمانی از quranenc.com (از طریق بسته quran-json). در نسخه نهایی: متن Tanzil.net.</p>`;
+}
+const range = q => Array.from({length: ayahCount(q)}, (_, j) => q.s + j);
+
+// ---------- Audio ----------
+let audio;
+function audioUrl(sn, i) { return `https://everyayah.com/data/${RECITER}/${String(sn).padStart(3, "0")}${String(i).padStart(3, "0")}.mp3`; }
+function play(sn, i, el) {
+  try { if (audio) audio.pause(); audio = new Audio(audioUrl(sn, i));
+    audio.play().catch(() => toast("پخش صوت در این پیش‌نمایش مسدود است؛ در نسخه گیت‌هاب کار می‌کند"));
+  } catch (e) { toast("پخش صوت در دسترس نیست"); }
+}
+
+// ---------- Surah sheet ----------
+function openSurah(n) {
+  const s = S[n];
+  const box = document.getElementById("sheet");
+  box.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-label="سوره ${s.name}">
+  <header><button class="btn-ghost" id="close" aria-label="بستن">✕</button><h2>سوره ${s.name}</h2><span class="small muted">${s.type === "meccan" ? "مکی" : "مدنی"} · ${FA(s.total)} آیه</span></header>
+  <div class="body">${strip(s)}${legend()}${testNote}
+  ${s.siyaqs.map(q => { const k = key(s.n, q.n), stt = status(k), it = st.items[k];
+    return `<div class="siyaq-item" style="--c:${COLORS[stt]}"><span class="stripe"></span><span><b>${title(s, q)}</b><br><span class="small muted">آیات ${FA(q.s)} تا ${FA(q.e)} · ${LABELS[stt]}${it && it.stage < 5 ? " · مرحله " + FA(it.stage + 1) : ""}</span></span>
+    <button class="${stt === "new" || stt === "learn" ? "btn-main" : ""} small" data-start="${k}" data-mode="${stt === "new" || stt === "learn" ? "learn" : "review"}">${stt === "new" ? "شروع" : stt === "learn" ? "ادامه" : "مرور"}</button></div>`; }).join("")}
+  </div></div>`;
+  box.querySelector("#close").addEventListener("click", () => { box.innerHTML = ""; render(); });
+  box.querySelectorAll("[data-start]").forEach(el => el.addEventListener("click", () => startSession(el.dataset.start, el.dataset.mode)));
+}
+
+// ---------- Session ----------
+let ses;
+function startSession(k, mode) {
+  const [sn, qn] = k.split(":").map(Number);
+  const s = S[sn], q = s.siyaqs[qn - 1];
+  const it = st.items[k] || {stage: 0};
+  ses = {k, s, q, mode, step: mode === "review" ? 3 : Math.min(it.stage, 4), ay: q.s, level: 0, shown: {}, reps: 3};
+  drawSession();
+}
+function drawSession() {
+  const {s, q, step} = ses;
+  const box = document.getElementById("sheet");
+  const content = [stepUnderstand, stepListen, stepMemorize, stepConnect, stepRate][step]();
+  box.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-label="جلسه حفظ">
+  <header><button class="btn-ghost" id="close" aria-label="بستن">✕</button><h2>${s.name} · ${title(s, q)}</h2><span class="small muted num">آیات ${FA(q.s)} تا ${FA(q.e)}</span></header>
+  <div class="steps">${STAGES.map((_, i) => `<span class="${i <= step ? "on" : ""}"></span>`).join("")}</div>
+  <div class="steplabels">${STAGES.map((l, i) => `<span class="${i === step ? "on" : ""}">${l}</span>`).join("")}</div>
+  <div class="body">${content.body}</div>
+  <footer>${content.foot}</footer></div>`;
+  box.querySelector("#close").addEventListener("click", () => { box.innerHTML = ""; render(); });
+  content.wire && content.wire(box);
+}
+function advance() {
+  const it = st.items[ses.k] || (st.items[ses.k] = {stage: 0});
+  if (ses.mode === "learn") it.stage = Math.max(it.stage, ses.step + 1);
+  save(); ses.step++; ses.ay = ses.q.s; ses.level = 0; ses.shown = {}; drawSession();
+}
+function stepUnderstand() {
+  const {s, q} = ses;
+  return {body: `
+    <div class="card"><div class="small muted">گام ۱ · فهم پیش از حفظ</div><h2>${title(s, q)}</h2>
+    ${q.steps.length ? `<div class="small muted">گام‌های هدایتی این سیاق:</div><ol class="steps-list">${q.steps.map(x => `<li>${x}</li>`).join("")}</ol>` : `<p class="small muted">گام‌های هدایتی این سیاق پس از دریافت داده کتاب نمایش داده می‌شود.</p>`}</div>
+    ${testNote}
+    <div class="ayah-box"><div class="ayah">${range(q).map(i => verseHTML(s, i)).join(" ")}</div></div>
+    <p class="small muted">ترجمه فارسی پس از انتخاب مترجم و اخذ مجوز اضافه می‌شود. یادداشت تدبری خودتان را هم اینجا می‌نویسید.</p>
+    <label class="small" for="note">یادداشت تدبری من</label><textarea id="note" rows="3" style="font:inherit;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);color:var(--ink)" placeholder="این سیاق به من چه می‌گوید؟"></textarea>`,
+    foot: `<button class="btn-main" id="next">فهمیدم، برو به شنیدن</button>`,
+    wire: b => b.querySelector("#next").addEventListener("click", advance)};
+}
+function stepListen() {
+  const {s, q} = ses;
+  return {body: `
+    <div class="card"><div class="small muted">گام ۲ · شنیدن ترتیل</div><p class="small">کل سیاق را چند بار بشنوید و همراه قاری در دل بخوانید.</p>
+    <div class="row"><span class="small">تکرار هر آیه</span><div class="levels" style="flex:1">${[1, 3, 5].map(n => `<button data-reps="${n}" aria-pressed="${ses.reps === n}">${FA(n)} بار</button>`).join("")}</div></div>
+    <button id="playall">▶ پخش کل سیاق</button></div>
+    ${range(q).map(i => `<div class="ayah-box ${i === ses.ay ? "focus" : ""}"><div class="ayah">${verseHTML(s, i)}</div></div>`).join("")}`,
+    foot: `<button class="btn-main" id="next">برو به حفظ</button>`,
+    wire: b => {
+      b.querySelector("#next").addEventListener("click", advance);
+      b.querySelectorAll("[data-reps]").forEach(x => x.addEventListener("click", () => { ses.reps = +x.dataset.reps; drawSession(); }));
+      b.querySelector("#playall").addEventListener("click", () => play(s.n, q.s));
+    }};
+}
+const LEVELS = [["full", "کامل"], ["half", "نیمه"], ["first", "سرنخ"], ["none", "از حفظ"]];
+function stepMemorize() {
+  const {s, q} = ses;
+  const lv = LEVELS[ses.level][0];
+  const idx = ses.ay - q.s + 1, n = ayahCount(q);
+  return {body: `
+    <div class="card"><div class="row between"><div class="small muted">گام ۳ · حفظ آیه‌به‌آیه</div><span class="small num">آیه ${FA(idx)} از ${FA(n)}</span></div>
+    <div class="small">کلمات کم‌کم محو می‌شوند. روی کلمه پنهان بزنید تا نمایش داده شود.</div>
+    <div class="levels" role="group" aria-label="سطح محو">${LEVELS.map((l, i) => `<button data-lv="${i}" aria-pressed="${i === ses.level}">${l[1]}</button>`).join("")}</div></div>
+    ${ses.ay > q.s ? `<div class="ayah-box" style="opacity:.55"><div class="ayah" style="font-size:20px">${verseHTML(s, ses.ay - 1)}</div></div>` : ""}
+    <div class="ayah-box focus"><div class="ayah" id="cur">${verseHTML(s, ses.ay, lv)}</div></div>
+    <button id="hear">▶ شنیدن این آیه</button>`,
+    foot: `<button id="prev" ${ses.ay === q.s ? "disabled" : ""}>آیه قبل</button><button class="btn-main" id="nextay">${ses.level < 3 ? "سطح بعد" : ses.ay < q.e ? "آیه بعد" : "برو به اتصال"}</button>`,
+    wire: b => {
+      b.querySelectorAll("[data-lv]").forEach(x => x.addEventListener("click", () => { ses.level = +x.dataset.lv; drawSession(); }));
+      b.querySelectorAll("#cur .w-hide").forEach(w => { w.classList.add("reveal"); w.addEventListener("click", () => w.classList.remove("w-hide")); });
+      b.querySelector("#hear").addEventListener("click", () => play(s.n, ses.ay));
+      b.querySelector("#prev").addEventListener("click", () => { ses.ay--; ses.level = 0; drawSession(); });
+      b.querySelector("#nextay").addEventListener("click", () => {
+        if (ses.level < 3) ses.level++; else if (ses.ay < q.e) { ses.ay++; ses.level = 0; } else return advance();
+        drawSession();
+      });
+    }};
+}
+function stepConnect() {
+  const {s, q} = ses;
+  const total = ayahCount(q), opened = Object.keys(ses.shown).length;
+  return {body: `
+    <div class="card"><div class="small muted">گام ۴ · ${ses.mode === "review" ? "مرور: " : ""}خواندن کل سیاق از حفظ</div>
+    <p class="small">هر آیه را از حفظ بخوانید، بعد روی آن بزنید تا متن را ببینید و خودتان را بسنجید.</p>
+    <div class="small muted num">بررسی‌شده: ${FA(opened)} از ${FA(total)}</div></div>
+    ${range(q).map(i => `<div class="ayah-box reveal" data-show="${i}" role="button" tabindex="0" aria-label="نمایش آیه ${FA(i)}"><div class="ayah">${verseHTML(s, i, ses.shown[i] ? "full" : "none")}</div></div>`).join("")}`,
+    foot: `<button class="btn-main" id="next" ${opened < total ? "disabled" : ""}>${opened < total ? "همه آیات را بررسی کنید" : "ثبت نتیجه"}</button>`,
+    wire: b => {
+      b.querySelectorAll("[data-show]").forEach(x => { const f = () => { ses.shown[x.dataset.show] = 1; drawSession(); }; x.addEventListener("click", f); x.addEventListener("keydown", e => (e.key === "Enter" || e.key === " ") && f()); });
+      b.querySelector("#next").addEventListener("click", advance);
+    }};
+}
+function stepRate() {
+  const it = st.items[ses.k] || {};
+  const ivl = it.ivl || 1;
+  const opts = [["hard", "سخت", 1], ["good", "خوب", Math.max(2, Math.round(ivl * 2))], ["easy", "آسان", Math.max(4, Math.round(ivl * 3))]];
+  return {body: `
+    <div class="card"><div class="small muted">گام ۵ · ثبت</div><h2>این سیاق را چطور خواندید؟</h2>
+    <p class="small muted">پاسخ شما زمان مرور بعدی را تعیین می‌کند. «سخت» سیاق را به مرحله حفظ برمی‌گرداند.</p></div>
+    <div class="rate">${opts.map(([k, l, d]) => `<button data-rate="${k}" data-days="${d}"><b>${l}</b><small class="num">${k === "hard" ? "بازگشت به حفظ" : "مرور " + FA(d) + " روز بعد"}</small></button>`).join("")}</div>`,
+    foot: `<button class="btn-ghost" id="close2">بعداً</button>`,
+    wire: b => {
+      b.querySelector("#close2").addEventListener("click", () => { b.innerHTML = ""; render(); });
+      b.querySelectorAll("[data-rate]").forEach(x => x.addEventListener("click", () => {
+        const item = st.items[ses.k] || (st.items[ses.k] = {});
+        if (x.dataset.rate === "hard") { item.stage = 2; delete item.due; toast("سیاق به مرحله حفظ برگشت"); }
+        else { item.stage = 5; item.ivl = +x.dataset.days; item.due = st.day + item.ivl; toast("ثبت شد · مرور بعدی " + FA(item.ivl) + " روز دیگر"); }
+        save(); b.innerHTML = ""; render();
+      }));
+    }};
+}
+
+render();
+</script>
