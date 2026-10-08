@@ -1,13 +1,9 @@
 name: Build Android APK
 
 on:
+  # Builds only when a version tag (e.g. v0.2.0) is pushed, or when started by hand.
   push:
-    branches: [main]
-    paths:
-      - "android/**"
-      - "scripts/**"
-      - "data/**"
-      - ".github/workflows/android.yml"
+    tags: ["v*"]
   workflow_dispatch:
 
 permissions:

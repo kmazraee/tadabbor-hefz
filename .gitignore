@@ -2,3 +2,5 @@ node_modules/
 package/
 *.tgz
 __pycache__/
+.qcftest/
+prototype/qcftest.html
