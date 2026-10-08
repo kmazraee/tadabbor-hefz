@@ -31,7 +31,7 @@
 
 ## دانلود برنامه اندروید
 
-آخرین فایل APK در بخش [Releases](https://github.com/kmazraee/tadabbor-hefz/releases) است. نسخه جدید فقط وقتی ساخته می‌شود که یک برچسب نسخه (مثل `v0.2.0`) به مخزن فرستاده شود.
+آخرین فایل APK در بخش [Releases](https://github.com/kmazraee/tadabbor-hefz/releases) است. نسخه جدید خودکار ساخته نمی‌شود؛ فقط با اجرای دستی گردش‌کار «Build Android APK» (یا فرستادن برچسب نسخه مثل `v0.3.0`) ساخته و در Releases منتشر می‌شود. شماره نسخه از `android/app/build.gradle` خوانده می‌شود.
 
 ## ساخت دوباره نمونه اولیه
 
