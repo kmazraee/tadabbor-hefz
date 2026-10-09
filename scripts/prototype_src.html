@@ -259,7 +259,7 @@ let DATA = /*DATA*/;
 try { const m = JSON.parse(localStorage.getItem("tadabbor-meta")); if (m && m.surahs && m.v !== DATA.v && m.built >= DATA.built) DATA = m; } catch (e) {}
 const DATA_BASE = "/*DATABASE*/";
 const PAGE_BASE = DATA_BASE + "pages/";
-const VERSION = "0.4.0";
+const VERSION = "0.5.0";
 const SITE_BASE = "https://kmazraee.github.io/tadabbor-hefz/";
 const REPO_API = "https://api.github.com/repos/kmazraee/tadabbor-hefz/releases?per_page=10";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
@@ -278,7 +278,11 @@ const key = (sn, i) => sn + ":" + i;
 const STAGES = ["تدبر", "شنیدن", "حفظ", "اتصال", "ثبت"];
 const COLORS = {new: "var(--st-new)", learn: "var(--st-learn)", solid: "var(--st-solid)", due: "var(--st-due)"};
 const LABELS = {new: "شروع‌نشده", learn: "در حال حفظ", solid: "تثبیت‌شده", due: "نیاز به مرور"};
-const RECITERS = [["Abu_Bakr_Ash-Shaatree_64kbps", "ابوبکر الشاطری"], ["Parhizgar_48kbps", "شهریار پرهیزگار"], ["Muhammad_Ayyoub_64kbps", "محمد ایوب"]];
+// [folder on everyayah.com, name, kbps, group]; Mishary Alafasy is left out on purpose
+const RECITERS = [["Parhizgar_48kbps", "شهریار پرهیزگار", 48, "ir"], ["Karim_Mansoori_40kbps", "کریم منصوری", 40, "ir"], ["Abu_Bakr_Ash-Shaatree_64kbps", "ابوبکر الشاطری", 64, "tr"], ["Muhammad_Ayyoub_64kbps", "محمد ایوب", 64, "tr"], ["Abdul_Basit_Murattal_64kbps", "عبدالباسط عبدالصمد (ترتیل)", 64, "tr"], ["Husary_64kbps", "محمود خلیل الحصری (ترتیل)", 64, "tr"], ["Menshawi_32kbps", "محمد صدیق المنشاوی (ترتیل)", 32, "tr"], ["Abdurrahmaan_As-Sudais_64kbps", "عبدالرحمن السدیس", 64, "tr"], ["Saood_ash-Shuraym_64kbps", "سعود الشریم", 64, "tr"], ["Maher_AlMuaiqly_64kbps", "ماهر المعیقلی", 64, "tr"], ["Hudhaify_64kbps", "علی الحذیفی", 64, "tr"], ["Abdullah_Basfar_64kbps", "عبدالله بصفر", 64, "tr"], ["Ghamadi_40kbps", "سعد الغامدی", 40, "tr"], ["Hani_Rifai_64kbps", "هانی الرفاعی", 64, "tr"], ["Ibrahim_Akhdar_64kbps", "ابراهیم الاخضر", 64, "tr"], ["Muhammad_Jibreel_64kbps", "محمد جبریل", 64, "tr"], ["Ahmed_ibn_Ali_al-Ajamy_64kbps_QuranExplorer.Com", "احمد بن علی العجمی", 64, "tr"], ["Salaah_AbdulRahman_Bukhatir_128kbps", "صلاح بوخاطر", 128, "tr"], ["Muhsin_Al_Qasim_192kbps", "محسن القاسم", 192, "tr"], ["Abdullaah_3awwaad_Al-Juhaynee_128kbps", "عبدالله عواد الجهنی", 128, "tr"], ["Salah_Al_Budair_128kbps", "صلاح البدیر", 128, "tr"], ["Abdullah_Matroud_128kbps", "عبدالله مطرود", 128, "tr"], ["Muhammad_AbdulKareem_128kbps", "محمد عبدالکریم", 128, "tr"], ["khalefa_al_tunaiji_64kbps", "خلیفه الطنیجی", 64, "tr"], ["Khaalid_Abdullaah_al-Qahtaanee_192kbps", "خالد القحطانی", 192, "tr"], ["Yasser_Ad-Dussary_128kbps", "یاسر الدوسری", 128, "tr"], ["Nasser_Alqatami_128kbps", "ناصر القطامی", 128, "tr"], ["Ali_Hajjaj_AlSuesy_128kbps", "علی حجاج السویسی", 128, "tr"], ["Sahl_Yassin_128kbps", "سهل یاسین", 128, "tr"], ["aziz_alili_128kbps", "عزیز علیلی", 128, "tr"], ["Yaser_Salamah_128kbps", "یاسر سلامه", 128, "tr"], ["Akram_AlAlaqimy_128kbps", "اکرم العلاقمی", 128, "tr"], ["Ali_Jaber_64kbps", "علی جابر", 64, "tr"], ["Fares_Abbad_64kbps", "فارس عباد", 64, "tr"], ["Abdul_Basit_Mujawwad_128kbps", "عبدالباسط عبدالصمد (تحقیق)", 128, "mj"], ["Husary_Mujawwad_64kbps", "محمود خلیل الحصری (تحقیق)", 64, "mj"], ["Minshawy_Mujawwad_64kbps", "محمد صدیق المنشاوی (تحقیق)", 64, "mj"], ["Mustafa_Ismail_48kbps", "مصطفی اسماعیل", 48, "mj"], ["Mohammad_al_Tablaway_64kbps", "محمد محمود الطبلاوی", 64, "mj"], ["mahmoud_ali_al_banna_32kbps", "محمود علی البنا", 32, "mj"], ["Ahmed_Neana_128kbps", "احمد نعینع", 128, "mj"], ["Husary_Muallim_128kbps", "الحصری معلّم (با مکث برای تکرار)", 128, "edu"], ["Ayman_Sowaid_64kbps", "ایمن سوید", 64, "edu"], ["translations/Makarem_Kabiri_16Kbps", "ترجمه گویای مکارم شیرازی (کبیری)", 16, "fa"], ["translations/Fooladvand_Hedayatfar_40Kbps", "ترجمه گویای فولادوند (هدایت‌فر)", 40, "fa"]];
+const RECITER_GROUPS = [["ir", "قاریان ایرانی"], ["tr", "ترتیل"], ["mj", "تحقیق (مجوّد)"], ["edu", "آموزشی"], ["fa", "ترجمه گویای فارسی"]];
+const reciterName = r => (RECITERS.find(x => x[0] === r) || [, ""])[1];
+const reciterOptions = sel => RECITER_GROUPS.map(([g, gl]) => `<optgroup label="${gl}">${RECITERS.filter(x => x[3] === g).map(([v, l]) => `<option value="${v}" ${sel === v ? "selected" : ""}>${l}</option>`).join("")}</optgroup>`).join("");
 const QFONTS = [["qcf", "عثمان طه (مصحف مدینه)"], ["amiri", "امیری قرآن"], ["sch", "شهرزاد نو"]];
 const TEXTFONT = {amiri: '"Amiri Quran","Amiri",serif', sch: '"Scheherazade New","Amiri Quran",serif', qcf: '"Amiri Quran","Amiri",serif'};
 const ACCENTS = [["lapis", "لاجوردی", "#1F4E79"], ["green", "سبز", "#2F6B4F"], ["teal", "فیروزه‌ای", "#0F6E73"], ["maroon", "عنابی", "#7A2E3B"]];
@@ -564,7 +568,7 @@ const jobBar = id => `<div class="bar" data-job="${id}"><i style="width:${Math.r
 // Translations
 function downloadTrans(id) { const t2 = TRANSLATIONS.find(x => x[0] === id); startJob("tr-" + id, "ترجمه " + t2[1], [{url: SITE_BASE + "data/trans/" + id + ".json", path: "trans/" + id + ".json"}]); }
 // Recitations: one folder per reciter and surah, one mp3 per ayah (as on everyayah.com)
-const RECITER_KBPS = {"Abu_Bakr_Ash-Shaatree_64kbps": 64, "Parhizgar_48kbps": 48, "Muhammad_Ayyoub_64kbps": 64};
+const RECITER_KBPS = Object.fromEntries(RECITERS.map(x => [x[0], x[2]]));
 const remoteAudio = (r, sn, i) => `https://everyayah.com/data/${r}/${P3(sn)}${P3(i)}.mp3`;
 const localAudio = (r, sn, i) => `audio/${r}/${P3(sn)}/${P3(sn)}${P3(i)}.mp3`;
 const audioCount = new Map();
@@ -579,7 +583,7 @@ const surahPages = sn => S[sn].vp.reduce((a, p) => a + 1 / PAGE_VERSES[p], 0);
 const audioMB = (r, sn) => surahPages(sn) * 0.95 * (RECITER_KBPS[r] || 64) / 64;
 const audioJobId = (r, sn) => "au-" + r + "-" + sn;
 function downloadAudio(r, sn) {
-  const name = (RECITERS.find(x => x[0] === r) || [, ""])[1];
+  const name = reciterName(r);
   startJob(audioJobId(r, sn), "ترتیل " + S[sn].name + " (" + name + ")", range(1, S[sn].total).map(i => ({url: remoteAudio(r, sn, i), path: localAudio(r, sn, i)})));
 }
 function deleteAudio(r, sn) { try { Android.deletePath(`audio/${r}/${P3(sn)}`); } catch (e) {} audioCount.clear(); }
@@ -590,7 +594,7 @@ function offlineBox() {
   if (!IS_APP) return `<p class="small muted">در نسخه وب همه‌چیز از اینترنت خوانده می‌شود. ذخیره متن، ترجمه و ترتیل روی گوشی فقط در برنامه اندروید است.</p>`;
   const rest = TRANSLATIONS.filter(x => x[0] !== "none" && !x[3]);
   const pend = transPending(), pendMB = rest.filter(x => pend.includes(x[0])).reduce((a, x) => a + x[2], 0);
-  const r = cfg.reciter, rname = (RECITERS.find(x => x[0] === r) || [, ""])[1];
+  const r = cfg.reciter, rname = reciterName(r);
   const haveS = DATA.surahs.filter(s => audioHave(r, s.n) >= s.total).length;
   return `<div class="upd">
     <p class="small">متن و ۶۰۴ صفحه قرآن و سه ترجمه داخل خود برنامه است.</p>
@@ -598,44 +602,78 @@ function offlineBox() {
     <div class="row between"><h3 style="font-size:14px">ترجمه‌ها</h3>${pend.length ? `<button class="small btn-main" id="tr-all">دریافت همه (${FA(pendMB.toFixed(0))} مگابایت)</button>` : `<span class="small ok">همه روی گوشی است</span>`}</div>
     <div>${rest.map(([id, nm, mb]) => `<div class="dlrow"><span class="small">${nm} <span class="muted num">· ${FA(mb)} مگابایت</span></span>${jobActive("tr-" + id) ? "" : transLocal(id) ? `<span class="row" style="gap:6px"><span class="small ok">✓</span><button class="small btn-ghost" data-trdel="${id}">حذف</button></span>` : `<button class="small" data-trget="${id}">دریافت</button>`}${jobActive("tr-" + id) ? jobBar("tr-" + id) : ""}</div>`).join("")}</div>
     <div class="row between"><h3 style="font-size:14px">ترتیل</h3><span class="small muted">${rname}: ${FA(haveS)} سوره روی گوشی</span></div>
-    <button id="au-open">دانلود ترتیل به تفکیک سوره و قاری</button></div>`;
+    <button id="au-open">⬇ دانلود ترتیل: انتخاب سوره‌ها، جزء یا کل قرآن</button></div>`;
 }
 function wireOffline(root) {
   const a = root.querySelector("#tr-all"); if (a) a.addEventListener("click", downloadAllTrans);
   root.querySelectorAll("[data-trget]").forEach(b => b.addEventListener("click", () => downloadTrans(b.dataset.trget)));
   root.querySelectorAll("[data-trdel]").forEach(b => b.addEventListener("click", () => { try { Android.deletePath("trans/" + b.dataset.trdel + ".json"); } catch (e) {} delete TR[b.dataset.trdel]; TR_LOADING[b.dataset.trdel] = null; refresh(); }));
-  const o = root.querySelector("#au-open"); if (o) o.addEventListener("click", () => openAudio());
+  const o = root.querySelector("#au-open"); if (o) o.addEventListener("click", () => { auFrom = "settings"; openAudio(); });
 }
-let auReciter = null;
+let auReciter = null, auSel = new Set(), auFilter = "";
+const juzPages = j => [j === 1 ? 1 : (j - 1) * 20 + 2, j === 30 ? 604 : j * 20 + 1];
+const juzSurahs = j => { const [a, b] = juzPages(j); return DATA.surahs.filter(s => s.vp.some(p => p >= a && p <= b)).map(s => s.n); };
+const auJobs = r => Object.keys(JOBS).filter(id => id.startsWith("au-" + r + "-") && jobActive(id));
+function stopAllDownloads() {
+  try { Android.cancelAll(); } catch (e) { Object.keys(JOBS).filter(jobActive).forEach(id => { try { Android.cancelJob(id); } catch (e2) {} }); }
+  Object.keys(JOBS).filter(id => JOBS[id].state === "queued").forEach(id => { JOBS[id].state = "cancel"; });
+  toast("دانلودها متوقف شد"); refresh();
+}
+// Recitation manager: pick surahs (one by one, by juz, my surahs, current level or the whole Quran) and download them for one reciter
 function openAudio() {
-  const r = auReciter || cfg.reciter;
+  const r = auReciter || cfg.reciter, rname = reciterName(r);
   lastDraw = () => { const b = document.querySelector(".sheet .body"); const y = b ? b.scrollTop : 0; openAudio(); const nb = document.querySelector(".sheet .body"); if (nb) nb.scrollTop = y; };
-  const mine = DATA.surahs.filter(s => s.siyaqs.some(q => status(key(s.n, q.n)) !== "new")).map(s => s.n);
-  const todo = list => list.filter(sn => audioHave(r, sn) < S[sn].total && !jobActive(audioJobId(r, sn)));
-  const mb = list => FA(Math.round(list.reduce((a, sn) => a + audioMB(r, sn), 0)));
-  const all = DATA.surahs.map(s => s.n), j30 = range(78, 114);
+  const full = sn => audioHave(r, sn) >= S[sn].total, busy = sn => jobActive(audioJobId(r, sn));
+  const todo = list => list.filter(sn => !full(sn) && !busy(sn));
+  const mbOf = list => list.reduce((a, sn) => a + audioMB(r, sn), 0);
+  const mbTxt = x => x >= 1000 ? FA((x / 1000).toFixed(1)) + " گیگابایت" : FA(Math.round(x)) + " مگابایت";
+  const all = DATA.surahs.map(s => s.n), mine = all.filter(sn => S[sn].siyaqs.some(q => status(key(sn, q.n)) !== "new"));
+  const lv = currentLevel(), lvS = lv.surahs || [];
+  [...auSel].forEach(sn => { if (full(sn) || busy(sn)) auSel.delete(sn); });
+  const sel = [...auSel].sort((a, b) => a - b), selMB = mbOf(sel);
+  const have = all.filter(full), haveMB = mbOf(have), active = auJobs(r);
+  const f = normFa(auFilter).trim();
+  const shown = DATA.surahs.filter(s => !f || normFa(s.name).includes(f) || String(s.n) === faNum(f));
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="دانلود ترتیل">
     <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>دانلود ترتیل</h2></header>
     <div class="body">
-      <div class="field"><label for="au-r">قاری</label><select id="au-r">${RECITERS.map(([v, l]) => `<option value="${v}" ${r === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>
-      <p class="small muted">هر سوره جدا دانلود می‌شود و بعد از آن، ترتیلش بدون اینترنت پخش می‌شود. حجم‌ها تقریبی است. دانلودها به‌ترتیب و یکی‌یکی انجام می‌شوند.</p>
-      <div class="row">
-        ${mine.length ? `<button class="small" data-aubulk="mine" ${todo(mine).length ? "" : "disabled"}>سوره‌های من (${mb(todo(mine))} مگابایت)</button>` : ""}
-        <button class="small" data-aubulk="j30" ${todo(j30).length ? "" : "disabled"}>جزء ۳۰ (${mb(todo(j30))} مگابایت)</button>
-        <button class="small" data-aubulk="all" ${todo(all).length ? "" : "disabled"}>کل قرآن (${mb(todo(all))} مگابایت)</button>
+      ${IS_APP ? "" : `<div class="card startnote"><p class="small">ذخیره ترتیل روی گوشی فقط در <b>برنامه اندروید</b> کار می‌کند. در نسخه وب ترتیل هنگام پخش از اینترنت خوانده می‌شود.</p></div>`}
+      <div class="field"><label for="au-r">قاری</label><select id="au-r">${reciterOptions(r)}</select></div>
+      <div class="card"><div class="row between"><span class="small"><b>روی گوشی:</b> ${FA(have.length)} سوره از ۱۱۴ <span class="muted">(${mbTxt(haveMB)})</span></span>${have.length ? `<button class="small btn-ghost" id="au-delall">${auConfirm ? "مطمئنید؟ دوباره بزنید" : "حذف همه"}</button>` : ""}</div>
+        ${miniBar(have.length / 114)}
+        ${active.length ? `<div class="row between"><span class="small">در حال دانلود: ${FA(active.length)} سوره</span><button class="small" id="au-stop">توقف همه</button></div>` : ""}</div>
+      <h3>انتخاب سوره‌ها</h3>
+      <div class="chips">
+        <button class="small" data-aupick="all">کل قرآن</button>
+        ${lvS.length ? `<button class="small" data-aupick="level">${lv.t}</button>` : ""}
+        ${mine.length ? `<button class="small" data-aupick="mine">سوره‌های من (${FA(mine.length)})</button>` : ""}
+        <select id="au-juz" aria-label="افزودن یک جزء" style="width:auto;padding:6px 10px"><option value="">+ افزودن جزء…</option>${range(1, 30).map(j => `<option value="${j}">جزء ${FA(j)}</option>`).join("")}</select>
+        ${sel.length ? `<button class="small btn-ghost" data-aupick="none">پاک کردن انتخاب</button>` : ""}
       </div>
-      <section class="card" style="gap:0;padding-block:4px">${DATA.surahs.map(s => { const h = audioHave(r, s.n), id = audioJobId(r, s.n), act = jobActive(id);
-        return `<div class="dlrow"><span class="small"><b>${FA(s.n)}. ${s.name}</b> <span class="muted num">· ${FA(s.total)} آیه · ${FA(Math.max(0.1, audioMB(r, s.n)).toFixed(1))} مگابایت</span></span>
-          ${act ? "" : h >= s.total ? `<span class="row" style="gap:6px"><span class="small ok">✓ روی گوشی</span><button class="small btn-ghost" data-audel="${s.n}">حذف</button></span>` : `<button class="small" data-auget="${s.n}">${h ? "ادامه (" + FA(h) + "/" + FA(s.total) + ")" : "دریافت"}</button>`}
-          ${act ? jobBar(id) : ""}</div>`; }).join("")}</section>
-    </div></div>`, () => { auReciter = null; openSettingsKeep(); });
-  box.querySelector("#au-r").addEventListener("change", e => { auReciter = e.target.value; openAudio(); });
-  box.querySelectorAll("[data-auget]").forEach(b => b.addEventListener("click", () => downloadAudio(r, +b.dataset.auget)));
-  box.querySelectorAll("[data-audel]").forEach(b => b.addEventListener("click", () => { deleteAudio(r, +b.dataset.audel); refresh(); }));
-  box.querySelectorAll("[data-aubulk]").forEach(b => b.addEventListener("click", () => {
-    const list = {mine, j30, all}[b.dataset.aubulk]; todo(list).forEach(sn => downloadAudio(r, sn)); toast(FA(todo(list).length || list.length) + " سوره در صف دانلود");
-  }));
+      <input type="search" id="au-f" value="${esc(auFilter)}" placeholder="پیدا کردن سوره با نام یا شماره" aria-label="پیدا کردن سوره">
+      <section class="card" style="gap:0;padding-block:4px">${shown.map(s => { const h = audioHave(r, s.n), id = audioJobId(r, s.n), act = busy(s.n), ok = full(s.n);
+        return `<div class="dlrow"><label class="row" style="gap:8px;flex-wrap:nowrap;flex:1;min-width:0"><input type="checkbox" data-ausel="${s.n}" ${auSel.has(s.n) ? "checked" : ""} ${ok || act ? "disabled" : ""} aria-label="انتخاب سوره ${s.name}">
+          <span class="small"><b>${FA(s.n)}. ${s.name}</b> <span class="muted num">· ${FA(Math.max(0.1, audioMB(r, s.n)).toFixed(1))} مگابایت${h && !ok ? " · " + FA(h) + " از " + FA(s.total) + " آیه" : ""}</span></span></label>
+          ${act ? "" : ok ? `<span class="row" style="gap:6px"><span class="small ok">✓ روی گوشی</span><button class="small btn-ghost" data-audel="${s.n}">حذف</button></span>` : ""}
+          ${act ? jobBar(id) : ""}</div>`; }).join("") || `<p class="small muted">سوره‌ای پیدا نشد.</p>`}</section>
+      <p class="small muted">حجم‌ها تقریبی است. سوره‌ها به‌ترتیب و یکی‌یکی دانلود می‌شوند و اگر اینترنت قطع شود، با دانلود دوباره از همان‌جا ادامه پیدا می‌کنند. ترتیل‌های دانلودشده بدون اینترنت پخش می‌شوند.</p>
+    </div>
+    <footer><button class="btn-main" id="au-go" ${sel.length && IS_APP ? "" : "disabled"}>${sel.length ? `دانلود ${FA(sel.length)} سوره (${mbTxt(selMB)})` : "سوره‌ها را انتخاب کنید"}</button></footer></div>`, () => { auReciter = null; auConfirm = false; if (auFrom === "settings") { auFrom = ""; openSettingsKeep(); } else render(); });
+  const on = (sel2, ev, fn) => box.querySelectorAll(sel2).forEach(x => x.addEventListener(ev, () => fn(x)));
+  on("#au-r", "change", x => { auReciter = x.value; auSel.clear(); openAudio(); });
+  on("[data-ausel]", "change", x => { const n = +x.dataset.ausel; x.checked ? auSel.add(n) : auSel.delete(n); lastDraw(); });
+  on("[data-aupick]", "click", x => { const k = x.dataset.aupick;
+    if (k === "none") auSel.clear(); else todo({all, mine, level: lvS}[k]).forEach(sn => auSel.add(sn));
+    lastDraw(); });
+  on("#au-juz", "change", x => { if (!x.value) return; todo(juzSurahs(+x.value)).forEach(sn => auSel.add(sn)); toast("سوره‌های جزء " + FA(+x.value) + " انتخاب شد"); lastDraw(); });
+  const fi = box.querySelector("#au-f");
+  fi.addEventListener("input", () => { auFilter = fi.value; clearTimeout(openAudio.t); openAudio.t = setTimeout(() => { lastDraw(); const n = document.querySelector("#au-f"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }, 250); });
+  on("[data-audel]", "click", x => { deleteAudio(r, +x.dataset.audel); lastDraw(); });
+  on("#au-delall", "click", () => { if (!auConfirm) { auConfirm = true; return lastDraw(); } auConfirm = false; try { Android.deletePath("audio/" + r); } catch (e) {} audioCount.clear(); toast("ترتیل‌های " + rname + " حذف شد"); lastDraw(); });
+  on("#au-stop", "click", stopAllDownloads);
+  on("#au-go", "click", () => { const list = todo(sel); list.forEach(sn => downloadAudio(r, sn)); auSel.clear(); toast(FA(list.length) + " سوره در صف دانلود"); lastDraw(); });
 }
+let auConfirm = false, auFrom = "";
 
 // ---------- audio ----------
 let audio, queue = [], playingVk = null;
@@ -802,6 +840,7 @@ function mushaf() {
   <div id="mushaf-page">${renderPages([mushafPage], {marks: true, weak: cfg.showWeak})}</div>
   ${Object.keys(st.err || {}).length ? `<label class="switch small"><span>نشان دادن آیه‌های نیازمند تثبیت<br><span class="muted">زیر آیه‌های اشتباه‌شده خط نقطه‌چین و کلمه‌های اشتباه رنگی می‌شوند.</span></span><input type="checkbox" id="showweak" ${cfg.showWeak ? "checked" : ""}></label>` : ""}
   <p class="small muted">نوار رنگی کنار هر سطر، وضعیت سیاق همان سطر را نشان می‌دهد. روی هر کلمه بزنید تا آیه و سیاق آن را ببینید. با کشیدن صفحه به چپ و راست ورق بزنید.</p>
+  <button class="small" id="mu-audio">⬇ دانلود ترتیل برای پخش بدون اینترنت</button>
   <p class="small muted">خط عثمان طه، مصحف مدینه (QCF4 مجمع ملک فهد).</p>`;
 }
 function wireMushaf(v) {
@@ -815,6 +854,7 @@ function wireMushaf(v) {
   box.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, {passive: true});
   box.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 60) go(dx > 0 ? 1 : -1); });
   box.addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (w) openWordbar(w.dataset.vk); });
+  v.querySelector("#mu-audio").addEventListener("click", () => openAudio());
   const sw = v.querySelector("#showweak"); if (sw) sw.addEventListener("change", () => { cfg.showWeak = sw.checked; saveCfg(); render(); });
   if (selVk) markSel(selVk);
 }
@@ -1129,7 +1169,7 @@ function openSurah(n) {
   ${surahOpen(n) ? "" : (() => { const L = levelOfSurah(n); return `<div class="card startnote"><b>${ICON_LOCK} تدبر این سوره هنوز باز نیست</b><p class="small">${L ? `این سوره در «${L.t}» است و بعد از گذراندن «${blocker(L).t}» باز می‌شود.` : "این سوره بعد از گذراندن سطح ۶ باز می‌شود."} ثبت «از قبل حفظ هستم» و مرور همیشه آزاد است.</p><div class="row"><button class="small btn-main" id="go-cur">ادامه ${currentLevel().t}</button></div></div>`; })()}
   ${dirBlock(s)}
   <button id="les">🎬 فیلم و صوت درس‌های تدبر این سوره</button>
-  ${IS_APP ? (() => { const r = cfg.reciter, h = audioHave(r, s.n), id = audioJobId(r, s.n), rn = (RECITERS.find(x => x[0] === r) || [, ""])[1];
+  ${IS_APP ? (() => { const r = cfg.reciter, h = audioHave(r, s.n), id = audioJobId(r, s.n), rn = reciterName(r);
     return `<div class="card"><div class="row between"><span class="small">ترتیل ${rn}</span>${jobActive(id) ? "" : h >= s.total ? `<span class="small ok">✓ روی گوشی</span>` : `<button class="small" id="au-this">${h ? "ادامه دانلود" : "دانلود"} (${FA(audioMB(r, s.n).toFixed(1))} مگابایت)</button>`}</div>${jobActive(id) ? jobBar(id) : ""}</div>`; })() : ""}
   <div class="card"><label class="switch small"><span><b>از قبل حفظ هستم</b><br><span class="muted">همه سیاق‌های سوره حفظ‌شده ثبت می‌شوند و در برنامه مرور قرار می‌گیرند.</span></span><input type="checkbox" id="pre-mem" ${surahAll(s, isMem) ? "checked" : ""}></label>
   <label class="switch small"><span><b>از قبل تدبر کرده‌ام</b><br><span class="muted">مثلاً در کلاس یا با کتاب؛ سوره تدبرشده ثبت می‌شود.</span></span><input type="checkbox" id="pre-tad" ${surahAll(s, isTad) ? "checked" : ""}></label></div>
@@ -1294,7 +1334,7 @@ function stepListen() {
   const {s, q} = ses, steps = stepsOf(s, q);
   const labels = Object.fromEntries(steps.map(g => [key(s.n, g.s), g.t]));
   return {body: `
-    <div class="card"><p class="small">کل سیاق را چند بار بشنوید و همراه قاری در دل بخوانید. قاری: ${RECITERS.find(r => r[0] === cfg.reciter)[1]}</p>
+    <div class="card"><p class="small">کل سیاق را چند بار بشنوید و همراه قاری در دل بخوانید. قاری: ${reciterName(cfg.reciter)}</p>
     <div class="row"><span class="small">تکرار هر آیه</span><div class="seg" style="flex:1">${[1, 3, 5].map(x => `<button data-reps="${x}" aria-pressed="${cfg.reps === x}">${FA(x)} بار</button>`).join("")}</div></div>
     <div class="row"><button id="playall" class="btn-main">▶ پخش کل سیاق</button><button id="stop">■ توقف</button></div>
     <p class="small muted">روی هر آیه بزنید تا همان آیه پخش شود.</p></div>
@@ -1765,10 +1805,11 @@ function openSettings() {
     </section>
     <section class="card" id="offline"><h3>بدون اینترنت</h3>${offlineBox()}</section>
     <section class="card"><h3>صوت</h3>
-      <div class="field"><label for="reciter">قاری ترتیل</label><select id="reciter">${RECITERS.map(([v, l]) => `<option value="${v}" ${cfg.reciter === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+      <div class="field"><label for="reciter">قاری ترتیل</label><select id="reciter">${reciterOptions(cfg.reciter)}</select></div>
       <button id="testaudio">▶ آزمایش صدای قاری</button>
+      <button id="au-open2">⬇ دانلود ترتیل: انتخاب سوره‌ها، جزء یا کل قرآن</button>
       <div class="field"><span class="small">تکرار پیش‌فرض هر آیه</span><div class="seg" data-group="reps">${[1, 3, 5].map(v => `<button data-v="${v}" aria-pressed="${cfg.reps === v}">${FA(v)} بار</button>`).join("")}</div></div>
-      <p class="small muted">پخش صوت به اینترنت نیاز دارد.</p>
+      <p class="small muted">ترتیل‌هایی که دانلود نشده‌اند هنگام پخش از اینترنت خوانده می‌شوند.</p>
     </section>
     <section class="card"><h3>روش حفظ</h3>
       <label class="switch small"><span>حفظ فقط بعد از تدبر<br><span class="muted">مرحله تدبر قابل رد شدن نیست و دست‌کم یک پاسخ لازم است.</span></span><input type="checkbox" id="gate" ${cfg.gate ? "checked" : ""}></label>
@@ -1804,6 +1845,7 @@ function openSettings() {
   wireUpd(box);
   wireQcf(box);
   box.querySelector("#testaudio").addEventListener("click", () => play(78, 1));
+  box.querySelector("#au-open2").addEventListener("click", () => { auFrom = "settings"; openAudio(); });
   box.querySelector("#gate").addEventListener("change", e => set("gate", e.target.checked));
   box.querySelector("#freepath").addEventListener("change", e => set("freePath", e.target.checked));
   box.querySelector("#backup").addEventListener("click", () => doBackup().then(() => openSettingsKeep()));

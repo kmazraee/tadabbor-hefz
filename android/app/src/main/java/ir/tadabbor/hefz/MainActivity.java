@@ -27,7 +27,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -47,7 +50,9 @@ public class MainActivity extends Activity {
     private volatile boolean downloading = false;
     /** One download job at a time (translations, recitations), in the order they were asked for. */
     private final ExecutorService jobs = Executors.newSingleThreadExecutor();
-    private final AtomicReference<String> cancelled = new AtomicReference<>("");
+    private final Set<String> cancelled = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    // cancelAll() bumps this; jobs queued before the bump stop at their next file
+    private final AtomicInteger generation = new AtomicInteger();
 
     private static String[] buildQcfList() {
         String[] list = new String[48];
@@ -148,7 +153,10 @@ public class MainActivity extends Activity {
         public void deletePath(String rel) { deleteTree(safe(rel)); }
 
         @JavascriptInterface
-        public void cancelJob(String id) { cancelled.set(id); }
+        public void cancelJob(String id) { cancelled.add(id); }
+
+        @JavascriptInterface
+        public void cancelAll() { generation.incrementAndGet(); }
 
         /**
          * Queue a download job. files = JSON array of {url, path}; paths are relative to app storage.
@@ -156,6 +164,8 @@ public class MainActivity extends Activity {
          */
         @JavascriptInterface
         public void downloadList(String id, String filesJson) {
+            cancelled.remove(id);
+            final int gen = generation.get();
             jobs.submit(() -> {
                 int done = 0, total = 0;
                 try {
@@ -163,7 +173,7 @@ public class MainActivity extends Activity {
                     total = arr.length();
                     js("window.__dl && __dl(" + JSONObject.quote(id) + ",0," + total + ",'run')");
                     for (int i = 0; i < arr.length(); i++) {
-                        if (id.equals(cancelled.get())) {
+                        if (cancelled.remove(id) || gen != generation.get()) {
                             js("window.__dl && __dl(" + JSONObject.quote(id) + "," + done + "," + total + ",'cancel')");
                             return;
                         }
