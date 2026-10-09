@@ -78,6 +78,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .siyaq-strip span.fstart{margin-inline-start:5px}
 .fasl-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:6px;padding:6px 2px;border-top:2px solid var(--line)}
 .fasl-head b{font-size:15px;color:var(--lapis)}
+.fasl-head .fdesc{flex-basis:100%;color:var(--ink)}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.upd{display:flex;flex-direction:column;gap:8px}
 .fasl-head.nested{border-top-style:dashed;margin-inline-start:14px}
 .siyaq-item.nested{margin-inline-start:14px;width:calc(100% - 14px)}
 .siyaq-strip span.cur{outline:2px solid var(--gold);outline-offset:1px}
@@ -210,10 +213,14 @@ footer.note{font-size:12px;color:var(--muted);text-align:center}
 })();
 </script>
 <script>
-const DATA = /*DATA*/;
+let DATA = /*DATA*/;
+// Content downloaded by "بررسی به‌روزرسانی" replaces the bundled copy while it is newer.
+try { const m = JSON.parse(localStorage.getItem("tadabbor-meta")); if (m && m.surahs && m.v !== DATA.v && m.built >= DATA.built) DATA = m; } catch (e) {}
 const DATA_BASE = "/*DATABASE*/";
 const PAGE_BASE = DATA_BASE + "pages/";
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
+const SITE_BASE = "https://kmazraee.github.io/tadabbor-hefz/";
+const REPO_API = "https://api.github.com/repos/kmazraee/tadabbor-hefz/releases?per_page=10";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
 const BAZAAR_ID = "ir.tadabbor.hefz";
 const RATE_URL = IS_APP ? "bazaar://details?id=" + BAZAAR_ID : "https://cafebazaar.ir/app/" + BAZAAR_ID;
@@ -311,15 +318,17 @@ function toast(msg) {
   const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
   document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
 }
+const qName = q => "سیاق " + FA(q.n);
+const dirBlock = s => s.dir ? `<div class="help"><b>${s.src === "book" ? "راهبرد سوره" : "جهت هدایتی سوره (آزمایشی)"}:</b> ${esc(s.dir)}${s.points ? `<ol class="small" style="margin:6px 0 0;padding-inline-start:20px">${s.points.map(x => `<li>${esc(x)}</li>`).join("")}</ol>` : ""}</div>` : "";
 const faslOf = (s, q) => q.f && s.fasls ? s.fasls.find(f => f.n === q.f) : null;
-const sesTitle = (s, q) => { const f = faslOf(s, q); return f ? `فصل ${FA(f.n)} · ${esc(title(s, q))}` : esc(title(s, q)); };
+const sesTitle = (s, q) => { const f = faslOf(s, q); return f ? `فصل ${FA(f.n)} · ${qName(q)}` : (s.src === "book" ? qName(q) : esc(title(s, q))); };
 const sourceNote = s => s.src === "book" ? `<div class="help small">سیاق‌ها و فصل‌های این سوره بر اساس سیاق‌بندی و فصل‌بندی درس «تدبر در سوره مبارک بقره» (مرحله چهارم) استاد علی صبوحی طسوجی است.</div>` : testNote;
 function faslHead(s, q, prev) {
   const f = faslOf(s, q); if (!f || (prev && prev.f === q.f)) return "";
   const back = prev && prev.f && s.fasls.find(x => x.n === prev.f).parent === f.n;
   const par = f.parent ? ` · معترضه، درون فصل ${FA(f.parent)}` : "";
   const sCount = s.siyaqs.filter(x => x.f === f.n).length;
-  return `<div class="fasl-head${f.parent ? " nested" : ""}"><b>${back ? "ادامه " : ""}فصل ${FA(f.n)}</b><span class="small muted">آیات ${FA(f.s)} تا ${FA(f.e)}${par} · ${FA(sCount)} سیاق</span></div>`;
+  return `<div class="fasl-head${f.parent ? " nested" : ""}"><b>${back ? "ادامه " : ""}فصل ${FA(f.n)}${f.t && !back ? ": " + esc(f.t) : ""}</b><span class="small muted">آیات ${FA(f.s)} تا ${FA(f.e)}${par} · ${FA(sCount)} سیاق</span>${f.d && f.d.length && !back ? `<span class="small fdesc">${esc(f.d.join(" "))}</span>` : ""}</div>`;
 }
 function strip(s, cur) {
   return `<div class="siyaq-strip" aria-hidden="true">${s.siyaqs.map((q, i) => `<span class="${cur === q.n ? "cur" : ""}${i && q.f && q.f !== s.siyaqs[i - 1].f ? " fstart" : ""}" style="flex:${ayahCount(q)};--c:${COLORS[status(key(s.n, q.n))]}"></span>`).join("")}</div>`;
@@ -550,6 +559,7 @@ function home() {
   const backupOld = !cfg.lastBackup || (Date.now() - cfg.lastBackup) > 7 * 864e5;
   return `
   ${topBar(`<h1>حفظ تدبری</h1>`)}
+  ${upd.app || upd.meta ? `<section class="card"><div class="row between"><span class="small"><b>به‌روزرسانی آماده است:</b> ${[upd.app ? "نسخه " + FA(upd.app.v) + " برنامه" : "", upd.meta ? "محتوای تازه سیاق‌ها" : ""].filter(Boolean).join(" و ")}</span><button class="small btn-main" data-settings>مشاهده</button></div></section>` : ""}
   ${qcfCard()}
   ${fresh ? `<section class="card"><h2>از کجا شروع کنم؟</h2>
     <p class="small">اگر سوره‌هایی را از قبل حفظ هستید، در «نقشه سیاق» سوره را باز کنید و «از قبل حفظ هستم» را بزنید تا وارد برنامه مرور شوند.</p>
@@ -814,14 +824,14 @@ function openSurah(n) {
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="سوره ${s.name}">
   <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>سوره ${s.name}</h2><span class="small muted">${s.type === "meccan" ? "مکی" : "مدنی"} · ${FA(s.total)} آیه</span></header>
   <div class="body">${strip(s)}${legend()}
-  ${s.dir ? `<div class="help"><b>جهت هدایتی سوره (آزمایشی):</b> ${esc(s.dir)}</div>` : ""}
+  ${dirBlock(s)}
   <button id="les">🎬 فیلم و صوت درس‌های تدبر این سوره</button>
   <div class="card"><label class="switch small"><span><b>از قبل حفظ هستم</b><br><span class="muted">همه سیاق‌های سوره حفظ‌شده ثبت می‌شوند و در برنامه مرور قرار می‌گیرند.</span></span><input type="checkbox" id="pre-mem" ${surahAll(s, isMem) ? "checked" : ""}></label>
   <label class="switch small"><span><b>از قبل تدبر کرده‌ام</b><br><span class="muted">مثلاً در کلاس یا با کتاب؛ سوره تدبرشده ثبت می‌شود.</span></span><input type="checkbox" id="pre-tad" ${surahAll(s, isTad) ? "checked" : ""}></label></div>
   ${sourceNote(s)}
   ${s.siyaqs.map((q, qi) => { const k = key(s.n, q.n), stt = status(k), it = st.items[k], n2 = st.notes[k], fh = faslHead(s, q, s.siyaqs[qi - 1]), nest = (faslOf(s, q) || {}).parent;
     const lbl = stt === "new" ? "شروع تدبر" : stt === "learn" ? "ادامه" : "مرور";
-    return `${fh}<div class="siyaq-item${nest ? " nested" : ""}" style="--c:${COLORS[stt]}"><span class="stripe"></span><span><b>${esc(title(s, q))}</b><br><span class="small muted">آیات ${FA(q.s)} تا ${FA(q.e)} · ${LABELS[stt]}${it && it.stage < 5 ? " · مرحله " + FA(it.stage + 1) : ""}</span>${n2 && n2.title && q.title ? `<br><span class="mine">برداشت من: ${esc(n2.title)}</span>` : ""}</span>
+    return `${fh}<div class="siyaq-item${nest ? " nested" : ""}" style="--c:${COLORS[stt]}"><span class="stripe"></span><span><b>${s.src === "book" ? qName(q) : esc(title(s, q))}</b>${s.src === "book" && q.title ? `<br><span class="small clamp2">${esc(q.title)}</span>` : ""}<br><span class="small muted">آیات ${FA(q.s)} تا ${FA(q.e)} · ${LABELS[stt]}${it && it.stage < 5 ? " · مرحله " + FA(it.stage + 1) : ""}</span>${n2 && n2.title && q.title ? `<br><span class="mine">برداشت من: ${esc(n2.title)}</span>` : ""}</span>
     <button class="${stt === "new" || stt === "learn" ? "btn-main" : ""} small" data-start="${k}" data-mode="${stt === "new" || stt === "learn" ? "learn" : "review"}">${lbl}</button></div>`; }).join("")}
   </div></div>`);
   box.querySelector("#les").addEventListener("click", () => openLessons(n));
@@ -896,7 +906,8 @@ function stepTadabbur() {
   if (sub === 0) return {
     body: `${nav}
     <div class="card"><div class="small muted">سیاق ${FA(q.n)} از ${FA(s.siyaqs.length)} سوره ${s.name} · آیات ${FA(q.s)} تا ${FA(q.e)}</div>${strip(s, q.n)}
-    ${s.dir ? `<p class="small"><b>جهت هدایتی سوره (آزمایشی):</b> ${esc(s.dir)}</p>` : ""}
+    ${faslOf(s, q) && faslOf(s, q).t ? `<p class="small"><b>فصل ${FA(faslOf(s, q).n)}:</b> ${esc(faslOf(s, q).t)}</p>` : ""}
+    ${s.dir ? `<p class="small"><b>${s.src === "book" ? "راهبرد سوره" : "جهت هدایتی سوره (آزمایشی)"}:</b> ${esc(s.dir)}</p>` : ""}
     <p class="small">آیات را آرام و با توجه بخوانید یا بشنوید. هنوز قصد حفظ نداشته باشید؛ فقط بپرسید: این آیات درباره چیست و چه می‌خواهد؟</p>
     <div class="row"><button id="listen">▶ شنیدن کل سیاق</button><button id="les">🎬 درس استاد درباره این سوره</button></div></div>
     ${sesPages(q.s, q.e)}
@@ -942,11 +953,13 @@ function stepTadabbur() {
     <div class="card"><h3>پرسش‌های تدبری</h3><p class="small">کوتاه و به زبان خودتان بنویسید. پاسخ درست و غلط ندارد؛ هدف، ارتباط گرفتن با آیات پیش از حفظ است.</p></div>
     ${QUESTIONS.map((qq, i) => `<div class="field"><label for="qa-${i}">${FA(i + 1)}. ${qq}</label><textarea id="qa-${i}" data-qa="${i}" rows="2">${esc(n.answers[i] || "")}</textarea></div>`).join("")}
     <div class="field"><label for="mytitle"><b>عنوان این سیاق به زبان من</b></label><input type="text" id="mytitle" value="${esc(n.title)}" placeholder="در یک جمله کوتاه"></div>
-    ${q.title ? `<p class="small muted">عنوان مرجع (آزمایشی): ${esc(q.title)}</p>` : ""}`,
+    ${q.title ? `<div class="card"><div class="row between"><h3>${s.src === "book" ? "مقایسه با برداشت استاد" : "عنوان مرجع (آزمایشی)"}</h3><button class="small" id="cmp2" aria-expanded="${!!ses.cmp2}">${ses.cmp2 ? "پنهان کن" : "نشانم بده"}</button></div>
+      ${ses.cmp2 ? `<div class="meaning"><b>${esc(q.title)}</b>${(q.sum || []).map(x => `<span class="small">${esc(x)}</span>`).join("")}</div>${s.source ? `<p class="small muted">از ${esc(s.source)}</p>` : ""}` : `<p class="small muted">اول برداشت خودتان را بنویسید، بعد با پیام اصلی این سیاق مقایسه کنید.</p>`}</div>` : ""}`,
     foot: `<button id="back">قبلی</button><button class="btn-main" id="next">تدبر تمام شد؛ برو به شنیدن</button>`,
     wire: b => {
       b.querySelectorAll("[data-qa]").forEach(x => x.addEventListener("input", () => { n.answers[+x.dataset.qa] = x.value; save(); }));
       b.querySelector("#mytitle").addEventListener("input", e => { n.title = e.target.value; save(); });
+      const c2 = b.querySelector("#cmp2"); if (c2) c2.addEventListener("click", () => { ses.cmp2 = !ses.cmp2; redraw(); });
       b.querySelector("#back").addEventListener("click", () => { ses.sub = 1; drawSession(); });
       b.querySelector("#next").addEventListener("click", () => {
         if (cfg.gate && !n.title.trim() && !n.answers.some(a => a.trim())) { toast("دست‌کم به یک پرسش پاسخ دهید یا عنوانی بنویسید"); return; }
@@ -1095,6 +1108,75 @@ function restoreFrom(file) {
   r.readAsText(file);
 }
 
+// ---------- updates: new app version (GitHub Releases) and new siyaq content (GitHub Pages) ----------
+const upd = {state: "idle", app: null, meta: null, changed: [], err: false};
+const vnum = v => String(v || "").replace(/^v/, "").split(".").map(x => parseInt(x) || 0);
+const newer = (a, b) => { const x = vnum(a), y = vnum(b); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; };
+function changedSurahs(oldM, newM) {
+  const sig = s => JSON.stringify([s.siyaqs, s.fasls, s.dir, s.points]);
+  return newM.surahs.filter((s, i) => !oldM.surahs[i] || sig(s) !== sig(oldM.surahs[i])).map(s => s.n);
+}
+async function checkUpdates(silent) {
+  upd.state = "checking"; upd.err = false; if (!silent) refreshUpd();
+  const jobs = [];
+  jobs.push(fetch(SITE_BASE + "data/meta.json?t=" + Date.now()).then(r => r.ok ? r.json() : null).then(m => {
+    upd.meta = m && m.v !== DATA.v && m.built >= DATA.built ? m : null;
+    upd.changed = upd.meta ? changedSurahs(DATA, upd.meta) : [];
+  }).catch(() => { upd.err = true; }));
+  if (IS_APP) jobs.push(fetch(REPO_API).then(r => r.ok ? r.json() : []).then(list => {
+    const rel = (list || []).filter(r => !r.draft && r.tag_name).sort((a, b) => newer(a.tag_name, b.tag_name) ? -1 : 1)[0];
+    upd.app = rel && newer(rel.tag_name, VERSION) ? {v: rel.tag_name.replace(/^v/, ""), url: ((rel.assets || [])[0] || {}).browser_download_url || rel.html_url, test: rel.prerelease} : null;
+  }).catch(() => { upd.err = true; }));
+  await Promise.all(jobs);
+  upd.state = "done"; cfg.lastUpdateCheck = Date.now(); saveCfg();
+  if (!silent) { refreshUpd(); if (!upd.app && !upd.meta) toast(upd.err ? "اتصال برقرار نشد؛ اینترنت را بررسی کنید" : "برنامه و محتوا به‌روز هستند"); }
+  else if (upd.app || upd.meta) refresh();
+}
+// Keep progress when siyaq boundaries of a surah change: a new siyaq inherits what its overlapping old siyaqs had.
+function migrateProgress(oldM, newM, surahNums) {
+  surahNums.forEach(sn => {
+    const os = oldM.surahs[sn - 1].siyaqs, ns = newM.surahs[sn - 1].siyaqs;
+    const items = {}, notes = {};
+    ns.forEach(q => {
+      const ov = os.filter(o => o.e >= q.s && o.s <= q.e), ks = ov.map(o => key(sn, o.n));
+      const its = ks.map(k => st.items[k]).filter(Boolean);
+      if (its.length === ks.length && its.length) {
+        const stage = Math.min(...its.map(x => x.stage || 0));
+        if (stage >= 5) items[key(sn, q.n)] = {stage: 5, ivl: Math.min(...its.map(x => x.ivl || 1)), due: Math.min(...its.map(x => x.due || today()))};
+        else if (stage > 0) items[key(sn, q.n)] = {stage};
+      }
+      const nts = ks.map(k => st.notes[k]).filter(Boolean);
+      const same = ov.length === 1 && ov[0].s === q.s && ov[0].e === q.e;
+      if (same && nts.length) notes[key(sn, q.n)] = nts[0];
+      else if (nts.length === ks.length && nts.length && nts.every(x => x.done)) notes[key(sn, q.n)] = {done: true, title: "", answers: ["", "", "", ""], cuts: [], stepTitles: {}, carried: true};
+    });
+    Object.keys(st.items).filter(k => k.startsWith(sn + ":")).forEach(k => delete st.items[k]);
+    Object.keys(st.notes).filter(k => k.startsWith(sn + ":")).forEach(k => delete st.notes[k]);
+    Object.assign(st.items, items); Object.assign(st.notes, notes);
+  });
+  save();
+}
+function applyContent() {
+  const m = upd.meta; if (!m) return;
+  migrateProgress(DATA, m, upd.changed);
+  store("tadabbor-meta", m);
+  toast("محتوا به‌روز شد"); setTimeout(() => location.reload(), 600);
+}
+function updBox() {
+  const built = DATA.built ? FA(new Date(DATA.built).toLocaleDateString("fa-IR")) : "—";
+  const names = upd.changed.map(n => (upd.meta.surahs[n - 1] || {}).name).filter(Boolean);
+  return `<div class="upd" id="upd-box">
+    <p class="small">نسخه برنامه ${FA(VERSION)} · محتوای سیاق‌ها ${built}</p>
+    ${upd.app ? `<div class="help"><b>نسخه ${FA(upd.app.v)} برنامه منتشر شده است.</b>${upd.app.test ? " (نسخه آزمایشی)" : ""}<div class="row" style="margin-top:6px"><a class="small" href="https://cafebazaar.ir/app/${BAZAAR_ID}" target="_blank" rel="noopener">به‌روزرسانی از کافه‌بازار</a><a class="small" href="${esc(upd.app.url)}" target="_blank" rel="noopener">دانلود مستقیم</a></div></div>` : ""}
+    ${upd.meta ? `<div class="help"><b>محتوای تازه آماده است.</b> ${names.length ? "سوره‌های تغییرکرده: " + esc(names.join("، ")) + "." : ""} پیشرفت شما حفظ می‌شود.<div class="row" style="margin-top:6px"><button class="btn-main small" id="upd-apply">دریافت محتوا</button></div></div>` : ""}
+    <button id="upd-check" ${upd.state === "checking" ? "disabled" : ""}>${upd.state === "checking" ? "در حال بررسی…" : "بررسی به‌روزرسانی"}</button></div>`;
+}
+function wireUpd(root) {
+  const c = root.querySelector("#upd-check"); if (c) c.addEventListener("click", () => checkUpdates(false));
+  const a = root.querySelector("#upd-apply"); if (a) a.addEventListener("click", applyContent);
+}
+function refreshUpd() { const b = document.getElementById("upd-box"); if (b) { b.outerHTML = updBox(); wireUpd(document.querySelector("#sheet") || document); } }
+
 // ---------- settings ----------
 let confirmReset = "";
 function openSettings() {
@@ -1103,6 +1185,7 @@ function openSettings() {
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="تنظیمات">
   <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>تنظیمات</h2></header>
   <div class="body">
+    <section class="card"><h3>به‌روزرسانی</h3>${updBox()}</section>
     <section class="card"><h3>ظاهر</h3>
       <div class="field"><span class="small">پوسته</span><div class="seg" data-group="theme">${THEMES.map(([v, l]) => `<button data-v="${v}" aria-pressed="${cfg.theme === v}">${l}</button>`).join("")}</div></div>
       <div class="field"><span class="small">رنگ اصلی</span><div class="swatches">${ACCENTS.map(([v, l, c]) => `<button class="swatch" data-accent="${v}" aria-pressed="${cfg.accent === v}" aria-label="${l}" title="${l}" style="background:${c}"></button>`).join("")}</div></div>
@@ -1154,6 +1237,7 @@ function openSettings() {
   const ql = box.querySelector("#qlh"); ql.addEventListener("input", () => { set("qlh", +ql.value); box.querySelector("#qlh-v").textContent = FA((+ql.value).toFixed(2)); });
   box.querySelector("#reciter").addEventListener("change", e => set("reciter", e.target.value));
   box.querySelector("#trans").addEventListener("change", e => set("trans", e.target.value));
+  wireUpd(box);
   wireQcf(box);
   box.querySelector("#testaudio").addEventListener("click", () => play(78, 1));
   box.querySelector("#gate").addEventListener("change", e => set("gate", e.target.checked));
@@ -1216,6 +1300,7 @@ function openGuide(section) {
       <p><b>پشتیبان:</b> دکمه «ذخیره پشتیبان» یک فایل می‌سازد؛ در پنجره اشتراک‌گذاری Drive را انتخاب کنید. برای بازیابی، «بازیابی از فایل» را بزنید و فایل را از گوگل‌درایو انتخاب کنید.</p></div></details>
     <details><summary>پرسش‌های رایج</summary><div>
       <p><b>داده‌هایم کجا ذخیره می‌شود؟</b> روی همین دستگاه، و هر وقت پشتیبان بگیرید در گوگل‌درایو خودتان.</p>
+      <p><b>چطور به‌روز کنم؟</b> در تنظیمات، «بررسی به‌روزرسانی» را بزنید. برنامه هم روزی یک بار خودش بررسی می‌کند. سیاق‌بندی سوره‌های تازه بدون نصب دوباره دریافت می‌شود و پیشرفت شما حفظ می‌شود؛ برای نسخه تازه برنامه به کافه‌بازار یا دانلود مستقیم هدایت می‌شوید.</p>
       <p><b>بدون اینترنت کار می‌کند؟</b> بله. متن، صفحه‌ها و ترجمه داخل برنامه است و قلم عثمان طه بعد از نصب یک بار روی گوشی ذخیره می‌شود. فقط ترتیل و درس‌ها اینترنت لازم دارند.</p>
       <p><b>ترجمه کجاست؟</b> در مرحله تدبر زیر صفحه مصحف، و با زدن روی هر آیه در مصحف. مترجم را در تنظیمات انتخاب کنید.</p>
       <p><b>سوره‌هایی را از قبل حفظ هستم؛ چه کنم؟</b> در «نقشه سیاق» سوره را باز کنید و «از قبل حفظ هستم» را بزنید. سوره در شمارنده بالای برنامه حساب می‌شود و مرورهایش در روزهای آینده پخش می‌شود.</p>
@@ -1261,4 +1346,5 @@ applySettings();
 render();
 if (!cfg.seenIntro) showIntro();
 if (IS_APP && !qcfLocal() && !cfg.qcfAsked && cfg.qfont === "qcf") qcfStart();
+if (navigator.onLine !== false && (!cfg.lastUpdateCheck || Date.now() - cfg.lastUpdateCheck > 864e5)) setTimeout(() => checkUpdates(true), 4000);
 </script>

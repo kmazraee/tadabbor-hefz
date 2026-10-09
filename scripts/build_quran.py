@@ -21,7 +21,7 @@ are only included with --with-test-siyaq, for development.
 
 Usage: python3 scripts/build_quran.py <quran-json chapters> <quran-qcf4 dir> <rukus.json> <ghoran json/fa dir> [--with-test-siyaq]
 """
-import json, re, sys, pathlib
+import hashlib, json, re, sys, pathlib, datetime
 
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 WITH_TEST = "--with-test-siyaq" in sys.argv
@@ -156,6 +156,23 @@ for sn in range(1, 115):
         q = {"n": i, "s": a, "e": b, "title": t, "steps": [{"s": x, "e": y, "t": tt} for x, y, tt in steps]}
         if sfasl.get(i): q["f"] = sfasl[i]
         siyaqs.append(q)
+    # optional texts for book siyaqs: data/siyaq/NNN.json (titles and summaries)
+    texts = ROOT / "data/siyaq" / f"{sn:03d}.json"
+    sdir, spoints, ssource = None, None, None
+    if src == "book" and texts.exists():
+        c = json.loads(texts.read_text(encoding="utf-8"))
+        cs = c.get("siyaqs", [])
+        if len(cs) != len(siyaqs):
+            problems.append(f"surah {sn}: {len(cs)} siyaq texts for {len(siyaqs)} siyaqs")
+        for q, x in zip(siyaqs, cs):
+            if (x.get("s"), x.get("e")) != (q["s"], q["e"]):
+                problems.append(f"surah {sn} siyaq {q['n']}: text range {x.get('s')}-{x.get('e')} != {q['s']}-{q['e']}")
+            q["title"] = x.get("t") or None
+            if x.get("d"): q["sum"] = x["d"]
+        for f in fasls:
+            x = next((y for y in c.get("fasls", []) if y["n"] == f["n"]), None)
+            if x: f["t"] = x.get("t"); f["d"] = x.get("d", [])
+        sdir, spoints, ssource = c.get("dir"), c.get("points"), c.get("source")
     # verse -> page: first page of each verse; list extra pages only for verses split across pages
     vp, split = [], {}
     for ay in range(1, total + 1):
@@ -164,7 +181,8 @@ for sn in range(1, 115):
         vp.append(pl[0])
         if len(pl) > 1: split[ay] = pl[1:]
     surahs.append({"n": sn, "name": NAMES[sn - 1], "type": ch["type"], "total": total, "src": src,
-                   "dir": DIRECTION.get(sn) if WITH_TEST else None, "siyaqs": siyaqs, "vp": vp, "split": split,
+                   "dir": sdir or (DIRECTION.get(sn) if WITH_TEST else None), "siyaqs": siyaqs, "vp": vp, "split": split,
+                   **({"points": spoints} if spoints else {}), **({"source": ssource} if ssource else {}),
                    **({"fasls": fasls} if fasls else {})})
 
 if total_verses != 6236: problems.append(f"total verses {total_verses}")
@@ -185,7 +203,10 @@ for tid, fname in TRANSLATIONS.items():
 if len(vpages) != 6236: problems.append(f"verses on pages {len(vpages)}")
 if problems:
     print("QA FAILED:\n" + "\n".join(problems[:30])); sys.exit(1)
-OUT_META.write_text(json.dumps({"surahs": surahs}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+# Content version: changes only when siyaq/fasl data or texts change (used by the in-app update check)
+content_key = json.dumps([[s["n"], s["src"], s["siyaqs"], s.get("fasls"), s.get("dir"), s.get("points")] for s in surahs], ensure_ascii=False, sort_keys=True)
+version = hashlib.sha1(content_key.encode()).hexdigest()[:10]
+OUT_META.write_text(json.dumps({"v": version, "built": datetime.date.today().isoformat(), "surahs": surahs}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 size = sum(f.stat().st_size for f in OUT_PAGES.glob("*.json"))
 print(f"Translations: {', '.join(TRANSLATIONS)} | test siyaq data: {'ON' if WITH_TEST else 'off'}")
 for s in surahs:
