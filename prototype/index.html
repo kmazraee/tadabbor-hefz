@@ -169,6 +169,11 @@ details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direc
 .tbar{display:flex;align-items:center;gap:8px;font-size:13px}
 .tbar>span:first-child{flex:0 0 132px}
 .tbar .bar{flex:1;margin:0}
+.books{display:flex;flex-direction:column;gap:8px}
+.book{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.book b{font-size:14px;font-weight:700}
+.bk-ic{font-size:20px}
+.bk-buy{color:var(--lapis);font-weight:700;white-space:nowrap}
 .stepper{display:flex;gap:2px;position:relative;padding-top:2px}
 .stepper::before{content:"";position:absolute;inset-inline:7%;top:19px;height:2px;background:var(--line)}
 .step{all:unset;cursor:pointer;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;position:relative;color:var(--ink);text-align:center}
@@ -191,6 +196,11 @@ details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direc
 .lockicon .ic-lock{width:36px;height:36px;color:var(--muted)}
 .linkbtn{display:inline-block;padding:8px 14px;border-radius:10px;background:var(--lapis);color:var(--on-lapis);text-decoration:none;font-weight:700;font-size:14px}
 .startnote{border:2px dashed var(--gold)}
+.wform{display:flex;flex-direction:column;gap:8px}
+.wform label{font-weight:700;font-size:14px}
+.wform input{background:var(--surface);color:var(--ink);border:none;border-radius:12px;padding:12px 14px;font-size:16px}
+.wform button{margin-top:8px}
+.werr{background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
 .intro{position:fixed;inset:0;z-index:40;background:var(--lapis);color:var(--on-lapis);display:flex;flex-direction:column;justify-content:center;padding:32px 24px;gap:20px;max-width:480px;margin-inline:auto}
 .intro h1{font-size:26px}
 .intro p{font-size:16px;opacity:.9}
@@ -280,6 +290,9 @@ const TRANSLATIONS = [["ansarian", "حسین انصاریان", 1.6, 1], ["makar
   ["khorramdel", "مصطفی خرم‌دل (با توضیح)", 4.6], ["khorramshahi", "بهاءالدین خرمشاهی", 1.2], ["moezzi", "محمدکاظم معزی", 1.1],
   ["mojtabavi", "سید جلال‌الدین مجتبوی", 1.3], ["sadeqi", "محمد صادقی تهرانی", 1.4], ["safavi", "سید محمدرضا صفوی", 1.8], ["none", "بدون ترجمه"]];
 const FA = n => String(n).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
+// The reader's own name, for greetings
+const myName = () => (cfg.name || "").trim();
+const nameComma = () => myName() ? myName() + "، " : "";
 const AR = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const S = Object.fromEntries(DATA.surahs.map(s => [s.n, s]));
@@ -311,7 +324,7 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "system", accent: "lapis", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Abu_Bakr_Ash-Shaatree_64kbps", reps: 3, gate: true, trans: "ansarian", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true};
+const DEFAULTS = {theme: "system", accent: "lapis", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Abu_Bakr_Ash-Shaatree_64kbps", reps: 3, gate: true, trans: "ansarian", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: ""};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";
@@ -730,6 +743,7 @@ function render() {
   v.querySelectorAll("[data-lessons]").forEach(el => el.addEventListener("click", () => openLessons(+el.dataset.lessons)));
   v.querySelectorAll("[data-level]").forEach(el => el.addEventListener("click", () => openLevel(el.dataset.level)));
   v.querySelectorAll("[data-search]").forEach(el => el.addEventListener("click", openSearch));
+  v.querySelectorAll("[data-books]").forEach(el => el.addEventListener("click", openBooks));
   v.querySelectorAll("[data-weak]").forEach(el => el.addEventListener("click", openWeak));
   v.querySelectorAll("[data-drill]").forEach(el => el.addEventListener("click", () => openDrill(weakOpen().slice(0, 10).map(x => x.vk), 0)));
   if (tab === "mushaf") wireMushaf(v);
@@ -783,11 +797,11 @@ function home() {
   const inLearn = all.filter(x => status(x.k) === "learn").length;
   const backupOld = !cfg.lastBackup || (Date.now() - cfg.lastBackup) > 7 * 864e5;
   return `
-  ${topBar(`<h1>حفظ تدبری</h1>`)}
+  ${topBar(myName() ? `<h1>سلام ${esc(myName())}</h1><span class="small muted">حفظ تدبری</span>` : `<h1>حفظ تدبری</h1>`)}
   ${upd.app || upd.meta ? `<section class="card"><div class="row between"><span class="small"><b>به‌روزرسانی آماده است:</b> ${[upd.app ? "نسخه " + FA(upd.app.v) + " برنامه" : "", upd.meta ? "محتوای تازه سیاق‌ها" : ""].filter(Boolean).join(" و ")}</span><button class="small btn-main" data-settings>مشاهده</button></div></section>` : ""}
   ${qcfCard()}
   ${IS_APP && TRANSLATIONS.some(x => jobActive("tr-" + x[0])) ? `<section class="card"><h3>ذخیره ترجمه‌ها روی گوشی</h3><p class="small muted">${FA(TRANSLATIONS.filter(x => x[0] !== "none" && (x[3] || transLocal(x[0]))).length)} از ۱۳ ترجمه روی گوشی است.</p></section>` : ""}
-  <section class="card"><div class="row between"><h2>مسیر شما</h2><button class="small btn-ghost" data-goto="path">همه قدم‌ها</button></div>${stepper()}
+  <section class="card"><div class="row between"><h2>${myName() ? "مسیر " + esc(myName()) : "مسیر شما"}</h2><button class="small btn-ghost" data-goto="path">همه قدم‌ها</button></div>${stepper()}
     ${passed("intro") ? "" : `<p class="small muted">قدم‌ها به ترتیب باز می‌شوند. از «مبانی تدبر» شروع کنید.</p>`}</section>
   ${journeyHero()}
   ${fresh ? "" : `<div class="stats">
@@ -891,8 +905,70 @@ const span = (a, b) => range(a, b);
 const BOOK_URL = "https://taaghche.com/book/129741";
 const HOWTO_URL = SITE + "/آشنایی-با-تدبر/چگونه-در-قرآن-تدبر-کنم؟/";
 const WORKS_URL = SITE + "/آثار-حجت-الاسلام-علی-صبوحی-طسوجی/";
+// ---------- books of Tadabbor Publishing (tadabborpub.ir), linked for purchase ----------
+const PUB = "https://tadabborpub.ir";
+const pubUrl = b => b.id ? `${PUB}/?post_type=product&p=${b.id}` : `${PUB}/?s=${encodeURIComponent(b.q)}&post_type=product`;
+const VOLS = [[6, "l1", 15041, 4790], [5, "l2", 95, 7146], [4, "l3", 0, 7712], [3, "l4", 2180, 0], [2, "l5", 2185, 10747], [1, "l6", 8264, 11483]];
+// [volume, level, id of the cited-and-reasoned edition, id of the general edition]; 0 = found by search on the shop
+const BOOKS = [
+  {id: 3999, t: "آشنایی با دانش تدبر در قرآن کریم", k: "مقدمات تدبر", found: true},
+  {id: 17816, t: "آشنایی با روش تدبر در سوره‌های قرآن کریم", k: "مقدمات تدبر", found: true},
+  {id: 14957, t: "زبان وحی مقدماتی (واژه‌شناسی، جمله‌شناسی)", k: "مقدمات تدبر", found: true},
+  ...VOLS.flatMap(([v, l, a, g]) => [
+    {id: a, q: `جلد ${v} استنادی`, t: `تدبر در قرآن کریم، جلد ${FA(v)} (استنادی و استدلالی)`, k: "کتاب درسی سطح", level: l},
+    {id: g, q: `جلد ${FA(v)} فراگیر`, t: `تدبر در قرآن کریم، جلد ${FA(v)} (فراگیر و عمومی)`, k: "کتاب درسی سطح", level: l}]),
+  {id: 15056, t: "لوح تصویری آموزش تدبر سطح یک (انشقاق تا ناس)", k: "لوح فشرده", level: "l1"},
+  {id: 8119, t: "لوح تصویری آموزش تدبر سطح دو (مزمل تا مطففین)", k: "لوح فشرده", level: "l2"},
+  {id: 8117, t: "لوح تصویری آموزش تدبر سطح سه (طلاق تا جن)", k: "لوح فشرده", level: "l3"},
+  {id: 23541, t: "تدبر در سوره مبارکه بقره (فسطاط)", k: "تدبر در سوره", s: [2]},
+  {id: 1881, t: "تدبر در سوره مبارکه نور (فرایند تثبیت فرهنگ عفاف در جامعه)", k: "تدبر در سوره", s: [24]},
+  {id: 8041, t: "لوح تصویری آموزش تدبر سوره نور", k: "لوح فشرده", s: [24]},
+  {id: 17382, t: "تدبر در سوره مبارکه عنکبوت", k: "تدبر در سوره", s: [29]},
+  {id: 11700, t: "تدبر در سوره مبارکه یاسین", k: "تدبر در سوره", s: [36]},
+  {id: 19582, t: "درسگفتار تدبر در سوره فرقان", k: "درسگفتار", s: [25]},
+  {id: 19586, t: "درسگفتار تدبر در سوره جاثیه", k: "درسگفتار", s: [45]},
+  {id: 19585, t: "درسگفتار تدبر در سوره احقاف", k: "درسگفتار", s: [46]},
+  {id: 15053, t: "درسگفتار تدبر در سوره فتح", k: "درسگفتار", s: [48]},
+  {id: 10031, t: "درسگفتار تدبر در سوره حجرات", k: "درسگفتار", s: [49]},
+  {id: 19577, t: "درسگفتار تدبر در سوره نجم", k: "درسگفتار", s: [53]},
+  {id: 19545, t: "درسگفتار تدبر در سوره واقعه", k: "درسگفتار", s: [56]},
+  {id: 9560, t: "درسگفتار تدبر در سوره حدید", k: "درسگفتار", s: [57]},
+  {id: 19552, t: "درسگفتار تدبر در سوره حشر", k: "درسگفتار", s: [59]},
+  {id: 19576, t: "درسگفتار تدبر در سوره ممتحنه", k: "درسگفتار", s: [60]},
+  {id: 19575, t: "درسگفتار تدبر در سوره صف", k: "درسگفتار", s: [61]},
+  {id: 19579, t: "درسگفتار تدبر در سوره جمعه", k: "درسگفتار", s: [62]},
+  {id: 19580, t: "درسگفتار تدبر در سوره تغابن", k: "درسگفتار", s: [64]},
+  {id: 19584, t: "درسگفتار تدبر در سوره تحریم", k: "درسگفتار", s: [66]},
+  {id: 19583, t: "درسگفتار تدبر در سوره قلم", k: "درسگفتار", s: [68]},
+  {id: 5386, t: "سی‌صد + ۹ (داستان اصحاب کهف)", k: "داستان", s: [18]},
+  {id: 19622, t: "مأموریت مخفیانه (بر اساس تدبر در سوره ماعون)", k: "داستان", s: [107]},
+  {id: 175, t: "بهترین پناه (بر اساس تدبر در سوره ناس)", k: "داستان", s: [114]}
+];
+// Books for a surah: its own books first, then the textbook volumes and disc of its level
+const booksForSurah = sn => { const L = levelOfSurah(sn); return BOOKS.filter(b => (b.s || []).includes(sn)).concat(L ? BOOKS.filter(b => b.level === L.id) : []); };
+const booksForLevel = id => id === "intro" ? BOOKS.filter(b => b.found) : BOOKS.filter(b => b.level === id || (b.s || []).some(sn => (lvl(id).surahs || []).includes(sn)));
+const bookList = list => list.length ? `<div class="books">${list.map(b => `<a class="book" href="${pubUrl(b)}" target="_blank" rel="noopener"><span class="bk-ic" aria-hidden="true">📚</span><span><b>${esc(b.t)}</b><br><span class="small muted">${b.k} · انتشارات تدبر در کلام وحی</span></span><span class="small bk-buy">خرید</span></a>`).join("")}</div>` : "";
+const booksCard = (list, title) => list.length ? `<div class="card"><h3>${title || "کتاب‌ها"}</h3>${bookList(list)}<p class="small muted">خرید از فروشگاه انتشارات تدبر (tadabborpub.ir)؛ قیمت و موجودی در همان سایت است.</p></div>` : "";
+function openBooks() {
+  lastDraw = () => {};
+  const groups = [...new Set(BOOKS.map(b => b.k))];
+  sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="کتاب‌های تدبر">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>کتاب‌های تدبر</h2></header>
+    <div class="body"><p class="small">آثار استاد علی صبوحی طسوجی از انتشارات تدبر در کلام وحی و سیره ائمه اطهار. با زدن هر کتاب، صفحه خرید آن در سایت انتشارات باز می‌شود.</p>
+    ${groups.map(g => `<h3>${g}</h3>${bookList(BOOKS.filter(b => b.k === g))}`).join("")}
+    <a class="linkbtn" href="${PUB}/shop/" target="_blank" rel="noopener">همه محصولات در فروشگاه</a></div></div>`);
+}
+// Foundations: keep only the foundation sessions, grouped into their two courses; drop registration notices and anything about one surah
+function pickFoundation(x) {
+  const t = normFa(x.title);
+  if (/تدبر چیست/.test(t)) return Object.assign(x, {course: "پیش از شروع", extra: true});
+  if (!/مبانی/.test(t) || /سوره\s/.test(t)) return null;
+  if (/طلاب/.test(t)) return Object.assign(x, {course: "دوره مبانی تدبر (ویژه طلاب)"});
+  return Object.assign(x, {course: "دوره مبانی تدبر" + (/1398|۱۳۹۸/.test(t) ? " (سال ۱۳۹۸)" : "")});
+}
+const lvKey = id => "tadabbor-level-" + id + (id === "intro" ? "-2" : "");
 const PATH = [
-  {id: "intro", t: "مبانی تدبر", short: "مبانی", d: "دانش و مبانی تدبر: تدبر چیست و چطور انجام می‌شود. پیش از همه سطح‌ها.", catIds: [161, 1632], surahs: []},
+  {id: "intro", t: "مبانی تدبر", short: "مبانی", d: "دانش و مبانی تدبر: تدبر چیست و چطور انجام می‌شود. پیش از همه سطح‌ها.", catIds: [161], surahs: [], pick: pickFoundation},
   {id: "l1", t: "سطح ۱", short: "سطح ۱", d: "سوره حمد و سوره‌های انشقاق تا ناس.", cat: "سطح یک", surahs: [1, ...span(84, 114)]},
   {id: "l2", t: "سطح ۲", short: "سطح ۲", d: "سوره‌های مزمل تا مطففین.", cat: "سطح دو", surahs: span(73, 83)},
   {id: "l3", t: "سطح ۳", short: "سطح ۳", d: "سوره‌های طلاق تا جن.", cat: "سطح سه", surahs: span(65, 72)},
@@ -920,13 +996,13 @@ function surahProgress(sn) {
 }
 // Lessons of a step: passing needs one whole course of it (levels were taught in several years, each a full course)
 function lessonState(L) {
-  const les = load("tadabbor-level-" + L.id, null);
+  const les = load(lvKey(L.id), null);
   if (!les) return {known: false, total: 0, watched: 0, best: 0, course: null, done: false};
   const w = st.watched || {}, by = {};
-  les.items.forEach(x => { (by[x.course] = by[x.course] || []).push(x.id); });
+  les.items.filter(x => !x.extra).forEach(x => { (by[x.course] = by[x.course] || []).push(x.id); });
   let best = -1, course = null;
   Object.entries(by).forEach(([c, ids]) => { const f = ids.filter(id => w[id]).length / ids.length; if (f > best) { best = f; course = c; } });
-  const n = les.items.length;
+  const n = les.items.filter(x => !x.extra).length;
   return {known: true, total: n, watched: les.items.filter(x => w[x.id]).length, best: n ? best : 1, course, courseLen: course ? by[course].length : 0, courseSeen: course ? by[course].filter(id => w[id]).length : 0, done: !n || best >= 1};
 }
 function levelProgress(L) {
@@ -946,7 +1022,7 @@ const stepNo = L => FA(JOURNEY.indexOf(L) + 1);
 function passLevel(id) {
   st.passed = st.passed || {}; st.passed[id] = today(); markActive(); save();
   const nx = JOURNEY[JOURNEY.indexOf(lvl(id)) + 1];
-  toast(nx ? `«${lvl(id).t}» گذرانده شد؛ ${nx.t} باز شد` : `«${lvl(id).t}» گذرانده شد`);
+  toast((myName() ? "آفرین " + myName() + "! " : "") + (nx ? `«${lvl(id).t}» گذرانده شد؛ ${nx.t} باز شد` : `«${lvl(id).t}» گذرانده شد`));
   return nx;
 }
 const stepper = () => { const cur = currentLevel();
@@ -960,6 +1036,7 @@ function path() {
   ${PATH.filter(L => !L.req).map(L => stepRow(L, cur)).join("")}
   <h3>${all ? "پس از سطح‌ها" : "دوره‌های تکمیلی"}</h3>
   ${PATH.filter(L => L.req).map(L => stepRow(L, cur)).join("")}
+  <section class="card"><div class="row between"><h3>📚 کتاب‌های تدبر</h3><button class="small" data-books>همه کتاب‌ها</button></div><p class="small muted">کتاب درسی هر سطح و کتاب‌های تدبر در سوره‌ها، برای خرید از انتشارات تدبر.</p></section>
   <section class="card"><h3>برنامه پیشنهادی هر هفته</h3><ol class="small" style="margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px">
     <li>دو جلسه از درس‌های قدم فعلی را ببینید یا بشنوید و تیک «دیده شد» را بزنید.</li>
     <li>بعد از هر درس، سوره همان درس را در برنامه «تدبر» کنید: خواندن، کشف گام‌ها و پرسش‌ها.</li>
@@ -984,12 +1061,12 @@ async function fetchLevel(L) {
       const r = await fetch(`${SITE}/wp-json/wp/v2/posts?categories=${c.id}&per_page=50&page=${page}&_fields=id,title,link,content,date`);
       if (!r.ok) break;
       const posts = await r.json();
-      parseLessons(posts, null).forEach(x => items.push(Object.assign(x, {course: decode(c.name)})));
+      parseLessons(posts, null).forEach(x => { x.course = decode(c.name); x = L.pick ? L.pick(x) : x; if (x) items.push(x); });
       if (posts.length < 50) break; page++;
     }
   }
-  const seen = new Set(), uniq = items.filter(x => !seen.has(x.id) && seen.add(x.id)).sort((a, b) => a.course === b.course ? (a.date < b.date ? -1 : 1) : (a.course < b.course ? -1 : 1));
-  store("tadabbor-level-" + L.id, {at: Date.now(), items: uniq});
+  const seen = new Set(), uniq = items.filter(x => !seen.has(x.id) && seen.add(x.id)).sort((a, b) => !!a.extra !== !!b.extra ? (a.extra ? -1 : 1) : a.course === b.course ? (a.date < b.date ? -1 : 1) : (a.course < b.course ? -1 : 1));
+  store(lvKey(L.id), {at: Date.now(), items: uniq});
   return uniq;
 }
 let levelOpen = {}, confirmPrior = "";
@@ -1023,13 +1100,14 @@ function lockedLevel(L) {
       <div class="card"><h3>در این قدم</h3><p class="small">${L.d}</p>${L.surahs.length ? `<p class="small muted">${L.surahs.map(sn => S[sn].name).join("، ")}</p>` : ""}</div></div></div>`);
   box.querySelectorAll("[data-golevel]").forEach(x => x.addEventListener("click", () => openLevel(x.dataset.golevel)));
 }
-const foundBox = () => `<div class="card"><h3>راه اول: فیلم‌های مبانی تدبر</h3><p class="small">جلسه‌های «مبانی تدبر» و «آشنایی با تدبر در قرآن کریم» استاد صبوحی، پایین همین صفحه. هر جلسه را که دیدید یا شنیدید، تیک «دیده شد» را بزنید. یک دوره را کامل ببینید کافی است.</p></div>
-  <div class="card"><h3>راه دوم: کتاب</h3><p class="small"><b>آشنایی با دانش تدبر در قرآن کریم</b>، نوشته علی صبوحی طسوجی، انتشارات تدبر در کلام وحی و سیره ائمه اطهار. نسخه الکترونیکی در طاقچه.</p>
-    <div class="row"><a class="linkbtn" href="${BOOK_URL}" target="_blank" rel="noopener">کتاب در طاقچه</a><a class="small" href="${WORKS_URL}" target="_blank" rel="noopener">همه آثار استاد</a></div>
+const foundBox = () => `<div class="card"><h3>راه اول: فیلم‌های مبانی تدبر</h3><p class="small">پایین همین صفحه، جلسه‌های درس «مبانی تدبر» استاد صبوحی آمده است. این درس دو بار تدریس شده و هر کدام یک دوره کامل است؛ <b>یکی از دو دوره را</b> از اول تا آخر ببینید یا بشنوید و بعد از هر جلسه تیک «دیده شد» را بزنید. اگر خواستید، اول جلسه کوتاه «تدبر چیست؟» را ببینید.</p></div>
+  <div class="card"><h3>راه دوم: کتاب</h3><p class="small"><b>آشنایی با دانش تدبر در قرآن کریم</b>، نوشته علی صبوحی طسوجی، انتشارات تدبر در کلام وحی و سیره ائمه اطهار.</p>
+    <div class="row"><a class="linkbtn" href="${pubUrl(BOOKS[0])}" target="_blank" rel="noopener">خرید کتاب چاپی</a><a class="small" href="${BOOK_URL}" target="_blank" rel="noopener">نسخه الکترونیکی در طاقچه</a></div>
+    <p class="small muted">کتاب‌های بعدی، برای وقتی که خواستید عمیق‌تر شوید:</p>${bookList(BOOKS.slice(1, 3))}
     <label class="switch small"><span><b>کتاب را خواندم</b></span><input type="checkbox" id="bookread" ${(st.found || {}).book ? "checked" : ""}></label></div>
   <div class="card"><h3>برای شروع، یک مطلب کوتاه</h3><p class="small">«چگونه در قرآن تدبر کنم؟» در سایت استاد صبوحی.</p><a class="small" href="${HOWTO_URL}" target="_blank" rel="noopener">خواندن در سایت</a></div>`;
 function openLevel(id, state) {
-  const L = lvl(id), cached = load("tadabbor-level-" + id, null), items = cached && cached.items;
+  const L = lvl(id), cached = load(lvKey(id), null), items = cached && cached.items;
   if (!unlocked(L)) { lastDraw = () => lockedLevel(L); lockedLevel(L); return; }
   lastDraw = () => openLevel(id, state);
   const pr = levelProgress(L);
@@ -1050,7 +1128,7 @@ function openLevel(id, state) {
     <div class="body">
       <p class="small">${L.d}</p>
       ${passCard(L, pr)}
-      ${L.id === "intro" ? foundBox() : ""}
+      ${L.id === "intro" ? foundBox() : booksCard(booksForLevel(id), "📚 کتاب‌های این " + (L.surahs.length ? "سطح" : "بخش"))}
       ${L.surahs.length ? `<div class="card"><div class="small">تدبر سوره‌ها ${pct(pr.tad)}</div>${miniBar(pr.tad, "var(--lapis)")}<div class="small">حفظ سیاق‌ها ${pct(pr.mem)}</div>${miniBar(pr.mem)}</div>
       <h3>سوره‌های این سطح</h3><section class="card" style="gap:0;padding-block:4px">${L.surahs.map(sn => { const sp = surahProgress(sn);
         return `<div class="surah-row" style="grid-template-columns:34px 1fr auto"><span class="idx num">${FA(sn)}</span><span style="display:flex;flex-direction:column;gap:4px;min-width:0"><span class="nm"><span>${S[sn].name}${sp.tad >= 1 ? ` <span class="ok small">✓ تدبر</span>` : ""}</span><span class="small muted">تدبر ${pct(sp.tad)} · حفظ ${pct(sp.mem)}</span></span>${strip(S[sn])}</span>
@@ -1072,7 +1150,7 @@ function openLevel(id, state) {
   on("#prior-yes", advance);
   on("#unpass", () => { delete st.passed[id]; save(); openLevelKeep(id); });
   const br = box.querySelector("#bookread"); if (br) br.addEventListener("change", () => { st.found = st.found || {}; st.found.book = br.checked; save(); openLevelKeep(id); });
-  const go = () => { store("tadabbor-level-" + id, null); openLevel(id, "loading"); fetchLevel(L).then(() => openLevel(id)).catch(() => openLevel(id, "error")); };
+  const go = () => { store(lvKey(id), null); openLevel(id, "loading"); fetchLevel(L).then(() => openLevel(id)).catch(() => openLevel(id, "error")); };
   box.querySelector("#reload").addEventListener("click", go);
   const rt = box.querySelector("#retry"); if (rt) rt.addEventListener("click", go);
   if (!items && state !== "error" && state !== "loading") { openLevel(id, "loading"); fetchLevel(L).then(() => openLevel(id)).catch(() => openLevel(id, "error")); }
@@ -1178,6 +1256,7 @@ function openSurah(n) {
   ${surahOpen(n) ? "" : (() => { const L = levelOfSurah(n); return `<div class="card startnote"><b>${ICON_LOCK} تدبر این سوره هنوز باز نیست</b><p class="small">${L ? `این سوره در «${L.t}» است و بعد از گذراندن «${blocker(L).t}» باز می‌شود.` : "این سوره بعد از گذراندن سطح ۶ باز می‌شود."} ثبت «از قبل حفظ هستم» و مرور همیشه آزاد است.</p><div class="row"><button class="small btn-main" id="go-cur">ادامه ${currentLevel().t}</button></div></div>`; })()}
   ${dirBlock(s)}
   <button id="les">🎬 فیلم و صوت درس‌های تدبر این سوره</button>
+  ${booksCard(booksForSurah(n), "📚 کتاب‌های تدبر این سوره")}
   ${IS_APP ? (() => { const r = cfg.reciter, h = audioHave(r, s.n), id = audioJobId(r, s.n), rn = reciterName(r);
     return `<div class="card"><div class="row between"><span class="small">ترتیل ${rn}</span>${jobActive(id) ? "" : h >= s.total ? `<span class="small ok">✓ روی گوشی</span>` : `<button class="small" id="au-this">${h ? "ادامه دانلود" : "دانلود"} (${FA(audioMB(r, s.n).toFixed(1))} مگابایت)</button>`}</div>${jobActive(id) ? jobBar(id) : ""}</div>`; })() : ""}
   <div class="card"><label class="switch small"><span><b>از قبل حفظ هستم</b><br><span class="muted">همه سیاق‌های سوره حفظ‌شده ثبت می‌شوند و در برنامه مرور قرار می‌گیرند.</span></span><input type="checkbox" id="pre-mem" ${surahAll(s, isMem) ? "checked" : ""}></label>
@@ -1434,7 +1513,7 @@ function stepRate() {
   const ivl = it.ivl || 1;
   const opts = [["hard", "سخت", 1], ["good", "خوب", Math.max(2, Math.round(ivl * 2))], ["easy", "آسان", Math.max(4, Math.round(ivl * 3))]];
   return {body: `
-    <div class="card"><h2>این سیاق را چطور خواندید؟</h2>
+    <div class="card"><h2>${esc(nameComma())}این سیاق را چطور خواندید؟</h2>
     <p class="small muted">پاسخ شما زمان مرور بعدی را تعیین می‌کند. «سخت» سیاق را به مرحله حفظ برمی‌گرداند.</p>
     ${Object.keys(ses.errs || {}).length ? `<p class="small">در این جلسه در ${FA(Object.keys(ses.errs).length)} آیه اشتباه ثبت کردید (آیه ${Object.keys(ses.errs).map(FA).join("، ")}). این آیه‌ها در «دفتر اشتباهات» برای تمرین تثبیت آماده‌اند.</p>` : ""}</div>
     <div class="rate">${opts.map(([k, l, d]) => `<button data-rate="${k}" data-days="${d}"><b>${l}</b><small class="num">${k === "hard" ? "بازگشت به حفظ" : "مرور " + FA(d) + " روز بعد"}</small></button>`).join("")}</div>
@@ -1681,7 +1760,7 @@ function openDrill(list, i, phase) {
     re("done"); });
   box.querySelectorAll("[data-dt]").forEach(b => b.addEventListener("click", () => { addErr(vk, b.dataset.dt); drill.msg = "اشتباه ثبت شد. آیه را چند بار بشنوید و دوباره بخوانید؛ فردا هم تمرینش کنید."; re("done"); }));
   on("#dplay", () => play(sn, ay, cfg.reps));
-  on("#dnext", () => { stopAudio(); if (i < list.length - 1) openDrill(list, i + 1); else { toast(`تمرین تمام شد · ${FA(drill.ok)} از ${FA(list.length)} درست`); drill = null; openWeak(); } });
+  on("#dnext", () => { stopAudio(); if (i < list.length - 1) openDrill(list, i + 1); else { toast(`${nameComma()}تمرین تمام شد · ${FA(drill.ok)} از ${FA(list.length)} درست`); drill = null; openWeak(); } });
   if (!QTEXT) loadText().catch(() => {});
 }
 const weakCard = () => { const n = weakOpen().length; if (!n) return "";
@@ -1796,6 +1875,11 @@ function openSettings() {
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="تنظیمات">
   <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>تنظیمات</h2></header>
   <div class="body">
+    <section class="card"><h3>مشخصات شما</h3>
+      <div class="field"><label for="pf-name">نام</label><input type="text" id="pf-name" value="${esc(cfg.name)}" autocomplete="given-name"></div>
+      <div class="field"><label for="pf-phone">شماره همراه</label><input type="tel" id="pf-phone" value="${esc(cfg.phone)}" inputmode="numeric" dir="ltr" placeholder="09xxxxxxxxx" autocomplete="tel"></div>
+      <p class="small muted">فقط روی همین گوشی (و در فایل پشتیبان خودتان) ذخیره می‌شود و برای کسی فرستاده نمی‌شود.</p>
+    </section>
     <section class="card"><h3>به‌روزرسانی</h3>${updBox()}</section>
     <section class="card"><h3>ظاهر</h3>
       <div class="field"><span class="small">پوسته</span><div class="seg" data-group="theme">${THEMES.map(([v, l]) => `<button data-v="${v}" aria-pressed="${cfg.theme === v}">${l}</button>`).join("")}</div></div>
@@ -1857,6 +1941,8 @@ function openSettings() {
   box.querySelector("#au-open2").addEventListener("click", () => { auFrom = "settings"; openAudio(); });
   box.querySelector("#gate").addEventListener("change", e => set("gate", e.target.checked));
   box.querySelector("#freepath").addEventListener("change", e => set("freePath", e.target.checked));
+  box.querySelector("#pf-name").addEventListener("change", e => { const v = e.target.value.trim(); if (v.length >= 2) { cfg.name = v; saveCfg(); toast("نام ذخیره شد"); } else { e.target.value = cfg.name; toast("نام دست‌کم دو حرف باشد"); } });
+  box.querySelector("#pf-phone").addEventListener("change", e => { const v = normPhone(e.target.value); if (PHONE_OK(v)) { cfg.phone = v; saveCfg(); e.target.value = v; toast("شماره ذخیره شد"); } else { e.target.value = cfg.phone; toast("شماره همراه درست نیست؛ مثل ۰۹۱۲۳۴۵۶۷۸۹"); } });
   box.querySelector("#backup").addEventListener("click", () => doBackup().then(() => openSettingsKeep()));
   const rf = box.querySelector("#restore-file");
   box.querySelector("#restore").addEventListener("click", () => rf.click());
@@ -1865,7 +1951,7 @@ function openSettings() {
   on("#reset-progress", () => { confirmReset = "progress"; openSettingsKeep(); });
   on("#no", () => { confirmReset = ""; openSettingsKeep(); });
   on("#yes-progress", () => { st = EMPTY(); save(); confirmReset = ""; openSettingsKeep(); toast("پیشرفت پاک شد"); });
-  on("#reset-settings", () => { const keep = {seenIntro: cfg.seenIntro, lastBackup: cfg.lastBackup}; cfg = Object.assign({}, DEFAULTS, keep); saveCfg(); applySettings(); openSettingsKeep(); toast("تنظیمات به حالت پیش‌فرض برگشت"); });
+  on("#reset-settings", () => { const keep = {seenIntro: cfg.seenIntro, lastBackup: cfg.lastBackup, name: cfg.name, phone: cfg.phone}; cfg = Object.assign({}, DEFAULTS, keep); saveCfg(); applySettings(); openSettingsKeep(); toast("تنظیمات به حالت پیش‌فرض برگشت"); });
   on("[data-guide-open]", () => openGuide(""));
   fitPages(box);
 }
@@ -1940,6 +2026,32 @@ function openGuide(section) {
   box.querySelector("#replay-intro").addEventListener("click", () => { box.innerHTML = ""; showIntro(); });
 }
 
+// ---------- first-run welcome: name and mobile number, kept on the phone ----------
+const normPhone = v => faNum(String(v || "")).replace(/[\s\-()]/g, "").replace(/^\+98|^0098/, "0").replace(/^9(\d{9})$/, "09$1");
+const PHONE_OK = v => /^09\d{9}$/.test(v);
+function showWelcome(err) {
+  const box = document.getElementById("intro");
+  box.innerHTML = `<div class="intro" role="dialog" aria-modal="true" aria-label="خوش آمدید" data-welcome>
+    <h1>به حفظ تدبری خوش آمدید</h1>
+    <p>برای شروع، خودتان را معرفی کنید تا برنامه با نام خودتان همراهتان باشد.</p>
+    <form id="wl" class="wform" novalidate>
+      <label for="wl-name">نام شما</label><input id="wl-name" type="text" autocomplete="given-name" value="${esc(cfg.name)}" placeholder="مثلاً کمیل" required>
+      <label for="wl-phone">شماره همراه</label><input id="wl-phone" type="tel" inputmode="numeric" dir="ltr" autocomplete="tel" value="${esc(cfg.phone)}" placeholder="09xxxxxxxxx" required>
+      ${err ? `<p class="werr" role="alert">${err}</p>` : ""}
+      <button type="submit">ادامه</button>
+      <p class="small" style="opacity:.85">این اطلاعات فقط روی همین گوشی ذخیره می‌شود و برای کسی فرستاده نمی‌شود. بعداً از تنظیمات قابل تغییر است.</p>
+    </form></div>`;
+  box.querySelector("#wl").addEventListener("submit", e => { e.preventDefault();
+    const name = box.querySelector("#wl-name").value.trim(), phone = normPhone(box.querySelector("#wl-phone").value);
+    cfg.name = name; cfg.phone = phone;
+    if (name.length < 2) return showWelcome("نام خود را بنویسید.");
+    if (!PHONE_OK(phone)) return showWelcome("شماره همراه را درست بنویسید؛ ۱۱ رقم که با ۰۹ شروع شود.");
+    saveCfg(); box.innerHTML = ""; render();
+    if (!cfg.seenIntro) showIntro(); else toast("خوش آمدید " + name);
+  });
+  setTimeout(() => { const i = box.querySelector(err && err.includes("شماره") ? "#wl-phone" : "#wl-name"); if (i) i.focus(); }, 50);
+}
+
 // ---------- first-run intro ----------
 const INTRO = [
   ["اول بفهم، بعد حفظ کن", "هر بخش از آیات اول تدبر می‌شود: می‌خوانید، گام‌های معنایی‌اش را پیدا می‌کنید و به چند پرسش جواب می‌دهید."],
@@ -1962,6 +2074,7 @@ function showIntro(i = 0) {
 // Android back button: close intro, word bar or an open sheet, else go to the dashboard
 window.__back = () => {
   const intro = document.getElementById("intro");
+  if (intro.querySelector("[data-welcome]")) return true;     // the welcome form has to be filled in
   if (intro.innerHTML) { cfg.seenIntro = true; saveCfg(); intro.innerHTML = ""; return true; }
   if (document.getElementById("wordbar").innerHTML) { closeWordbar(); return true; }
   const box = document.getElementById("sheet");
@@ -1974,7 +2087,7 @@ mushafPage = 1;
 if (window.__oldWebView) throw new Error("old webview");
 applySettings();
 render();
-if (!cfg.seenIntro) showIntro();
+if (!myName() || !PHONE_OK(cfg.phone)) showWelcome(); else if (!cfg.seenIntro) showIntro();
 if (IS_APP && !qcfLocal() && !cfg.qcfAsked && cfg.qfont === "qcf") qcfStart();
 if (IS_APP && !cfg.transAsked) { cfg.transAsked = true; saveCfg(); setTimeout(downloadAllTrans, 1500); }
 if (navigator.onLine !== false && (!cfg.lastUpdateCheck || Date.now() - cfg.lastUpdateCheck > 864e5)) setTimeout(() => checkUpdates(true), 4000);
