@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1F4E79">
+<meta name="theme-color" content="#2F6B4F">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzBGM0QzQSIvPgogIDwhLS0gbmVzdGVkIGFyY3M6IGxheWVycyBvZiBtZWFuaW5nICh3b3JkLCB2ZXJzZSwgc2l5YXEpIHJpc2luZyBmcm9tIGFuIG9wZW4gYm9vayAtLT4KICA8ZyBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiPgogICAgPHBhdGggZD0iTTEzNiAzMDBhMTIwIDEyMCAwIDAgMSAyNDAgMCIgc3Ryb2tlPSIjRTNCNjVDIiBzdHJva2Utd2lkdGg9IjIyIi8+CiAgICA8cGF0aCBkPSJNMTc2IDMwMGE4MCA4MCAwIDAgMSAxNjAgMCIgc3Ryb2tlPSIjRjJEOUEwIiBzdHJva2Utd2lkdGg9IjIyIi8+CiAgICA8cGF0aCBkPSJNMjE2IDMwMGE0MCA0MCAwIDAgMSA4MCAwIiBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS13aWR0aD0iMjIiLz4KICA8L2c+CiAgPHBhdGggZD0iTTI1NiAzMzBjLTQwLTI0LTkwLTMwLTE0MC0yMnY2MmM1MC04IDEwMC0yIDE0MCAyMnoiIGZpbGw9IiNGRkZGRkYiLz4KICA8cGF0aCBkPSJNMjU2IDMzMGM0MC0yNCA5MC0zMCAxNDAtMjJ2NjJjLTUwLTgtMTAwLTItMTQwIDIyeiIgZmlsbD0iI0RDRUJFOCIvPgo8L3N2Zz4K">
 <title>حفظ تدبری</title>
 <meta name="description" content="اپلیکیشن حفظ تدبری قرآن: اول تدبر، بعد حفظ سیاق‌به‌سیاق">
@@ -334,7 +334,7 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "system", accent: "lapis", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Abu_Bakr_Ash-Shaatree_64kbps", reps: 3, gate: true, trans: "ansarian", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: ""};
+const DEFAULTS = {theme: "sepia", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Abu_Bakr_Ash-Shaatree_64kbps", reps: 3, gate: true, trans: "ansarian", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: ""};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";

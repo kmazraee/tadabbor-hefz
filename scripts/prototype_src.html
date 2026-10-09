@@ -315,7 +315,7 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "system", accent: "lapis", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Abu_Bakr_Ash-Shaatree_64kbps", reps: 3, gate: true, trans: "ansarian", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: ""};
+const DEFAULTS = {theme: "sepia", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Abu_Bakr_Ash-Shaatree_64kbps", reps: 3, gate: true, trans: "ansarian", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: ""};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";
