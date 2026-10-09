@@ -195,6 +195,20 @@ details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direc
 .contact{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none}
 .contact-ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none}
 .contact-ic svg{width:20px;height:20px}
+.player{position:sticky;bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:4;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.12);padding:8px 10px;display:flex;flex-direction:column;gap:8px}
+.pl-main{display:flex;align-items:center;gap:6px}
+.pl-btn{width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--ink)}
+.pl-btn svg{width:20px;height:20px}
+.pl-play{width:48px;height:48px;background:var(--lapis);color:var(--on-lapis);border-color:var(--lapis)}
+.pl-play svg{width:24px;height:24px}
+.pl-info{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.5}
+.pl-info b,.pl-info span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-set{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:8px}
+.pl-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pl-set .seg{display:grid;grid-template-columns:repeat(5,1fr)}
+.pl-set .seg button{padding:7px 2px;font-size:13px}
+.me.fav{color:var(--gold)!important;text-shadow:0 0 1px var(--gold)}
+.fav-star{color:var(--gold);font-size:18px}
 .stepper{display:flex;gap:2px;position:relative;padding-top:2px}
 .stepper::before{content:"";position:absolute;inset-inline:7%;top:19px;height:2px;background:var(--line)}
 .step{all:unset;cursor:pointer;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;position:relative;color:var(--ink);text-align:center}
@@ -345,7 +359,7 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "sepia", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: ""};
+const DEFAULTS = {theme: "sepia", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";
@@ -540,6 +554,7 @@ function renderPages(pnums, opt = {}) {
         if (s8 === "dim") cls += " dim";
         if (t === "w" && (s8 === "mask" || (opt.wordMask && opt.wordMask(vk, pos[vk])))) cls += " mask";
         if (t === "e" && opt.cut && opt.cut.has(vk)) cls += " cut";
+        if (t === "e" && opt.marks && (st.fav || {})[vk]) cls += " fav";
         if (opt.weak && t === "w" && !cls.includes("mask")) { const er = errOf(vk); if (er && errOpen(vk)) cls += " weak"; if (er && er.w[pos[vk]] > 0) cls += " errw"; }
         if (playingVk === vk) cls += " playing";
         const glyph = qcf ? ch : (t === "e" ? `﴿${AR(parseVk(vk)[1])}﴾` : esc(text));
@@ -738,6 +753,7 @@ function setPlaying(vk) {
 function play(sn, i, reps = 1) { playQueue([...Array(reps)].map(() => [sn, i])); }
 function playQueue(list) {
   try { if (audio) audio.pause(); } catch (e) {}
+  if (mp.playing) { mp.playing = false; mpRefresh(); }
   queue = list.slice();
   const next = () => {
     const it = queue.shift(); if (!it) { setPlaying(null); return; }
@@ -748,7 +764,7 @@ function playQueue(list) {
   };
   next();
 }
-const stopAudio = () => { queue = []; setPlaying(null); try { if (audio) audio.pause(); } catch (e) {} };
+const stopAudio = () => { queue = []; if (typeof mp !== "undefined" && mp.playing) { mp.playing = false; setTimeout(mpRefresh, 0); } setPlaying(null); try { if (audio) audio.pause(); } catch (e) {} };
 
 // ---------- refresh: re-run whatever is on screen (after a font arrives) ----------
 let lastDraw = () => render();
@@ -887,9 +903,11 @@ function mushaf() {
   const juz = Math.min(30, Math.floor((mushafPage - 2) / 20) + 1);
   return `${topBar(`<h1>مصحف</h1>`)}
   <div class="row" style="flex-wrap:nowrap"><select id="mushaf-surah" aria-label="رفتن به سوره">${DATA.surahs.map(x => `<option value="${x.n}" ${cur === x.n ? "selected" : ""}>${FA(x.n)}. ${x.name}</option>`).join("")}</select>
-  <select id="mushaf-juz" aria-label="رفتن به جزء" style="max-width:110px">${range(1, 30).map(j => `<option value="${j}" ${juz === j ? "selected" : ""}>جزء ${FA(j)}</option>`).join("")}</select></div>
+  <select id="mushaf-juz" aria-label="رفتن به جزء" style="max-width:110px">${range(1, 30).map(j => `<option value="${j}" ${juz === j ? "selected" : ""}>جزء ${FA(j)}</option>`).join("")}</select>
+  <button class="icon-btn" id="mu-favs" aria-label="آیه‌های علاقه‌مندی" style="flex:none;color:var(--gold)">★</button></div>
   <div class="mnav"><button id="pg-next" aria-label="صفحه بعد" ${mushafPage >= 604 ? "disabled" : ""}>صفحه بعد</button><span class="pg num">صفحه ${FA(mushafPage)} از ۶۰۴</span><button id="pg-prev" aria-label="صفحه قبل" ${mushafPage <= 1 ? "disabled" : ""}>صفحه قبل</button></div>
   <div id="mushaf-page">${renderPages([mushafPage], {marks: true, weak: cfg.showWeak})}</div>
+  ${mpBar()}
   ${Object.keys(st.err || {}).length ? `<label class="switch small"><span>نشان دادن آیه‌های نیازمند تثبیت<br><span class="muted">زیر آیه‌های اشتباه‌شده خط نقطه‌چین و کلمه‌های اشتباه رنگی می‌شوند.</span></span><input type="checkbox" id="showweak" ${cfg.showWeak ? "checked" : ""}></label>` : ""}
   <p class="small muted">نوار رنگی کنار هر سطر، وضعیت سیاق همان سطر را نشان می‌دهد. روی هر کلمه بزنید تا آیه و سیاق آن را ببینید. با کشیدن صفحه به چپ و راست ورق بزنید.</p>
   <button class="small" id="mu-audio">⬇ دانلود ترتیل برای پخش بدون اینترنت</button>
@@ -907,6 +925,8 @@ function wireMushaf(v) {
   box.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 60) go(dx > 0 ? 1 : -1); });
   box.addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (w) openWordbar(w.dataset.vk); });
   v.querySelector("#mu-audio").addEventListener("click", () => openAudio());
+  v.querySelector("#mu-favs").addEventListener("click", openFavs);
+  wirePlayer(v);
   const sw = v.querySelector("#showweak"); if (sw) sw.addEventListener("change", () => { cfg.showWeak = sw.checked; saveCfg(); render(); });
   if (selVk) markSel(selVk);
 }
@@ -919,14 +939,138 @@ function openWordbar(vk) {
     <span class="small muted">سیاق ${FA(q.n)}: ${esc(title(s, q))} · ${LABELS[status(k)]}</span>
     ${trans(sn, ay) ? `<p class="tr" style="font-size:14px">${esc(trans(sn, ay))}</p>` : ""}
     ${errOf(vk) ? `<span class="small" style="color:var(--st-due)">${FA(errOf(vk).n)} بار اشتباه · ${errOpen(vk) ? "نیاز به تثبیت" : "تثبیت‌شده"}</span>` : ""}
-    <div class="row"><button id="wb-play" class="small">▶ ترتیل آیه</button>${errOpen(vk) ? `<button id="wb-drill" class="small">تمرین تثبیت</button>` : ""}<button id="wb-open" class="btn-main small">باز کردن سیاق</button><button id="wb-les" class="small">درس‌های سوره</button></div></div></div>`;
+    <div class="row"><button id="wb-from" class="small btn-main">▶ پخش از این آیه</button><button id="wb-play" class="small">فقط این آیه</button><button id="wb-fav" class="small" aria-pressed="${isFav(vk)}">${isFav(vk) ? "★ علاقه‌مندی" : "☆ علاقه‌مندی"}</button><button id="wb-share" class="small">اشتراک</button></div>
+    <div class="row">${errOpen(vk) ? `<button id="wb-drill" class="small">تمرین تثبیت</button>` : ""}<button id="wb-open" class="small">باز کردن سیاق</button><button id="wb-les" class="small">درس‌های سوره</button></div></div></div>`;
   box.querySelector("#wb-x").addEventListener("click", closeWordbar);
   box.querySelector("#wb-play").addEventListener("click", () => play(sn, ay));
+  box.querySelector("#wb-from").addEventListener("click", () => { closeWordbar(); mpStart(sn, ay); });
+  box.querySelector("#wb-fav").addEventListener("click", () => { toggleFav(vk); openWordbar(vk); document.querySelectorAll(`#mushaf-page .me[data-vk="${vk}"]`).forEach(e => e.classList.toggle("fav", isFav(vk))); });
+  box.querySelector("#wb-share").addEventListener("click", () => shareVerse(sn, ay));
   const wd = box.querySelector("#wb-drill"); if (wd) wd.addEventListener("click", () => { closeWordbar(); openDrill([vk], 0); });
   box.querySelector("#wb-open").addEventListener("click", () => { closeWordbar(); startSession(k, status(k) === "solid" || status(k) === "due" ? "review" : "learn"); });
   box.querySelector("#wb-les").addEventListener("click", () => { closeWordbar(); openLessons(sn); });
 }
 function closeWordbar() { selVk = null; document.getElementById("wordbar").innerHTML = ""; document.querySelectorAll(".sel").forEach(e => e.classList.remove("sel")); }
+
+// ---------- mushaf player: play on from a verse to the end of the page, siyaq, fasl, surah or the whole Quran ----------
+const MP_ENDS = [["page", "صفحه"], ["siyaq", "سیاق"], ["fasl", "فصل"], ["surah", "سوره"], ["quran", "قرآن"]];
+const MP_REPS = [1, 2, 3, 4, 5, 7, 10, 20, 0];     // 0 = endless
+const repName = n => n ? FA(n) + " بار" : "بی‌نهایت";
+const nextV = (sn, ay) => ay < S[sn].total ? [sn, ay + 1] : sn < 114 ? [sn + 1, 1] : null;
+const prevV = (sn, ay) => ay > 1 ? [sn, ay - 1] : sn > 1 ? [sn - 1, S[sn - 1].total] : null;
+const pageOf = (sn, ay) => S[sn].vp[ay - 1];
+function mpEnd(sn, ay, mode) {
+  const s = S[sn];
+  if (mode === "page") { let c = [sn, ay], n; const p = pageOf(sn, ay); while ((n = nextV(...c)) && pageOf(...n) === p) c = n; return c; }
+  if (mode === "siyaq") return [sn, siyaqOf(sn, ay).e];
+  if (mode === "fasl") { const f = faslOf(s, siyaqOf(sn, ay)); return [sn, f ? f.e : s.total]; }
+  if (mode === "surah") return [sn, s.total];
+  return [114, 6];
+}
+const firstOnPage = p => { for (const s of DATA.surahs) { const i = s.vp.indexOf(p); if (i >= 0) return [s.n, i + 1]; } return [1, 1]; };
+let mp = {playing: false, cur: null, start: null, end: null, k: 0, round: 1, open: false};
+function mpStart(sn, ay) {
+  stopAudio();
+  Object.assign(mp, {playing: true, start: [sn, ay], cur: [sn, ay], end: mpEnd(sn, ay, cfg.mpEnd), k: 0, round: 1});
+  mpPlay();
+}
+function mpPlay() {
+  const [sn, ay] = mp.cur;
+  try { if (audio) audio.pause(); } catch (e) {}
+  mp.playing = true;
+  if (tab === "mushaf" && pageOf(sn, ay) !== mushafPage && !document.getElementById("sheet").innerHTML) { mushafPage = pageOf(sn, ay); closeWordbar(); render(); }
+  setPlaying(key(sn, ay)); mpRefresh();
+  const a = audio = new Audio(audioUrl(sn, ay));
+  a.onended = () => { if (audio === a && mp.playing) mpNext(); };
+  a.play().catch(() => { if (audio !== a) return; mp.playing = false; setPlaying(null); mpRefresh(); toast("پخش صوت ممکن نشد؛ اینترنت را بررسی کنید"); });
+}
+function mpNext() {
+  mp.k++;
+  if (!cfg.mpRep || mp.k < cfg.mpRep) return mpPlay();
+  mp.k = 0;
+  if (mp.cur[0] === mp.end[0] && mp.cur[1] === mp.end[1]) {
+    mp.round++;
+    if (!cfg.mpRangeRep || mp.round <= cfg.mpRangeRep) { mp.cur = mp.start.slice(); return mpPlay(); }
+    return mpStop(true);
+  }
+  const n = nextV(...mp.cur); if (!n) return mpStop(true);
+  mp.cur = n; mpPlay();
+}
+function mpStop(done) { mp.playing = false; try { if (audio) audio.pause(); } catch (e) {} setPlaying(null); if (done) { mp.cur = null; toast("پخش تمام شد"); } mpRefresh(); }
+function mpToggle() {
+  if (mp.playing) return mpStop(false);
+  if (mp.cur && audio && audio.src && !audio.ended && playingVk === null && audio.currentTime > 0) { mp.playing = true; setPlaying(key(...mp.cur)); audio.play().catch(() => mpPlay()); return mpRefresh(); }
+  const from = selVk ? parseVk(selVk) : mp.cur || firstOnPage(mushafPage);
+  mpStart(from[0], from[1]);
+}
+function mpSkip(d) {
+  const base = mp.cur || (selVk ? parseVk(selVk) : firstOnPage(mushafPage));
+  const n = d > 0 ? nextV(...base) : prevV(...base); if (!n) return;
+  if (!mp.start || !mp.playing) { mpStart(n[0], n[1]); return; }
+  mp.cur = n; mp.k = 0; mpPlay();
+}
+function mpBar() {
+  const c = mp.cur, endName = (MP_ENDS.find(x => x[0] === cfg.mpEnd) || MP_ENDS[3])[1];
+  const where = c ? `سوره ${S[c[0]].name} · آیه ${FA(c[1])}` : selVk ? `از آیه ${FA(parseVk(selVk)[1])} سوره ${S[parseVk(selVk)[0]].name}` : "از ابتدای همین صفحه";
+  const noFasl = cfg.mpEnd === "fasl" && !(S[(c || firstOnPage(mushafPage))[0]].fasls || []).length;
+  return `<div class="player" id="player" role="region" aria-label="پخش ترتیل">
+    <div class="pl-main">
+      <button class="pl-btn" id="mp-prev" aria-label="آیه قبل"><svg viewBox="0 0 24 24"><path d="M7 6v12M18 6l-9 6 9 6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+      <button class="pl-btn pl-play" id="mp-play" aria-label="${mp.playing ? "توقف" : "پخش"}">${mp.playing ? `<svg viewBox="0 0 24 24"><rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor"/></svg>` : `<svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>`}</button>
+      <button class="pl-btn" id="mp-next" aria-label="آیه بعد"><svg viewBox="0 0 24 24"><path d="M17 6v12M6 6l9 6-9 6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+      <div class="pl-info"><b class="small">${where}</b><span class="small muted">تا آخر ${noFasl ? "سوره (بی‌فصل)" : endName} · تکرار ${repName(cfg.mpRep)}${cfg.mpRangeRep !== 1 ? " · بازه " + repName(cfg.mpRangeRep) : ""}</span></div>
+      <button class="pl-btn" id="mp-set" aria-label="تنظیمات پخش" aria-expanded="${mp.open}">${ICON_GEAR}</button>
+    </div>
+    ${mp.open ? `<div class="pl-set">
+      <div class="field"><span class="small">پخش تا آخر</span><div class="seg">${MP_ENDS.map(([v, l]) => `<button data-mpend="${v}" aria-pressed="${cfg.mpEnd === v}">${l}</button>`).join("")}</div></div>
+      <div class="pl-two">
+        <div class="field"><label class="small" for="mp-rep">تکرار هر آیه</label><select id="mp-rep">${MP_REPS.map(n => `<option value="${n}" ${cfg.mpRep === n ? "selected" : ""}>${repName(n)}</option>`).join("")}</select></div>
+        <div class="field"><label class="small" for="mp-rr">تکرار کل بازه</label><select id="mp-rr">${MP_REPS.map(n => `<option value="${n}" ${cfg.mpRangeRep === n ? "selected" : ""}>${repName(n)}</option>`).join("")}</select></div>
+      </div>
+      <div class="field"><label class="small" for="mp-reciter">قاری</label><select id="mp-reciter">${reciterOptions(cfg.reciter)}</select></div>
+    </div>` : ""}
+  </div>`;
+}
+function wirePlayer(root) {
+  const on = (sel, ev, f) => { const el = root.querySelector(sel); if (el) el.addEventListener(ev, f); };
+  on("#mp-play", "click", mpToggle);
+  on("#mp-prev", "click", () => mpSkip(-1));
+  on("#mp-next", "click", () => mpSkip(1));
+  on("#mp-set", "click", () => { mp.open = !mp.open; mpRefresh(); });
+  root.querySelectorAll("[data-mpend]").forEach(b => b.addEventListener("click", () => { cfg.mpEnd = b.dataset.mpend; saveCfg(); if (mp.start) mp.end = mpEnd(...mp.start, cfg.mpEnd); mpRefresh(); }));
+  on("#mp-rep", "change", e => { cfg.mpRep = +e.target.value; saveCfg(); mpRefresh(); });
+  on("#mp-rr", "change", e => { cfg.mpRangeRep = +e.target.value; saveCfg(); mpRefresh(); });
+  on("#mp-reciter", "change", e => { cfg.reciter = e.target.value; saveCfg(); if (mp.playing) mpPlay(); else mpRefresh(); });
+}
+function mpRefresh() { const el = document.getElementById("player"); if (!el) return; el.outerHTML = mpBar(); wirePlayer(document.getElementById("player").parentNode); }
+
+// ---------- favourite verses and sharing ----------
+const isFav = vk => !!(st.fav || {})[vk];
+function toggleFav(vk) { st.fav = st.fav || {}; if (st.fav[vk]) delete st.fav[vk]; else st.fav[vk] = Date.now(); save(); toast(st.fav[vk] ? "به علاقه‌مندی‌ها اضافه شد" : "از علاقه‌مندی‌ها برداشته شد"); }
+function shareVerse(sn, ay) {
+  const ar = vplain(sn, ay) || vtext(sn, ay), tr = trans(sn, ay);
+  const text = `${ar ? "﴿" + ar + "﴾\n" : ""}(سوره ${S[sn].name}، آیه ${FA(ay)})${tr ? "\n\n" + tr + "\n(ترجمه " + transName() + ")" : ""}\n\nاز برنامه «حفظ تدبری»`;
+  if (window.Android && Android.shareText) { Android.shareText(text); return; }
+  if (navigator.share) { navigator.share({text}).catch(() => {}); return; }
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast("متن آیه کپی شد")).catch(() => toast("اشتراک‌گذاری در این دستگاه ممکن نشد"));
+}
+function openFavs() {
+  lastDraw = openFavs;
+  const list = Object.entries(st.fav || {}).sort((a, b) => b[1] - a[1]).map(([vk]) => parseVk(vk));
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="آیه‌های علاقه‌مندی">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>آیه‌های علاقه‌مندی</h2></header>
+    <div class="body">${list.length ? list.map(([sn, ay]) => { const vk = key(sn, ay), tr = trans(sn, ay);
+      return `<div class="sres"><div class="row between"><b>سوره ${S[sn].name} · آیه ${FA(ay)}</b><span class="fav-star" aria-hidden="true">★</span></div>
+        <div class="ar">${arHtml(sn, ay)}</div>${tr ? `<p class="small">${esc(tr)}</p>` : ""}
+        <div class="row"><button class="small" data-fgo="${vk}">در مصحف</button><button class="small" data-fplay="${vk}" aria-label="پخش از این آیه">▶ پخش</button><button class="small" data-fshare="${vk}">اشتراک</button><button class="small btn-ghost" data-fdel="${vk}">برداشتن</button></div></div>`; }).join("")
+      : `<div class="card"><p class="small">هنوز آیه‌ای نشان نکرده‌اید. در مصحف روی هر آیه بزنید و «☆ علاقه‌مندی» را انتخاب کنید.</p></div>`}</div></div>`);
+  const on = (sel, f) => box.querySelectorAll(sel).forEach(b => b.addEventListener("click", () => f(parseVk(b.dataset[Object.keys(b.dataset)[0]]), b)));
+  on("[data-fgo]", ([sn, ay]) => goVerse(sn, ay));
+  on("[data-fplay]", ([sn, ay]) => { goVerse(sn, ay); setTimeout(() => mpStart(sn, ay), 120); });
+  on("[data-fshare]", ([sn, ay]) => shareVerse(sn, ay));
+  on("[data-fdel]", ([sn, ay]) => { toggleFav(key(sn, ay)); openFavs(); });
+  if (!QTEXT) loadText().then(() => { if (lastDraw === openFavs) openFavs(); }).catch(() => {});
+}
 
 // ---------- learning path (levels of Ali Sabouhi's tadabbur courses) ----------
 // The journey is ordered: foundations first, then levels 1 to 6; each step opens only after the one before it is passed.
@@ -2047,7 +2191,7 @@ function openGuide(section) {
       <ul><li><b>سخت:</b> سیاق به مرحله حفظ برمی‌گردد.</li><li><b>خوب:</b> مرور بعدی حدود دو برابر فاصله قبلی.</li><li><b>آسان:</b> مرور بعدی حدود سه برابر فاصله قبلی.</li></ul>
     </div></details>
     <details><summary>مصحف و درس‌ها</summary><div>
-      <p><b>مصحف:</b> صفحه‌های مصحف به خط عثمان طه. با کشیدن صفحه ورق بزنید و روی هر کلمه بزنید تا آیه، سیاق و ترتیل آن را ببینید.</p>
+      <p><b>مصحف:</b> صفحه‌های مصحف به خط عثمان طه. با کشیدن صفحه ورق بزنید و روی هر کلمه بزنید تا آیه، سیاق و ترتیل آن را ببینید. از همان‌جا می‌توانید آیه را به اشتراک بگذارید یا با ☆ به «علاقه‌مندی‌ها» (دکمه ★ بالای مصحف) اضافه کنید. پخش‌کننده پایین مصحف از آیه انتخاب‌شده تا آخر صفحه، سیاق، فصل، سوره یا کل قرآن می‌خواند، با تکرار هر آیه و کل بازه از ۱ بار تا بی‌نهایت؛ صفحه‌ها هم خودکار ورق می‌خورند.</p>
       <p><b>درس‌ها:</b> فیلم (آپارات) و صوت جلسه‌های تدبر استاد صبوحی برای هر سوره، مستقیم از سایت alisaboohi.com. این بخش به اینترنت نیاز دارد.</p>
     </div></details>
     <details><summary>معنی رنگ‌ها</summary><div>${legend()}<p>رنگ هر نوار، وضعیت آن سیاق را نشان می‌دهد. طول هر نوار به اندازه تعداد آیات آن سیاق است.</p></div></details>

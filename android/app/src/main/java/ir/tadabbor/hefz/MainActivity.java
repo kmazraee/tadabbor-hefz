@@ -199,6 +199,15 @@ public class MainActivity extends Activity {
             for (String f : QCF_FILES) new File(qcfDir(), f).delete();
         }
 
+        /** Share plain text (a verse with its translation) through the share sheet. */
+        @JavascriptInterface
+        public void shareText(String text) {
+            Intent send = new Intent(Intent.ACTION_SEND);
+            send.setType("text/plain");
+            send.putExtra(Intent.EXTRA_TEXT, text);
+            runOnUiThread(() -> startActivity(Intent.createChooser(send, "اشتراک آیه")));
+        }
+
         /** Hand a backup file to the share sheet (the user picks Google Drive). */
         @JavascriptInterface
         public void shareFile(String name, String content) {
