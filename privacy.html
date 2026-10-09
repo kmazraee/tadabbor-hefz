@@ -4,70 +4,105 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>حریم خصوصی حفظ تدبری</title>
+<meta name="theme-color" content="#2F6B4F">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap">
 <style>
-:root{--bg:#F3F5F4;--ink:#16231F;--muted:#5E6E68;--acc:#1F4E79;--card:#fff;--line:#DCE3E0}
-@media (prefers-color-scheme: dark){:root{--bg:#0F1715;--ink:#E7EEEB;--muted:#93A39D;--acc:#7FB0E3;--card:#17221F;--line:#2A3834;color-scheme:dark}}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.9 Tahoma,"Segoe UI",sans-serif}
-main{max-width:680px;margin:0 auto;padding:32px 16px 48px}
-h1{font-size:24px;margin:0 0 4px;color:var(--acc)}
-h2{font-size:17px;margin:28px 0 6px}
-p,li{margin:0 0 8px}
+:root{--bg:#F4EDDC;--card:#FBF6EA;--ink:#2F2618;--muted:#76664F;--line:#E3D6B8;--acc:#2F6B4F;--acc-soft:#E2EFE8;--gold:#B07A1E;--gold-soft:#F4E6C6;--r:16px}
+@media (prefers-color-scheme: dark){:root{--bg:#10171A;--card:#172126;--ink:#E7EEEB;--muted:#93A39D;--line:#283439;--acc:#7CC4A0;--acc-soft:#18302A;--gold:#E0B25E;--gold-soft:#33291A;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.9 "Vazirmatn",Tahoma,sans-serif}
+main{max-width:720px;margin:0 auto;padding:28px 16px 56px}
+.hero{display:flex;gap:16px;align-items:center;margin-bottom:8px}
+.hero svg{width:72px;height:72px;border-radius:18px;flex:none;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+h1{font-size:24px;margin:0;line-height:1.5}
 .muted{color:var(--muted);font-size:14px}
-section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 18px 12px;margin-top:16px}
+.lead{font-size:17px;margin:20px 0 22px}
+.lead b{color:var(--acc)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:28px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:6px}
+.tile .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--acc-soft);font-size:20px}
+.tile b{font-size:15px;line-height:1.6}
+.tile span{font-size:13px;color:var(--muted);line-height:1.7}
+section{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:6px 18px 14px;margin-top:14px}
+h2{font-size:17px;margin:12px 0 6px;display:flex;gap:8px;align-items:center}
+h2 .n{width:26px;height:26px;border-radius:50%;background:var(--acc);color:var(--card);display:grid;place-items:center;font-size:13px;flex:none}
+p,li{margin:0 0 8px}
+ul{padding-inline-start:20px;margin:6px 0}
+.net{display:flex;flex-direction:column;margin-top:6px}
+.net div{display:grid;grid-template-columns:minmax(120px,38%) 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.net div:first-child{border-top:none}
+.net code{direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--acc)}
+.note{background:var(--gold-soft);border-radius:12px;padding:10px 14px;font-size:14px;margin-top:10px}
+a{color:var(--acc)}
+.contact{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.contact a{padding:8px 14px;border-radius:12px;border:1px solid var(--line);text-decoration:none;background:var(--bg);font-size:14px}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
 </style>
 </head>
 <body>
 <main>
-<h1>سیاست حریم خصوصی «حفظ تدبری»</h1>
-<p class="muted">آخرین به‌روزرسانی: ۱۸ مهر ۱۴۰۵</p>
+  <div class="hero"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#0F3D3A"/><g fill="none" stroke-linecap="round"><path d="M136 300a120 120 0 0 1 240 0" stroke="#E3B65C" stroke-width="22"/><path d="M176 300a80 80 0 0 1 160 0" stroke="#F2D9A0" stroke-width="22"/><path d="M216 300a40 40 0 0 1 80 0" stroke="#FFFFFF" stroke-width="22"/></g><path d="M256 330c-40-24-90-30-140-22v62c50-8 100-2 140 22z" fill="#FFFFFF"/><path d="M256 330c40-24 90-30 140-22v62c-50-8-100-2-140 22z" fill="#DCEBE8"/></svg>
+    <div><h1>حریم خصوصی «حفظ تدبری»</h1><div class="muted">آخرین به‌روزرسانی: ۱۸ مهر ۱۴۰۵</div></div>
+  </div>
 
-<section>
-<h2>خلاصه</h2>
-<p>«حفظ تدبری» حساب کاربری ندارد و هیچ اطلاعاتی را برای ما یا شخص دیگری نمی‌فرستد. نام و شماره همراهی که در ابتدای کار وارد می‌کنید فقط روی گوشی خودتان می‌ماند.</p>
-</section>
+  <p class="lead">به زبان ساده: <b>هر چه در برنامه وارد می‌کنید روی گوشی خودتان می‌ماند.</b> برنامه حساب کاربری ندارد و چیزی برای ما یا کس دیگری نمی‌فرستد.</p>
 
-<section>
-<h2>چه چیزهایی روی گوشی شما ذخیره می‌شود</h2>
-<ul>
-<li>نام و شماره همراه شما، برای خطاب کردن شما با نامتان در برنامه.</li>
-<li>پیشرفت حفظ و مرور، اشتباه‌های ثبت‌شده، پاسخ‌های تدبری، یادداشت‌ها و تنظیمات برنامه.</li>
-<li>قلم مصحف عثمان طه و ترجمه‌هایی که بعد از نصب دریافت می‌شوند، و ترتیل‌هایی که خودتان دانلود می‌کنید.</li>
-</ul>
-<p>این داده‌ها فقط در حافظه داخلی برنامه روی گوشی خودتان می‌مانند. با حذف برنامه پاک می‌شوند.</p>
-</section>
+  <div class="grid">
+    <div class="tile"><span class="ic">📱</span><b>همه‌چیز روی گوشی</b><span>پیشرفت، تدبرها، اشتباه‌ها و مشخصات شما فقط روی همین گوشی است.</span></div>
+    <div class="tile"><span class="ic">🔒</span><b>بدون ارسال اطلاعات</b><span>نه نام، نه شماره، نه پیشرفت؛ هیچ‌کدام از گوشی بیرون نمی‌رود.</span></div>
+    <div class="tile"><span class="ic">🚫</span><b>بدون تبلیغ و ردیابی</b><span>برنامه رایگان است، تبلیغ ندارد و رفتار شما را دنبال نمی‌کند.</span></div>
+    <div class="tile"><span class="ic">💾</span><b>پشتیبان دست خودتان</b><span>فایل پشتیبان را خودتان می‌سازید و هر جا خواستید نگه می‌دارید.</span></div>
+  </div>
 
-<section>
-<h2>پشتیبان‌گیری</h2>
-<p>اگر «ذخیره پشتیبان» را بزنید، برنامه یک فایل می‌سازد و پنجره اشتراک‌گذاری اندروید را باز می‌کند. مقصد فایل (مثلاً گوگل‌درایو خودتان) را خودتان انتخاب می‌کنید. برنامه به حساب گوگل شما دسترسی ندارد.</p>
-</section>
+  <section>
+    <h2><span class="n">۱</span>چه چیزهایی روی گوشی شما ذخیره می‌شود</h2>
+    <ul>
+      <li>نام و شماره همراهی که در ابتدای کار وارد می‌کنید، تا برنامه شما را با نامتان صدا بزند.</li>
+      <li>پیشرفت حفظ و مرور، اشتباه‌های ثبت‌شده، پاسخ‌های تدبری، یادداشت‌ها و تنظیمات.</li>
+      <li>قلم مصحف عثمان طه و ترجمه‌هایی که بعد از نصب دریافت می‌شوند، و ترتیل‌هایی که خودتان دانلود می‌کنید.</li>
+    </ul>
+    <p>این داده‌ها در حافظه داخلی برنامه می‌مانند و با حذف برنامه پاک می‌شوند. مشخصات خود را هر وقت خواستید از تنظیمات تغییر دهید.</p>
+  </section>
 
-<section>
-<h2>اتصال به اینترنت</h2>
-<p>برنامه فقط برای این کارها به اینترنت وصل می‌شود و در این درخواست‌ها هیچ اطلاعات شخصی فرستاده نمی‌شود:</p>
-<ul>
-<li>دریافت قلم مصحف از cdn.jsdelivr.net و ترجمه‌ها و به‌روزرسانی محتوا از kmazraee.github.io (بعد از نصب و هنگام بررسی به‌روزرسانی).</li>
-<li>بررسی نسخه تازه برنامه از api.github.com.</li>
-<li>پخش یا دانلود ترتیل آیات از everyayah.com.</li>
-<li>نمایش فهرست، فیلم و صوت درس‌های تدبر از alisaboohi.com، آپارات و میزبان صوت آن سایت.</li>
-<li>باز کردن صفحه خرید کتاب‌ها در سایت انتشارات تدبر (tadabborpub.ir)، فقط وقتی خودتان روی کتاب بزنید.</li>
-</ul>
-<p>این سرویس‌ها مانند هر وب‌سایتی ممکن است نشانی اینترنتی (IP) دستگاه را در گزارش‌های خود ثبت کنند. سیاست حریم خصوصی هر سرویس متعلق به خود آن است.</p>
-</section>
+  <section>
+    <h2><span class="n">۲</span>پشتیبان‌گیری</h2>
+    <p>با زدن «ذخیره پشتیبان»، برنامه یک فایل می‌سازد و پنجره اشتراک‌گذاری گوشی را باز می‌کند. مقصد فایل، مثلاً گوگل‌درایو خودتان، را خودتان انتخاب می‌کنید. برنامه به حساب گوگل شما دسترسی ندارد.</p>
+    <div class="note">فایل پشتیبان نام و شماره شما را هم دارد؛ آن را جای امنی نگه دارید.</div>
+  </section>
 
-<section>
-<h2>دسترسی‌های برنامه</h2>
-<p>برنامه فقط دسترسی «اینترنت» را دارد. به مخاطبین، موقعیت مکانی، دوربین، میکروفون یا فایل‌های شما دسترسی ندارد. فایل پشتیبان فقط وقتی خوانده می‌شود که خودتان آن را انتخاب کنید.</p>
-</section>
+  <section>
+    <h2><span class="n">۳</span>کجا به اینترنت وصل می‌شود</h2>
+    <p>فقط برای این کارها، و در هیچ‌کدام اطلاعات شخصی فرستاده نمی‌شود:</p>
+    <div class="net">
+      <div><span>دریافت قلم مصحف</span><code>cdn.jsdelivr.net</code></div>
+      <div><span>ترجمه‌ها و محتوای تازه</span><code>kmazraee.github.io</code></div>
+      <div><span>بررسی نسخه تازه</span><code>api.github.com</code></div>
+      <div><span>پخش و دانلود ترتیل</span><code>everyayah.com</code></div>
+      <div><span>درس‌های تدبر</span><code>alisaboohi.com · aparat.com</code></div>
+      <div><span>خرید کتاب، با زدن خودتان</span><code>tadabborpub.ir</code></div>
+    </div>
+    <p class="muted">این سرویس‌ها مثل هر وب‌سایتی ممکن است نشانی اینترنتی (IP) دستگاه را در گزارش‌های خود ثبت کنند؛ سیاست حریم خصوصی هر کدام متعلق به خودش است.</p>
+  </section>
 
-<section>
-<h2>کودکان</h2>
-<p>برنامه برای همه سنین مناسب است و از هیچ کاربری، از جمله کودکان، اطلاعاتی جمع نمی‌کند.</p>
-</section>
+  <section>
+    <h2><span class="n">۴</span>دسترسی‌های برنامه</h2>
+    <p>برنامه فقط دسترسی «اینترنت» دارد. به مخاطبین، موقعیت مکانی، دوربین، میکروفون یا فایل‌های شما دسترسی ندارد؛ فایل پشتیبان فقط وقتی خوانده می‌شود که خودتان انتخابش کنید.</p>
+  </section>
 
-<section>
-<h2>تماس</h2>
-<p>پرسش‌ها و پیشنهادها را به <a href="mailto:kmazraee@gmail.com">kmazraee@gmail.com</a> یا از بخش «ارتباط با ما» در تنظیمات برنامه، در ایتا یا بله پیام بدهید یا در <a href="https://github.com/kmazraee/tadabbor-hefz/issues">صفحه پروژه</a> مطرح کنید.</p>
-</section>
+  <section>
+    <h2><span class="n">۵</span>کودکان</h2>
+    <p>برنامه برای همه سنین مناسب است و از هیچ کاربری، از جمله کودکان، اطلاعاتی برای ما نمی‌فرستد.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">۶</span>ارتباط با ما</h2>
+    <p>پرسش، گزارش مشکل یا پیشنهاد دارید؟ از بخش «ارتباط با ما» در تنظیمات برنامه، یا از این راه‌ها:</p>
+    <div class="contact"><a href="mailto:kmazraee@gmail.com">✉️ ایمیل</a><a href="https://eitaa.com/kmazraee">💬 ایتا</a><a href="https://ble.ir/kmazraee">💬 بله</a></div>
+  </section>
+
+  <footer>حفظ تدبری · رایگان و بدون تبلیغ</footer>
 </main>
 </body>
 </html>

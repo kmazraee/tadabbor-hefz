@@ -196,9 +196,9 @@ details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direc
 .btnlink{display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none;font-size:14px}
 .about-foot{text-align:center}
 .about-actions>:last-child:nth-child(odd){grid-column:1/-1}
-.contact-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.contact-row{display:flex;flex-direction:column;align-items:stretch;gap:12px;text-align:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .contact-title{font-weight:700;font-size:14px}
-.contact-ch{display:flex;gap:14px}
+.contact-ch{display:flex;gap:28px;justify-content:center}
 .ch{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:var(--muted)}
 .contacts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .contact{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none}
@@ -1968,13 +1968,11 @@ function openSettings() {
       <div class="about-actions">
         <button data-guide-open>راهنمای برنامه</button>
         <a class="btnlink" href="https://kmazraee.github.io/tadabbor-hefz/privacy.html" target="_blank" rel="noopener">حریم خصوصی</a>
-        <a class="btnlink" href="https://github.com/kmazraee/tadabbor-hefz/releases/latest" target="_blank" rel="noopener">آخرین نسخه</a>
       </div>
       <h3>ارتباط با ما</h3>
-      ${[["bug", "🐞", "گزارش مشکل", "مشکل را با جزئیات بنویسید (در کدام صفحه، چه کاری کردید، چه اتفاقی افتاد):"], ["idea", "💡", "پیشنهاد برای توسعه", "پیشنهاد من برای بهتر شدن برنامه:"]].map(([k, ic, label, hint]) =>
-        `<div class="contact-row"><span class="contact-title"><span aria-hidden="true">${ic}</span> ${label}</span><div class="contact-ch">
-          ${CONTACTS(label, hint).map(c => `<a class="ch" href="${c.url}" target="_blank" rel="noopener" aria-label="${label} از راه ${c.name}"><span class="contact-ic" style="background:${c.color}">${c.icon}</span><span class="small">${c.name}</span></a>`).join("")}
-        </div></div>`).join("")}
+      <div class="contact-row"><span class="contact-title">گزارش مشکل یا پیشنهاد برای توسعه</span><div class="contact-ch">
+        ${CONTACTS("گزارش مشکل یا پیشنهاد", "مشکل یا پیشنهادتان را بنویسید (اگر مشکل است: در کدام صفحه، چه کاری کردید، چه اتفاقی افتاد):").map(c => `<a class="ch" href="${c.url}" target="_blank" rel="noopener" aria-label="گزارش مشکل یا پیشنهاد از راه ${c.name}"><span class="contact-ic" style="background:${c.color}">${c.icon}</span><span class="small">${c.name}</span></a>`).join("")}
+      </div></div>
       <p class="small muted about-foot">رایگان و بدون تبلیغ · همه اطلاعات شما فقط روی گوشی خودتان می‌ماند</p>
     </section>
   </div></div>`);
