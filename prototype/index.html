@@ -175,6 +175,17 @@ details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direc
 .book b{font-size:14px;font-weight:700}
 .bk-ic{font-size:20px}
 .bk-buy{color:var(--lapis);font-weight:700;white-space:nowrap}
+.about{gap:14px}
+.about-head{display:flex;gap:14px;align-items:center}
+.about-logo svg{width:72px;height:72px;display:block;border-radius:18px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.about-head h2{font-size:20px}
+.about-list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.about-row{display:grid;grid-template-columns:30px 64px 1fr;gap:8px;align-items:center;padding:9px 12px}
+.about-row+.about-row{border-top:1px solid var(--line)}
+.about-ic{font-size:17px;text-align:center}
+.about-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btnlink{display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none;font-size:14px}
+.about-foot{text-align:center}
 .stepper{display:flex;gap:2px;position:relative;padding-top:2px}
 .stepper::before{content:"";position:absolute;inset-inline:7%;top:19px;height:2px;background:var(--line)}
 .step{all:unset;cursor:pointer;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;position:relative;color:var(--ink);text-align:center}
@@ -409,6 +420,7 @@ const legend = () => `<div class="legend">${Object.keys(LABELS).map(k => `<span 
 const testNote = `<div class="tag-test">تا آماده شدن تقسیم‌بندی کتاب «تدبر در قرآن کریم»، مرز سیاق‌ها بر اساس رکوع‌های مصحف است. در مرحله تدبر، گام‌های معنایی هر سیاق را خودتان مشخص می‌کنید.</div>`;
 const ICON_GEAR = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`;
 const ICON_LOCK = `<svg class="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
+const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#0F3D3A"/><g fill="none" stroke-linecap="round"><path d="M136 300a120 120 0 0 1 240 0" stroke="#E3B65C" stroke-width="22"/><path d="M176 300a80 80 0 0 1 160 0" stroke="#F2D9A0" stroke-width="22"/><path d="M216 300a40 40 0 0 1 80 0" stroke="#FFFFFF" stroke-width="22"/></g><path d="M256 330c-40-24-90-30-140-22v62c50-8 100-2 140 22z" fill="#FFFFFF"/><path d="M256 330c40-24 90-30 140-22v62c-50-8-100-2-140 22z" fill="#DCEBE8"/></svg>`;
 const ICON_SEARCH = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>`;
 const ICON_HELP = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.6V14"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg>`;
 
@@ -1920,11 +1932,21 @@ function openSettings() {
       ${confirmReset === "progress" ? `<div class="row"><span class="small">همه پیشرفت و تدبرها پاک شود؟</span><button class="btn-main small" id="yes-progress">بله، پاک کن</button><button class="small" id="no">نه</button></div>` : `<button id="reset-progress">پاک کردن پیشرفت و تدبرها</button>`}
       <button id="reset-settings">بازگرداندن تنظیمات پیش‌فرض</button>
     </section>
-    <section class="card"><h3>درباره</h3>
-      <p class="small">حفظ تدبری · نسخه ${FA(VERSION)}</p>
-      <p class="small muted">مصحف: عثمان طه (QCF4، مجمع ملک فهد) · صوت: everyayah.com · درس‌ها: alisaboohi.com · قلم‌ها: Amiri Quran، Scheherazade New و Vazirmatn.</p>
-      <p class="small muted">ترجمه‌ها: Tanzil.net (صفوی، انصاریان، مکارم شیرازی، فولادوند و نه ترجمه دیگر).</p>
-      <div class="row"><button data-guide-open>راهنمای برنامه</button><a class="small" href="${RATE_URL}" target="_blank" rel="noopener">نظر و امتیاز در کافه‌بازار</a><a class="small" href="https://kmazraee.github.io/tadabbor-hefz/privacy.html" target="_blank" rel="noopener">حریم خصوصی</a></div>
+    <section class="card about" aria-label="درباره برنامه">
+      <div class="about-head"><span class="about-logo">${LOGO_SVG}</span>
+        <div><h2>حفظ تدبری</h2><span class="small muted">نسخه ${FA(VERSION)}</span><p class="small">حفظ قرآن با تدبر، سیاق به سیاق</p></div></div>
+      <p class="small">اول فهم، بعد حفظ: هر سیاق اول تدبر می‌شود و بعد با تکیه بر همان معنا حفظ و مرور می‌شود. مسیر و تقسیم‌بندی‌ها بر پایه روش «تدبر در قرآن کریم» استاد <b>علی صبوحی طسوجی</b> است.</p>
+      <div class="about-list">
+        ${[["📖", "مصحف", "عثمان طه · QCF4، مجمع ملک فهد"], ["🌐", "ترجمه‌ها", FA(13) + " ترجمه فارسی · Tanzil.net"], ["🎧", "ترتیل", FA(RECITERS.filter(r => r[3] !== "fa").length) + " قاری · everyayah.com"], ["🎬", "درس‌ها", "alisaboohi.com"], ["📚", "کتاب‌ها", "انتشارات تدبر · tadabborpub.ir"], ["🔤", "قلم‌ها", "وزیرمتن، امیری قرآن، شهرزاد"]]
+          .map(([i, k, v]) => `<div class="about-row"><span class="about-ic" aria-hidden="true">${i}</span><span class="small muted">${k}</span><span class="small">${v}</span></div>`).join("")}
+      </div>
+      <div class="about-actions">
+        <button data-guide-open>راهنمای برنامه</button>
+        <a class="btnlink" href="https://kmazraee.github.io/tadabbor-hefz/privacy.html" target="_blank" rel="noopener">حریم خصوصی</a>
+        <a class="btnlink" href="https://github.com/kmazraee/tadabbor-hefz/releases/latest" target="_blank" rel="noopener">آخرین نسخه</a>
+        <a class="btnlink" href="https://github.com/kmazraee/tadabbor-hefz/issues" target="_blank" rel="noopener">گزارش مشکل یا پیشنهاد</a>
+      </div>
+      <p class="small muted about-foot">رایگان و بدون تبلیغ · همه اطلاعات شما فقط روی گوشی خودتان می‌ماند</p>
     </section>
   </div></div>`);
   const set = (k, v) => { cfg[k] = v; saveCfg(); applySettings(); };
