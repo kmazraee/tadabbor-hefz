@@ -5,7 +5,7 @@
 
 Run from the repo root after scripts/build_quran.py:  python3 scripts/build_web.py
 """
-import pathlib, re, shutil
+import json, pathlib, re, shutil
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 tpl = (ROOT / "scripts/prototype_src.html").read_text(encoding="utf-8")
@@ -38,6 +38,18 @@ FACES = "\n".join(
        "@font-face{font-family:'Scheherazade New';font-weight:400;font-display:swap;src:url('fonts/scheherazade-new-arabic-400-normal.woff2') format('woff2')}",
        "@font-face{font-family:'Scheherazade New';font-weight:700;font-display:swap;src:url('fonts/scheherazade-new-arabic-700-normal.woff2') format('woff2')}"])
 
+# Full text for search: one string per verse, joined from the mushaf page words (simple script with diacritics)
+verses = {}
+for f in sorted((ROOT / "data/pages").glob("*.json")):
+    for ln in json.loads(f.read_text(encoding="utf-8"))["lines"]:
+        for w in ln:
+            if w[0] == "w":
+                verses.setdefault(w[3], []).append(w[4])
+surah_meta = json.loads(meta)["surahs"]
+quran = [[" ".join(verses[f"{s['n']}:{a}"]) for a in range(1, s["total"] + 1)] for s in surah_meta]
+assert sum(map(len, quran)) == 6236 and len(verses) == 6236, "verse text incomplete"
+(ROOT / "data/quran.json").write_text(json.dumps(quran, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
 (ROOT / "prototype/index.html").write_text(page("../data/", False), encoding="utf-8")
 
 assets = ROOT / "android/app/src/main/assets"
@@ -53,4 +65,5 @@ for sub in ("pages", "trans"):
         dst.mkdir(parents=True)
         for tid in BUNDLED_TRANS:
             shutil.copy(ROOT / "data/trans" / f"{tid}.json", dst / f"{tid}.json")
-print("built prototype/index.html and android assets (index.html, 604 pages, 3 bundled translations)")
+shutil.copy(ROOT / "data/quran.json", assets / "data/quran.json")
+print("built prototype/index.html and android assets (index.html, 604 pages, full text for search, 3 bundled translations)")

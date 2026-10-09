@@ -132,7 +132,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .steplabels .on{color:var(--ink);font-weight:700}
 .sheet .body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
 .sheet .body > *,main > *{flex-shrink:0}
-.sheet footer{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface);display:flex;gap:10px}
+.sheet footer{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface);display:flex;flex-wrap:wrap;gap:10px}
 .sheet footer button{flex:1}
 .subnav{display:flex;gap:6px}
 .subnav span{flex:1;text-align:center;font-size:12px;padding:4px;border-radius:8px;background:var(--line);color:var(--muted)}
@@ -163,6 +163,21 @@ details[open] summary::after{content:"−"}
 details > div{padding-bottom:14px;display:flex;flex-direction:column;gap:8px;font-size:14px}
 details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px}
 .toast{position:fixed;bottom:84px;inset-inline:0;margin-inline:auto;width:max-content;max-width:90%;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:10px;font-size:13px;z-index:30}
+.mw.weak{text-decoration:underline dotted var(--st-due);text-decoration-thickness:2px;text-underline-offset:6px}
+.mw.errw{background:color-mix(in srgb,var(--st-due) 28%,transparent)}
+.markbar{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--gold-soft)}
+.markbar>span{flex:1 1 100%}
+.sheet footer .markbar button{flex:0 0 auto;padding:7px 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button[aria-pressed="true"]{background:var(--lapis);color:var(--on-lapis);border-color:var(--lapis)}
+.ar{font-family:"Amiri Quran","Amiri",serif;font-size:21px;line-height:2.2;direction:rtl}
+.ar mark,.ar .errw{background:color-mix(in srgb,var(--st-due) 30%,transparent);color:inherit;border-radius:4px}
+.ar mark{background:var(--gold-soft)}
+.sres{display:flex;flex-direction:column;gap:6px;padding-block:12px;border-bottom:1px solid var(--line)}
+.sres:last-child{border-bottom:none}
+.tbar{display:flex;align-items:center;gap:8px;font-size:13px}
+.tbar>span:first-child{flex:0 0 132px}
+.tbar .bar{flex:1;margin:0}
 .stepper{display:flex;gap:2px;position:relative;padding-top:2px}
 .stepper::before{content:"";position:absolute;inset-inline:7%;top:19px;height:2px;background:var(--line)}
 .step{all:unset;cursor:pointer;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;position:relative;color:var(--ink);text-align:center}
@@ -301,14 +316,14 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "system", accent: "lapis", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Abu_Bakr_Ash-Shaatree_64kbps", reps: 3, gate: true, trans: "ansarian", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false};
+const DEFAULTS = {theme: "system", accent: "lapis", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Abu_Bakr_Ash-Shaatree_64kbps", reps: 3, gate: true, trans: "ansarian", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";
 const saveCfg = () => store("tadabbor-settings", cfg);
 
 // Progress lives only on this device and in the user's own backups.
-const EMPTY = () => ({streak: 0, lastActive: null, notes: {}, items: {}, watched: {}, passed: {}, found: {}});
+const EMPTY = () => ({streak: 0, lastActive: null, notes: {}, items: {}, watched: {}, passed: {}, found: {}, err: {}});
 let st = Object.assign(EMPTY(), load("tadabbor-progress", {}));
 const save = () => store("tadabbor-progress", st);
 // Calendar day number in the phone's local time; reviews are scheduled on these.
@@ -385,6 +400,7 @@ const legend = () => `<div class="legend">${Object.keys(LABELS).map(k => `<span 
 const testNote = `<div class="tag-test">تا آماده شدن تقسیم‌بندی کتاب «تدبر در قرآن کریم»، مرز سیاق‌ها بر اساس رکوع‌های مصحف است. در مرحله تدبر، گام‌های معنایی هر سیاق را خودتان مشخص می‌کنید.</div>`;
 const ICON_GEAR = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`;
 const ICON_LOCK = `<svg class="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
+const ICON_SEARCH = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>`;
 const ICON_HELP = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.6V14"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg>`;
 
 // ---------- QCF (Uthman Taha) fonts: loaded at runtime from the npm CDN ----------
@@ -487,10 +503,11 @@ function renderPages(pnums, opt = {}) {
         if (s8 === "dim") cls += " dim";
         if (t === "w" && (s8 === "mask" || (opt.wordMask && opt.wordMask(vk, pos[vk])))) cls += " mask";
         if (t === "e" && opt.cut && opt.cut.has(vk)) cls += " cut";
+        if (opt.weak && t === "w" && !cls.includes("mask")) { const er = errOf(vk); if (er && errOpen(vk)) cls += " weak"; if (er && er.w[pos[vk]] > 0) cls += " errw"; }
         if (playingVk === vk) cls += " playing";
         const glyph = qcf ? ch : (t === "e" ? `﴿${AR(parseVk(vk)[1])}﴾` : esc(text));
         const style = qcf ? ` style="font-family:'${font}'"` : "";
-        return `<span class="${cls}" data-vk="${vk}" data-t="${t}"${style}>${glyph}</span>`;
+        return `<span class="${cls}" data-vk="${vk}" data-t="${t}"${t === "w" ? ` data-i="${pos[vk]}"` : ""}${style}>${glyph}</span>`;
       }).join("");
       const center = ln.length === 1 && (ln[0][0] === "h" || ln[0][0] === "b");
       const sy = opt.marks ? [...new Set(vks.map(v => { const [a, b] = parseVk(v); const q = siyaqOf(a, b); return q ? key(a, q.n) : null; }).filter(Boolean))] : [];
@@ -683,6 +700,9 @@ function render() {
   v.querySelectorAll("[data-guide]").forEach(el => el.addEventListener("click", () => openGuide(el.dataset.guide)));
   v.querySelectorAll("[data-lessons]").forEach(el => el.addEventListener("click", () => openLessons(+el.dataset.lessons)));
   v.querySelectorAll("[data-level]").forEach(el => el.addEventListener("click", () => openLevel(el.dataset.level)));
+  v.querySelectorAll("[data-search]").forEach(el => el.addEventListener("click", openSearch));
+  v.querySelectorAll("[data-weak]").forEach(el => el.addEventListener("click", openWeak));
+  v.querySelectorAll("[data-drill]").forEach(el => el.addEventListener("click", () => openDrill(weakOpen().slice(0, 10).map(x => x.vk), 0)));
   if (tab === "mushaf") wireMushaf(v);
   v.querySelectorAll("[data-goto]").forEach(el => el.addEventListener("click", () => { tab = el.dataset.goto; render(); window.scrollTo(0, 0); }));
   wireQcf(v);
@@ -696,7 +716,7 @@ function nextToLearn() {
   if (unlocked(L)) for (const sn of L.surahs) { const s = S[sn], q = s.siyaqs.find(q2 => status(key(sn, q2.n)) === "new"); if (q) return {s, q, k: key(sn, q.n)}; }
   return cfg.freePath || passed("l6") ? all.find(x => status(x.k) === "new") : null;
 }
-const topBar = h => { const c = surahCounts(); return `<div class="topbar"><div class="row between" style="flex-wrap:nowrap"><div style="flex:1;min-width:0">${h}</div><div class="row" style="gap:4px;flex-wrap:nowrap"><button class="icon-btn btn-ghost" data-guide="" aria-label="راهنما">${ICON_HELP}</button><button class="icon-btn btn-ghost" data-settings aria-label="تنظیمات">${ICON_GEAR}</button></div></div>
+const topBar = h => { const c = surahCounts(); return `<div class="topbar"><div class="row between" style="flex-wrap:nowrap"><div style="flex:1;min-width:0">${h}</div><div class="row" style="gap:4px;flex-wrap:nowrap"><button class="icon-btn btn-ghost" data-search aria-label="جستجو در قرآن">${ICON_SEARCH}</button><button class="icon-btn btn-ghost" data-guide="" aria-label="راهنما">${ICON_HELP}</button><button class="icon-btn btn-ghost" data-settings aria-label="تنظیمات">${ICON_GEAR}</button></div></div>
   <div class="counters" aria-label="پیشرفت شما از ۱۱۴ سوره"><span class="chip mem">حفظ <b class="num">${FA(c.m)}</b> سوره</span><span class="chip tad">تدبر <b class="num">${FA(c.t)}</b> سوره</span><span class="small muted">از ۱۱۴</span></div></div>`; };
 
 // The one thing to do next on the journey: foundations, a siyaq of the current level, or passing the level
@@ -750,6 +770,7 @@ function home() {
     <div class="row between"><h2>صف مرور امروز</h2>${due.length ? `<button class="btn-ghost small" data-start="${due[0].k}" data-mode="review">شروع مرور</button>` : ""}</div>
     ${due.length ? due.map(x => siyaqButton(x, "review")).join("") : `<p class="muted small">مرور امروز تمام است.</p>`}
   </section>` : ""}
+  ${weakCard()}
   ${anyPre ? "" : `<section class="card"><h3>سوره‌هایی را از قبل حفظ هستید؟</h3><p class="small">آن‌ها را از «نقشه سیاق» ثبت کنید تا از همین حالا مرورشان شروع شود. این کار به قدم‌های مسیر ربطی ندارد و همیشه آزاد است.</p><div class="row"><button class="small" data-goto="map">ثبت سوره‌های حفظ‌شده</button></div></section>`}
   ${fresh ? "" : `<section class="card">
     <div class="row between"><h2>پیشرفت حفظ قرآن</h2><span class="small muted num">${FA(solidAyat)} از ${FA(totalAyat)} آیه</span></div>
@@ -776,7 +797,8 @@ function review() {
   const due = all.filter(x => status(x.k) === "due");
   const soon = all.filter(x => status(x.k) === "solid").sort((a, b) => st.items[a.k].due - st.items[b.k].due);
   return `${topBar(`<h1>مرور</h1>`)}
-  <p class="muted small">هر مرور با یادآوری معنا شروع می‌شود: اول عنوان و گام‌های سیاق را به خاطر بیاورید، بعد آیات را از حفظ بخوانید.</p>
+  <p class="muted small">هر مرور با یادآوری معنا شروع می‌شود: اول عنوان و گام‌های سیاق را به خاطر بیاورید، بعد آیات را از حفظ بخوانید. اشتباه‌های هر آیه را ثبت کنید تا در «دفتر اشتباهات» بماند.</p>
+  ${weakCard() || `<section class="card"><div class="row between"><h2>دفتر اشتباهات</h2><button class="small" data-weak>باز کن</button></div><p class="small muted">${Object.keys(st.err || {}).length ? "همه آیه‌های ثبت‌شده تثبیت شده‌اند." : "اشتباه‌هایی که در حفظ و مرور ثبت کنید اینجا جمع می‌شوند."}</p></section>`}
   <section class="card"><h2>سررسید امروز (${FA(due.length)})</h2>
   ${due.length ? due.map(x => siyaqButton(x, "review")).join("") : `<p class="muted small">چیزی برای مرور نمانده.</p>`}</section>
   <section class="card"><h2>مرورهای آینده</h2>
@@ -795,7 +817,8 @@ function mushaf() {
   <div class="row" style="flex-wrap:nowrap"><select id="mushaf-surah" aria-label="رفتن به سوره">${DATA.surahs.map(x => `<option value="${x.n}" ${cur === x.n ? "selected" : ""}>${FA(x.n)}. ${x.name}</option>`).join("")}</select>
   <select id="mushaf-juz" aria-label="رفتن به جزء" style="max-width:110px">${range(1, 30).map(j => `<option value="${j}" ${juz === j ? "selected" : ""}>جزء ${FA(j)}</option>`).join("")}</select></div>
   <div class="mnav"><button id="pg-next" aria-label="صفحه بعد" ${mushafPage >= 604 ? "disabled" : ""}>صفحه بعد</button><span class="pg num">صفحه ${FA(mushafPage)} از ۶۰۴</span><button id="pg-prev" aria-label="صفحه قبل" ${mushafPage <= 1 ? "disabled" : ""}>صفحه قبل</button></div>
-  <div id="mushaf-page">${renderPages([mushafPage], {marks: true})}</div>
+  <div id="mushaf-page">${renderPages([mushafPage], {marks: true, weak: cfg.showWeak})}</div>
+  ${Object.keys(st.err || {}).length ? `<label class="switch small"><span>نشان دادن آیه‌های نیازمند تثبیت<br><span class="muted">زیر آیه‌های اشتباه‌شده خط نقطه‌چین و کلمه‌های اشتباه رنگی می‌شوند.</span></span><input type="checkbox" id="showweak" ${cfg.showWeak ? "checked" : ""}></label>` : ""}
   <p class="small muted">نوار رنگی کنار هر سطر، وضعیت سیاق همان سطر را نشان می‌دهد. روی هر کلمه بزنید تا آیه و سیاق آن را ببینید. با کشیدن صفحه به چپ و راست ورق بزنید.</p>
   <p class="small muted">خط عثمان طه، مصحف مدینه (QCF4 مجمع ملک فهد).</p>`;
 }
@@ -810,6 +833,7 @@ function wireMushaf(v) {
   box.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, {passive: true});
   box.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 60) go(dx > 0 ? 1 : -1); });
   box.addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (w) openWordbar(w.dataset.vk); });
+  const sw = v.querySelector("#showweak"); if (sw) sw.addEventListener("change", () => { cfg.showWeak = sw.checked; saveCfg(); render(); });
   if (selVk) markSel(selVk);
 }
 function markSel(vk) { document.querySelectorAll(".sel").forEach(e => e.classList.remove("sel")); document.querySelectorAll(`#mushaf-page [data-vk="${vk}"]`).forEach(e => e.classList.add("sel")); }
@@ -820,9 +844,11 @@ function openWordbar(vk) {
   box.innerHTML = `<div class="wordbar"><div class="card"><div class="row between"><b>سوره ${s.name} · آیه ${FA(ay)}</b><button class="icon-btn btn-ghost" id="wb-x" aria-label="بستن">✕</button></div>
     <span class="small muted">سیاق ${FA(q.n)}: ${esc(title(s, q))} · ${LABELS[status(k)]}</span>
     ${trans(sn, ay) ? `<p class="tr" style="font-size:14px">${esc(trans(sn, ay))}</p>` : ""}
-    <div class="row"><button id="wb-play" class="small">▶ ترتیل آیه</button><button id="wb-open" class="btn-main small">باز کردن سیاق</button><button id="wb-les" class="small">درس‌های سوره</button></div></div></div>`;
+    ${errOf(vk) ? `<span class="small" style="color:var(--st-due)">${FA(errOf(vk).n)} بار اشتباه · ${errOpen(vk) ? "نیاز به تثبیت" : "تثبیت‌شده"}</span>` : ""}
+    <div class="row"><button id="wb-play" class="small">▶ ترتیل آیه</button>${errOpen(vk) ? `<button id="wb-drill" class="small">تمرین تثبیت</button>` : ""}<button id="wb-open" class="btn-main small">باز کردن سیاق</button><button id="wb-les" class="small">درس‌های سوره</button></div></div></div>`;
   box.querySelector("#wb-x").addEventListener("click", closeWordbar);
   box.querySelector("#wb-play").addEventListener("click", () => play(sn, ay));
+  const wd = box.querySelector("#wb-drill"); if (wd) wd.addEventListener("click", () => { closeWordbar(); openDrill([vk], 0); });
   box.querySelector("#wb-open").addEventListener("click", () => { closeWordbar(); startSession(k, status(k) === "solid" || status(k) === "due" ? "review" : "learn"); });
   box.querySelector("#wb-les").addEventListener("click", () => { closeWordbar(); openLessons(sn); });
 }
@@ -1176,7 +1202,7 @@ function startSession(k, mode) {
   if (mode !== "review" && status(k) === "new" && !surahOpen(sn)) { lockedSurah(sn); return; }
   const s = S[sn], q = s.siyaqs[qn - 1];
   const it = st.items[k] || {stage: 0};
-  ses = {k, s, q, mode, step: mode === "review" ? 3 : Math.min(it.stage, 4), sub: 0, si: 0, ay: q.s, level: 0, recap: false, shown: {}, map: mode !== "review", recall: false, help: false, cmp: false};
+  ses = {k, s, q, mode, step: mode === "review" ? 3 : Math.min(it.stage, 4), sub: 0, si: 0, ay: q.s, level: 0, recap: false, shown: {}, map: mode !== "review", recall: false, help: false, cmp: false, mark: null, errs: {}, ew: {}};
   if (ses.step === 2) ses.ay = stepsOf(s, q)[0].s;
   drawSession();
 }
@@ -1309,13 +1335,15 @@ function stepMemorize() {
   if (ses.recap) {
     const ay = range(g.s, g.e), opened = ay.filter(i => ses.shown[i]).length;
     return {body: `${head}
-      <div class="card"><h3>کل این گام را یکجا از حفظ بخوانید</h3><p class="small">بعد روی هر آیه بزنید تا متن را ببینید و خودتان را بسنجید. <span class="num">(${FA(opened)} از ${FA(ay.length)})</span></p></div>
-      <div id="mpages">${sesPages(g.s, g.e, {state: vk => ses.shown[ayOf(vk)] ? "show" : "mask"})}</div>`,
-      foot: `<button id="again">تمرین دوباره گام</button><button class="btn-main" id="go" ${opened < ay.length ? "disabled" : ""}>${ses.si < steps.length - 1 ? "گام بعد" : "برو به اتصال"}</button>`,
+      <div class="card"><h3>کل این گام را یکجا از حفظ بخوانید</h3><p class="small">بعد روی هر آیه بزنید تا متن را ببینید و خودتان را بسنجید؛ اگر اشتباه داشتید ثبتش کنید تا در «دفتر اشتباهات» بماند. <span class="num">(${FA(opened)} از ${FA(ay.length)})</span></p></div>
+      <div id="mpages">${sesPages(g.s, g.e, {weak: true, state: vk => ses.shown[ayOf(vk)] ? "show" : "mask"})}</div>`,
+      foot: `${markBar()}<button id="again">تمرین دوباره گام</button><button class="btn-main" id="go" ${opened < ay.length ? "disabled" : ""}>${ses.si < steps.length - 1 ? "گام بعد" : "برو به اتصال"}</button>`,
       wire: b => {
-        b.querySelector("#mpages").addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (!w) return; const y = ayOf(w.dataset.vk); if (y >= g.s && y <= g.e) { ses.shown[y] = 1; redraw(); } });
-        b.querySelector("#again").addEventListener("click", () => { ses.recap = false; ses.ay = g.s; ses.level = 0; ses.shown = {}; drawSession(); });
+        b.querySelector("#mpages").addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (!w || markWordClick(w)) return; const y = ayOf(w.dataset.vk); if (y >= g.s && y <= g.e && parseVk(w.dataset.vk)[0] === s.n) { ses.shown[y] = 1; ses.mark = {ay: y, phase: "ask"}; redraw(); } });
+        wireMark(b);
+        b.querySelector("#again").addEventListener("click", () => { settleChecks(range(g.s, g.e)); ses.mark = null; ses.recap = false; ses.ay = g.s; ses.level = 0; ses.shown = {}; drawSession(); });
         b.querySelector("#go").addEventListener("click", () => {
+          settleChecks(range(g.s, g.e)); ses.mark = null;
           if (ses.si < steps.length - 1) { ses.si++; ses.ay = steps[ses.si].s; ses.level = 0; ses.recap = false; ses.shown = {}; drawSession(); } else advance();
         });
       }};
@@ -1356,16 +1384,17 @@ function stepConnect() {
     ${ses.recall ? `<div class="meaning"><b>${esc(title(s, q))}</b>${n && n.title && q.title ? `<span class="mine">برداشت من: ${esc(n.title)}</span>` : ""}</div><ol class="small" style="margin:0;padding-inline-start:20px">${steps.map(g => `<li>${esc(g.t)}</li>`).join("")}</ol>` : `<button id="recall">نقشه معنا را نشانم بده</button>`}</div>` : "";
   return {body: `${recallCard}
     <div class="card"><div class="small muted">خواندن کل سیاق از حفظ</div>
-    <p class="small">هر آیه را از حفظ بخوانید، بعد روی آن بزنید تا دیده شود.</p>
+    <p class="small">هر آیه را از حفظ بخوانید، بعد روی آن بزنید تا دیده شود و بگویید درست خواندید یا نه. اشتباه‌ها در «دفتر اشتباهات» جمع می‌شوند.</p>
     <label class="switch small"><span>نمایش نقشه معنا بالای سطرها</span><input type="checkbox" id="mapsw" ${ses.map ? "checked" : ""}></label>
     <div class="small muted num">بررسی‌شده: ${FA(opened)} از ${FA(total)}</div></div>
-    <div id="cpages">${sesPages(q.s, q.e, {labels, state: vk => ses.shown[parseVk(vk)[1]] ? "show" : "mask"})}</div>`,
-    foot: `<button class="btn-main" id="next" ${opened < total ? "disabled" : ""}>${opened < total ? "همه آیات را بررسی کنید" : "ثبت نتیجه"}</button>`,
+    <div id="cpages">${sesPages(q.s, q.e, {labels, weak: true, state: vk => ses.shown[parseVk(vk)[1]] ? "show" : "mask"})}</div>`,
+    foot: `${markBar()}<button class="btn-main" id="next" ${opened < total ? "disabled" : ""}>${opened < total ? "همه آیات را بررسی کنید" : "ثبت نتیجه"}</button>`,
     wire: b => {
-      b.querySelector("#cpages").addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (!w) return; const [x, y] = parseVk(w.dataset.vk); if (x === s.n && y >= q.s && y <= q.e) { ses.shown[y] = 1; redraw(); } });
+      b.querySelector("#cpages").addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (!w || markWordClick(w)) return; const [x, y] = parseVk(w.dataset.vk); if (x === s.n && y >= q.s && y <= q.e) { ses.shown[y] = 1; ses.mark = {ay: y, phase: "ask"}; redraw(); } });
+      wireMark(b);
       const r = b.querySelector("#recall"); if (r) r.addEventListener("click", () => { ses.recall = true; ses.map = true; redraw(); });
       b.querySelector("#mapsw").addEventListener("change", e => { ses.map = e.target.checked; redraw(); });
-      b.querySelector("#next").addEventListener("click", advance);
+      b.querySelector("#next").addEventListener("click", () => { settleChecks(range(q.s, q.e)); ses.mark = null; advance(); });
     }};
 }
 
@@ -1375,7 +1404,8 @@ function stepRate() {
   const opts = [["hard", "سخت", 1], ["good", "خوب", Math.max(2, Math.round(ivl * 2))], ["easy", "آسان", Math.max(4, Math.round(ivl * 3))]];
   return {body: `
     <div class="card"><h2>این سیاق را چطور خواندید؟</h2>
-    <p class="small muted">پاسخ شما زمان مرور بعدی را تعیین می‌کند. «سخت» سیاق را به مرحله حفظ برمی‌گرداند.</p></div>
+    <p class="small muted">پاسخ شما زمان مرور بعدی را تعیین می‌کند. «سخت» سیاق را به مرحله حفظ برمی‌گرداند.</p>
+    ${Object.keys(ses.errs || {}).length ? `<p class="small">در این جلسه در ${FA(Object.keys(ses.errs).length)} آیه اشتباه ثبت کردید (آیه ${Object.keys(ses.errs).map(FA).join("، ")}). این آیه‌ها در «دفتر اشتباهات» برای تمرین تثبیت آماده‌اند.</p>` : ""}</div>
     <div class="rate">${opts.map(([k, l, d]) => `<button data-rate="${k}" data-days="${d}"><b>${l}</b><small class="num">${k === "hard" ? "بازگشت به حفظ" : "مرور " + FA(d) + " روز بعد"}</small></button>`).join("")}</div>
     <div class="field"><label for="insight">نکته تازه‌ای در این ${ses.mode === "review" ? "مرور" : "جلسه"} فهمیدید؟ (اختیاری)</label><textarea id="insight" rows="2" placeholder="برداشت تازه شما کنار تدبرهای این سیاق ذخیره می‌شود"></textarea></div>`,
     foot: `<button class="btn-ghost" data-close>بعداً</button>`,
@@ -1384,12 +1414,249 @@ function stepRate() {
         const ins = b.querySelector("#insight").value.trim();
         if (ins) { n.extra = n.extra || []; n.extra.push({day: today(), text: ins}); }
         const item = st.items[ses.k] || (st.items[ses.k] = {});
-        if (x.dataset.rate === "hard") { item.stage = 2; delete item.due; toast("سیاق به مرحله حفظ برگشت"); }
+        item.hist = (item.hist || []).concat([[today(), x.dataset.rate, Object.keys(ses.errs || {}).length]]).slice(-20);
+        if (x.dataset.rate === "hard") { item.stage = 2; delete item.due; item.lapses = (item.lapses || 0) + 1; toast("سیاق به مرحله حفظ برگشت"); }
         else { item.stage = 5; item.ivl = +x.dataset.days; item.due = today() + item.ivl; toast("ثبت شد · مرور بعدی " + FA(item.ivl) + " روز دیگر"); }
         markActive(); save(); ses = null; document.getElementById("sheet").innerHTML = ""; render();
       }));
     }};
 }
+
+// ---------- mistakes: where memorization slips and what still needs consolidating ----------
+// st.err["2:5"] = {n: times wrong, t: {type: count}, w: {wordPos: count}, first, last: day, clean: clean recalls since, cday}
+const ERR_TYPES = [["forget", "یادم نیامد"], ["word", "اشتباه در کلمه یا اعراب"], ["similar", "قاطی با آیه مشابه"], ["order", "جابه‌جایی ترتیب"]];
+const errName = t => (ERR_TYPES.find(x => x[0] === t) || [, t])[1];
+const CLEAN_NEED = 2;      // clean recalls, each on a later day, before a verse counts as consolidated
+const errOf = vk => (st.err || {})[vk];
+const errOpen = vk => { const e = errOf(vk); return !!e && (e.clean || 0) < CLEAN_NEED; };
+const errList = () => Object.entries(st.err || {}).map(([vk, e]) => { const [sn, ay] = parseVk(vk); return {vk, sn, ay, e, open: (e.clean || 0) < CLEAN_NEED}; })
+  .sort((a, b) => (b.open - a.open) || (b.e.n - a.e.n) || (b.e.last - a.e.last));
+const weakOpen = () => errList().filter(x => x.open);
+function addErr(vk, t) {
+  st.err = st.err || {};
+  const e = st.err[vk] || (st.err[vk] = {n: 0, t: {}, w: {}, first: today()});
+  e.n++; e.t[t] = (e.t[t] || 0) + 1; e.last = today(); e.clean = 0; e.cday = null;
+  markActive(); save();
+}
+function undoErr(vk, t, words) {
+  const e = errOf(vk); if (!e) return;
+  e.n--; e.t[t] = Math.max(0, (e.t[t] || 1) - 1);
+  (words || []).forEach(i => { e.w[i] = Math.max(0, (e.w[i] || 1) - 1); });
+  if (e.n <= 0) delete st.err[vk];
+  save();
+}
+// A correct recall of a weak verse; counts once a day and not on the day of the mistake
+function cleanCheck(vk) {
+  const e = errOf(vk); if (!e || e.last === today() || e.cday === today()) return false;
+  e.clean = (e.clean || 0) + 1; e.cday = today(); save(); return true;
+}
+const ago = d => { const n = today() - d; return n <= 0 ? "امروز" : n === 1 ? "دیروز" : FA(n) + " روز پیش"; };
+
+// In-session marking: after a verse is revealed the reader says whether it was right
+function markBar() {
+  const m = ses.mark; if (!m) return "";
+  const had = ses.errs[m.ay];
+  if (had) return `<div class="markbar" role="status"><span class="small"><b>آیه ${FA(m.ay)}:</b> «${errName(had)}» در دفتر اشتباهات ثبت شد. اگر خواستید روی کلمه‌های اشتباه بزنید.</span><button class="small btn-ghost" data-mk="undo">لغو ثبت</button><button class="small" data-mk="ok">بستن</button></div>`;
+  if (m.phase === "type") return `<div class="markbar"><span class="small"><b>آیه ${FA(m.ay)}</b> · چه اشتباهی بود؟</span>${ERR_TYPES.map(([k, l]) => `<button class="small" data-mk="t:${k}">${l}</button>`).join("")}<button class="small btn-ghost" data-mk="ok">انصراف</button></div>`;
+  return `<div class="markbar"><span class="small">آیه ${FA(m.ay)} را درست از حفظ خواندید؟</span><button class="small" data-mk="ok">✓ درست</button><button class="small" data-mk="bad">✗ اشتباه داشتم</button></div>`;
+}
+function wireMark(b) {
+  b.querySelectorAll("[data-mk]").forEach(x => x.addEventListener("click", () => {
+    const a = x.dataset.mk, m = ses.mark; if (!m) return;
+    const vk = key(ses.s.n, m.ay);
+    if (a === "ok") ses.mark = null;
+    else if (a === "bad") m.phase = "type";
+    else if (a === "undo") { undoErr(vk, ses.errs[m.ay], ses.ew[m.ay]); delete ses.errs[m.ay]; delete ses.ew[m.ay]; ses.mark = null; }
+    else if (a.startsWith("t:")) { const t = a.slice(2); addErr(vk, t); ses.errs[m.ay] = t; ses.ew[m.ay] = []; }
+    redraw();
+  }));
+}
+// Tapping a word of the verse just marked wrong toggles that word as one of the slips
+function markWordClick(w) {
+  const m = ses.mark; if (!m || !ses.errs[m.ay] || w.dataset.t !== "w") return false;
+  const [x, y] = parseVk(w.dataset.vk); if (x !== ses.s.n || y !== m.ay) return false;
+  const i = +w.dataset.i, e = errOf(w.dataset.vk), list = ses.ew[y];
+  if (list.includes(i)) { ses.ew[y] = list.filter(v => v !== i); e.w[i] = Math.max(0, (e.w[i] || 1) - 1); }
+  else { list.push(i); e.w[i] = (e.w[i] || 0) + 1; }
+  save(); redraw(); return true;
+}
+// Revealed verses not marked wrong count as clean recalls
+function settleChecks(ays) { ays.forEach(y => { if (ses.shown[y] && !ses.errs[y]) cleanCheck(key(ses.s.n, y)); }); }
+const resetMarks = () => { ses.mark = null; ses.errs = ses.errs || {}; ses.ew = ses.ew || {}; };
+
+// ---------- full text (for search and the mistakes book) ----------
+let QTEXT = null, QNORM = null, QTEXT_LOADING = null;
+function loadText() {
+  if (QTEXT) return Promise.resolve(QTEXT);
+  return QTEXT_LOADING = QTEXT_LOADING || fetch(DATA_BASE + "quran.json").then(r => { if (!r.ok) throw 0; return r.json(); }).then(j => (QTEXT = j)).catch(e => { QTEXT_LOADING = null; throw e; });
+}
+const vplain = (sn, ay) => QTEXT ? QTEXT[sn - 1][ay - 1] : vtext(sn, ay);
+// Arabic folded for search: no diacritics, one form per letter, «صلوة/صلاة» and «إلاه/إله» alike
+const arNorm = x => String(x || "").replace(/[ً-ٰٟۖ-ۭـ‌‍]/g, "")
+  .replace(/[أإآٱ]/g, "ا").replace(/[ىی]/g, "ي").replace(/ک/g, "ك").replace(/ؤ/g, "و").replace(/ئ/g, "ي").replace(/ة/g, "ه")
+  .replace(/واه(?=\s|$)/g, "اه").replace(/(\S)ا/g, "$1").replace(/\s+/g, " ").trim();
+const faNum = x => String(x).replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+const findSurah = name => { const n = normFa(name).replace(/^سوره\s+/, "").trim(); if (!n) return null;
+  return DATA.surahs.find(s => surahNames(s.n).includes(n) || normFa(s.name) === n) || DATA.surahs.find(s => normFa(s.name).startsWith(n)) || null; };
+function searchQuran(q) {
+  const out = {ref: [], ar: [], tr: []}, raw = faNum(q.trim());
+  if (!raw) return out;
+  let m = raw.match(/^(\d{1,3})\s*[:：\/.\-]\s*(\d{1,3})$/);
+  if (m && S[+m[1]] && +m[2] >= 1 && +m[2] <= S[+m[1]].total) out.ref.push([+m[1], +m[2]]);
+  m = raw.match(/^(.+?)\s*[:：]?\s*(\d{1,3})$/);
+  if (m && !/^\d+$/.test(m[1])) { const s = findSurah(m[1]); if (s && +m[2] >= 1 && +m[2] <= s.total) out.ref.push([s.n, +m[2]]); }
+  if (!/\d/.test(raw)) { const s = findSurah(raw); if (s && normFa(raw).replace(/^سوره\s+/, "").length >= 2) out.ref.push([s.n, 1]); }
+  const nq = arNorm(raw);
+  if (QTEXT && nq.replace(/\s/g, "").length >= 2) {
+    QNORM = QNORM || QTEXT.map(sv => sv.map(arNorm));
+    QNORM.forEach((sv, si) => sv.forEach((v, ai) => { if (v.includes(nq)) out.ar.push([si + 1, ai + 1]); }));
+  }
+  const tq = normFa(raw).trim(), T = TR[cfg.trans];
+  if (T && tq.length >= 2) T.forEach((sv, si) => sv.forEach((v, ai) => { if (normFa(v).includes(tq)) out.tr.push([si + 1, ai + 1]); }));
+  return out;
+}
+// Verse text with the searched words (or the words once read wrong) highlighted
+function arHtml(sn, ay, opt = {}) {
+  const words = (vplain(sn, ay) || "").split(" "), toks = opt.q ? arNorm(opt.q).split(" ").filter(t => t.length >= 2) : [];
+  const e = opt.err ? errOf(key(sn, ay)) : null;
+  return words.map((w, i) => { const nw = arNorm(w);
+    if (e && e.w[i + 1] > 0) return `<span class="errw">${esc(w)}</span>`;
+    return toks.some(t => nw.includes(t) || (t.length > 2 && t.includes(nw) && nw.length > 2)) ? `<mark>${esc(w)}</mark>` : esc(w); }).join(" ");
+}
+let searchState = {q: "", scope: "all", more: 0};
+function openSearch() {
+  lastDraw = () => {};
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="جستجو در قرآن">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>جستجو در قرآن</h2></header>
+    <div class="body">
+      <input type="search" id="sq" value="${esc(searchState.q)}" placeholder="کلمه یا عبارت، یا آیه مثل «بقره ۲۵۵»" aria-label="عبارت جستجو" autocomplete="off">
+      <div class="seg" role="group" aria-label="جستجو در">${[["all", "متن و ترجمه"], ["ar", "متن عربی"], ["tr", "ترجمه"]].map(([v, l]) => `<button data-scope="${v}" aria-pressed="${searchState.scope === v}">${l}</button>`).join("")}</div>
+      <div id="sres"></div>
+    </div></div>`);
+  const input = box.querySelector("#sq");
+  const run = () => drawResults(box);
+  input.addEventListener("input", () => { searchState.q = input.value; searchState.more = 0; clearTimeout(run.t); run.t = setTimeout(run, 250); });
+  box.querySelectorAll("[data-scope]").forEach(b => b.addEventListener("click", () => { searchState.scope = b.dataset.scope; searchState.more = 0; box.querySelectorAll("[data-scope]").forEach(x => x.setAttribute("aria-pressed", x === b)); run(); }));
+  loadText().then(run).catch(() => { box.querySelector("#sres").innerHTML = `<p class="small">بارگیری متن قرآن ممکن نشد.</p>`; });
+  if (cfg.trans !== "none") trans(1, 1);      // starts loading the chosen translation
+  run(); setTimeout(() => input.focus(), 50);
+}
+function drawResults(box) {
+  const out = box.querySelector("#sres"); if (!out) return;
+  const q = searchState.q.trim();
+  if (!q) { out.innerHTML = `<p class="small muted">در متن عربی آیات (بدون نیاز به اعراب) و در ترجمه «${transName()}» جستجو می‌شود. برای رفتن به یک آیه، نام یا شماره سوره و شماره آیه را بنویسید، مثل «بقره ۲۵۵» یا «۲:۲۵۵».</p>`; return; }
+  if (!QTEXT) { out.innerHTML = `<p class="small muted">در حال بارگیری متن قرآن…</p>`; return; }
+  const r = searchQuran(q), sc = searchState.scope;
+  const seen = new Set(), list = [];
+  const add = (arr, kind) => arr.forEach(([sn, ay]) => { const k = key(sn, ay); if (!seen.has(k)) { seen.add(k); list.push({sn, ay, kind}); } });
+  add(r.ref, "ref"); if (sc !== "tr") add(r.ar, "ar"); if (sc !== "ar") add(r.tr, "tr");
+  const nAr = sc !== "tr" ? r.ar.length : 0, nTr = sc !== "ar" ? r.tr.length : 0, lim = 40 + searchState.more;
+  const trWait = sc !== "ar" && cfg.trans !== "none" && !TR[cfg.trans];
+  out.innerHTML = `<p class="small muted">${[sc !== "tr" ? `${FA(nAr)} آیه در متن عربی` : "", sc !== "ar" ? (cfg.trans === "none" ? "ترجمه خاموش است" : trWait ? "ترجمه در حال بارگیری…" : `${FA(nTr)} آیه در ترجمه ${transName()}`) : ""].filter(Boolean).join(" · ")}</p>
+    ${list.length ? list.slice(0, lim).map(x => { const k = key(x.sn, x.ay), sq = siyaqOf(x.sn, x.ay), tx = trans(x.sn, x.ay);
+      return `<div class="sres"><div class="row between"><b>${x.kind === "ref" ? "↵ " : ""}سوره ${S[x.sn].name} · آیه ${FA(x.ay)}</b><span class="small muted">${sq ? "سیاق " + FA(sq.n) : ""}${errOf(k) ? ` · <span style="color:var(--st-due)">${FA(errOf(k).n)} اشتباه</span>` : ""}</span></div>
+        <div class="ar">${arHtml(x.sn, x.ay, {q: x.kind === "ar" ? q : ""})}</div>
+        ${tx ? `<p class="small">${esc(tx)}</p>` : ""}
+        <div class="row"><button class="small" data-sgo="${k}">در مصحف</button><button class="small" data-splay="${k}" aria-label="ترتیل آیه">▶</button>${sq ? `<button class="small" data-ssiyaq="${x.sn}:${sq.n}">سیاق</button>` : ""}</div></div>`; }).join("")
+      + (list.length > lim ? `<button id="smore">نمایش بیشتر (${FA(list.length - lim)} آیه دیگر)</button>` : "")
+      : `<p class="small">چیزی پیدا نشد.${trWait ? " ترجمه هنوز بارگیری نشده؛ چند لحظه بعد دوباره امتحان کنید." : ""}</p>`}`;
+  out.querySelectorAll("[data-sgo]").forEach(b => b.addEventListener("click", () => { const [sn, ay] = parseVk(b.dataset.sgo); goVerse(sn, ay); }));
+  out.querySelectorAll("[data-splay]").forEach(b => b.addEventListener("click", () => { const [sn, ay] = parseVk(b.dataset.splay); play(sn, ay); }));
+  out.querySelectorAll("[data-ssiyaq]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.ssiyaq; startSession(k, ["solid", "due"].includes(status(k)) ? "review" : "learn"); }));
+  const mo = out.querySelector("#smore"); if (mo) mo.addEventListener("click", () => { searchState.more += 40; drawResults(box); });
+}
+// Open the mushaf on a verse and select it
+function goVerse(sn, ay) {
+  stopAudio(); document.getElementById("sheet").innerHTML = ""; ses = null;
+  tab = "mushaf"; mushafPage = S[sn].vp[ay - 1]; render(); window.scrollTo(0, 0);
+  setTimeout(() => openWordbar(key(sn, ay)), 50);
+}
+
+// ---------- the mistakes book ----------
+let weakFilter = "open";
+function openWeak() {
+  lastDraw = openWeak;
+  const all = errList(), open = all.filter(x => x.open), fixed = all.filter(x => !x.open);
+  const types = ERR_TYPES.map(([k, l]) => [l, all.reduce((a, x) => a + (x.e.t[k] || 0), 0)]), tmax = Math.max(1, ...types.map(x => x[1]));
+  const lapsed = siyaqs().filter(x => (st.items[x.k] || {}).lapses).sort((a, b) => st.items[b.k].lapses - st.items[a.k].lapses);
+  const bySurah = {}; open.forEach(x => { bySurah[x.sn] = (bySurah[x.sn] || 0) + 1; });
+  const shown = weakFilter === "open" ? open : fixed;
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="دفتر اشتباهات">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>دفتر اشتباهات</h2></header>
+    <div class="body">
+    ${all.length ? `<div class="stats">
+      <div class="stat"><b class="num" style="color:var(--st-due)">${FA(open.length)}</b><span class="small muted">نیاز به تثبیت</span></div>
+      <div class="stat"><b class="num" style="color:var(--st-solid)">${FA(fixed.length)}</b><span class="small muted">تثبیت‌شده</span></div>
+      <div class="stat"><b class="num">${FA(all.reduce((a, x) => a + x.e.n, 0))}</b><span class="small muted">کل اشتباه‌ها</span></div></div>
+    ${open.length ? `<button class="btn-main" id="drill">تمرین تثبیت (${FA(Math.min(10, open.length))} آیه)</button>` : ""}
+    <div class="card"><h3>نوع اشتباه‌ها</h3>${types.map(([l, n]) => `<div class="tbar"><span>${l}</span>${miniBar(n / tmax, "var(--st-due)")}<span class="num small">${FA(n)}</span></div>`).join("")}
+      ${Object.keys(bySurah).length ? `<p class="small muted">بیشترین آیه‌های نیازمند تثبیت: ${Object.entries(bySurah).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([sn, n]) => `${S[sn].name} (${FA(n)})`).join("، ")}</p>` : ""}</div>
+    ${lapsed.length ? `<div class="card"><h3>سیاق‌هایی که در مرور «سخت» بوده‌اند</h3>${lapsed.slice(0, 8).map(x => `<div class="row between small"><span>${x.s.name} · ${esc(title(x.s, x.q))}</span><span class="row" style="gap:6px;flex-wrap:nowrap"><span class="muted num">${FA(st.items[x.k].lapses)} بار</span><button class="small" data-wses="${x.k}">مرور</button></span></div>`).join("")}</div>` : ""}
+    <div class="seg" role="group" aria-label="فهرست">${[["open", "نیاز به تثبیت"], ["fixed", "تثبیت‌شده"]].map(([v, l]) => `<button data-wf="${v}" aria-pressed="${weakFilter === v}">${l}</button>`).join("")}</div>
+    ${shown.length ? shown.slice(0, 60).map(x => { const sq = siyaqOf(x.sn, x.ay);
+      return `<div class="sres"><div class="row between"><b>سوره ${S[x.sn].name} · آیه ${FA(x.ay)}</b><span class="pill">${FA(x.e.n)} بار اشتباه</span></div>
+        <div class="ar">${arHtml(x.sn, x.ay, {err: true})}</div>
+        <div class="small muted">${Object.entries(x.e.t).filter(([, n]) => n).map(([t, n]) => errName(t) + (n > 1 ? " ×" + FA(n) : "")).join("، ")} · آخرین اشتباه ${ago(x.e.last)}${sq ? " · سیاق " + FA(sq.n) : ""}</div>
+        ${x.open ? `<div class="small">تثبیت: ${FA(x.e.clean || 0)} از ${FA(CLEAN_NEED)} بار درست خواندن در روزهای بعد</div>` : `<div class="small ok">✓ تثبیت شد</div>`}
+        <div class="row"><button class="small" data-wplay="${x.vk}">▶ ${FA(cfg.reps)} بار</button><button class="small" data-wgo="${x.vk}">در مصحف</button>${x.open ? `<button class="small btn-main" data-wone="${x.vk}">تمرین همین آیه</button>` : ""}<button class="small btn-ghost" data-wdel="${x.vk}" aria-label="حذف از دفتر">حذف</button></div></div>`; }).join("")
+      : `<p class="small muted">${weakFilter === "open" ? "آیه‌ای نیاز به تثبیت ندارد." : "هنوز آیه‌ای تثبیت نشده."}</p>`}`
+    : `<div class="card"><h3>هنوز اشتباهی ثبت نشده</h3><p class="small">در مرحله «اتصال» و «مرور»، بعد از خواندن هر آیه از حفظ، روی آن بزنید تا دیده شود. اگر اشتباه داشتید «✗ اشتباه داشتم» و نوع اشتباه را بزنید؛ می‌توانید روی کلمه‌های اشتباه هم بزنید.</p><p class="small">همه اشتباه‌ها اینجا جمع می‌شوند: کدام آیه‌ها، چه نوع اشتباهی، و کدام کلمه‌ها. هر آیه با ${FA(CLEAN_NEED)} بار درست خواندن در روزهای بعد «تثبیت‌شده» می‌شود.</p></div>`}
+    </div></div>`);
+  const on = (sel, f) => box.querySelectorAll(sel).forEach(b => b.addEventListener("click", () => f(b)));
+  on("#drill", () => openDrill(weakOpen().slice(0, 10).map(x => x.vk), 0));
+  on("[data-wf]", b => { weakFilter = b.dataset.wf; openWeak(); });
+  on("[data-wplay]", b => { const [sn, ay] = parseVk(b.dataset.wplay); play(sn, ay, cfg.reps); });
+  on("[data-wgo]", b => { const [sn, ay] = parseVk(b.dataset.wgo); goVerse(sn, ay); });
+  on("[data-wone]", b => openDrill([b.dataset.wone], 0));
+  on("[data-wses]", b => startSession(b.dataset.wses, "review"));
+  on("[data-wdel]", b => { if (b.dataset.sure) { delete st.err[b.dataset.wdel]; save(); openWeak(); } else { b.dataset.sure = 1; b.textContent = "مطمئنید؟ دوباره بزنید"; } });
+  if (!QTEXT) loadText().then(() => { if (lastDraw === openWeak) openWeak(); }).catch(() => {});
+}
+// Consolidation drill: the verse before stays visible as the cue, the weak verse is recited from memory
+let drill = null;
+function openDrill(list, i, phase) {
+  if (!list.length) return openWeak();
+  const was = drill && drill.list === list ? drill : null;
+  drill = {list, i, phase: phase || "ask", ok: was ? was.ok : 0, msg: was && was.i === i ? was.msg : ""};
+  lastDraw = () => openDrill(list, i, drill.phase);
+  const vk = list[i], [sn, ay] = parseVk(vk), s = S[sn], q = siyaqOf(sn, ay), e = errOf(vk) || {t: {}, w: {}, n: 0};
+  const g = q ? stepsOf(s, q).find(x => ay >= x.s && ay <= x.e) : null, prev = q && ay > q.s ? ay - 1 : (ay > 1 ? ay - 1 : ay);
+  const shown = drill.phase !== "ask";
+  const inR = v => { const [x, y] = parseVk(v); return x === sn && y >= prev && y <= ay; };
+  const pages = renderPages(pagesFor(sn, prev, ay), {only: inR, weak: shown, state: v => { const [x, y] = parseVk(v); if (x !== sn || y < prev || y > ay) return "dim"; return y < ay || shown ? "show" : "mask"; }});
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="تمرین تثبیت">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>تمرین تثبیت · ${FA(i + 1)} از ${FA(list.length)}</h2></header>
+    <div class="body">
+      <div class="meaning"><span class="small muted">سوره ${s.name} · آیه ${FA(ay)}${q ? " · سیاق " + FA(q.n) : ""}</span>${q ? `<b>${esc(title(s, q))}</b>` : ""}${g && g.t ? `<span class="small">گام: ${esc(g.t)}</span>` : ""}</div>
+      <p class="small">${prev < ay ? "آیه قبل پیدا است. آیه بعد از آن را از حفظ بخوانید، بعد «نشانم بده» را بزنید." : "این آیه را از حفظ بخوانید، بعد «نشانم بده» را بزنید."} قبلاً: ${Object.entries(e.t).filter(([, n]) => n).map(([t]) => errName(t)).join("، ") || "—"}.</p>
+      <div id="dpages">${pages}</div>
+      ${drill.phase === "type" ? `<div class="card"><h3>چه اشتباهی بود؟</h3><div class="chips">${ERR_TYPES.map(([k, l]) => `<button class="small" data-dt="${k}">${l}</button>`).join("")}</div></div>` : ""}
+      ${drill.phase === "done" ? `<div class="card"><p class="small">${drill.msg}</p></div>` : ""}
+    </div>
+    <footer>${drill.phase === "ask" ? `<button id="dhear">▶ شنیدن آیه قبل</button><button class="btn-main" id="dshow">نشانم بده</button>`
+      : drill.phase === "show" ? `<button id="dbad">✗ اشتباه داشتم</button><button class="btn-main" id="dok">✓ درست خواندم</button>`
+      : drill.phase === "type" ? `<button id="dback">برگشت</button>`
+      : `<button id="dplay">▶ شنیدن آیه</button><button class="btn-main" id="dnext">${i < list.length - 1 ? "آیه بعد" : "پایان تمرین"}</button>`}</footer></div>`, () => { drill = null; openWeak(); });
+  fitPages(box);
+  const on = (sel, f) => { const el = box.querySelector(sel); if (el) el.addEventListener("click", f); };
+  const re = ph => openDrill(list, i, ph);
+  on("#dhear", () => play(sn, prev));
+  on("#dshow", () => re("show"));
+  on("#dbad", () => re("type"));
+  on("#dback", () => re("show"));
+  on("#dok", () => { const c = cleanCheck(vk), ee = errOf(vk); drill.ok++;
+    drill.msg = !ee ? "درست بود." : !c ? (ee.last === today() ? "درست بود. چون امروز در این آیه اشتباه ثبت شده، این بار در شمارش تثبیت حساب نمی‌شود؛ فردا دوباره تمرین کنید." : "درست بود. امروز یک بار برای این آیه حساب شده؛ تمرین بعدی را فردا انجام دهید.")
+      : ee.clean >= CLEAN_NEED ? "✓ این آیه تثبیت شد." : `درست بود. ${FA(ee.clean)} از ${FA(CLEAN_NEED)} بار برای تثبیت.`;
+    re("done"); });
+  box.querySelectorAll("[data-dt]").forEach(b => b.addEventListener("click", () => { addErr(vk, b.dataset.dt); drill.msg = "اشتباه ثبت شد. آیه را چند بار بشنوید و دوباره بخوانید؛ فردا هم تمرینش کنید."; re("done"); }));
+  on("#dplay", () => play(sn, ay, cfg.reps));
+  on("#dnext", () => { stopAudio(); if (i < list.length - 1) openDrill(list, i + 1); else { toast(`تمرین تمام شد · ${FA(drill.ok)} از ${FA(list.length)} درست`); drill = null; openWeak(); } });
+  if (!QTEXT) loadText().catch(() => {});
+}
+const weakCard = () => { const n = weakOpen().length; if (!n) return "";
+  return `<section class="card"><div class="row between"><h2>نیاز به تثبیت</h2><span class="pill">${FA(n)} آیه</span></div>
+    <p class="small muted">آیه‌هایی که در حفظ یا مرور اشتباه خوانده‌اید. هر آیه با ${FA(CLEAN_NEED)} بار درست خواندن در روزهای بعد تثبیت می‌شود.</p>
+    <div class="row"><button class="btn-main small" data-drill>تمرین تثبیت</button><button class="small" data-weak>دفتر اشتباهات</button></div></section>`; };
 
 // ---------- backup (Google Drive via the share sheet) ----------
 const backupName = () => `tadabbor-hefz-backup-${new Date().toISOString().slice(0, 10)}.json`;
@@ -1609,6 +1876,12 @@ function openGuide(section) {
       <li><b>سرنخ:</b> فقط کلمه اول آیه دیده می‌شود.</li>
       <li><b>معنا:</b> همه کلمات پنهان‌اند و فقط عنوان گام می‌ماند؛ آیه را از روی معنا به یاد می‌آورید.</li>
     </ul><p>روی هر کلمه پنهان بزنید تا دیده شود.</p></div></details>
+    <details ${section === "weak" ? "open" : ""}><summary>دفتر اشتباهات و تثبیت</summary><div>
+      <p>در مرحله «اتصال»، در مرور و در پایان هر گام حفظ، هر آیه را از حفظ می‌خوانید و بعد روی آن می‌زنید تا دیده شود. برنامه می‌پرسد درست خواندید یا نه. اگر اشتباه داشتید، نوعش را بزنید: <b>یادم نیامد</b>، <b>اشتباه در کلمه یا اعراب</b>، <b>قاطی با آیه مشابه</b> یا <b>جابه‌جایی ترتیب</b>. بعد می‌توانید روی همان کلمه‌هایی که اشتباه خواندید بزنید.</p>
+      <p>همه این‌ها در «دفتر اشتباهات» (از داشبورد یا صفحه مرور) جمع می‌شود: کدام آیه‌ها، چند بار، چه نوع اشتباهی و کدام کلمه‌ها. سیاق‌هایی که در مرور «سخت» زده‌اید هم آنجا هستند.</p>
+      <p><b>تمرین تثبیت:</b> آیه قبل نشان داده می‌شود و آیه ضعیف را از حفظ می‌خوانید. هر آیه با ${FA(2)} بار درست خواندن در روزهای بعد از اشتباه «تثبیت‌شده» می‌شود. در مصحف هم زیر آیه‌های نیازمند تثبیت خط نقطه‌چین می‌آید.</p></div></details>
+    <details ${section === "search" ? "open" : ""}><summary>جستجو در قرآن</summary><div>
+      <p>با دکمه ذره‌بین بالای هر صفحه. کلمه یا عبارت را با حروف عربی یا فارسی و بدون اعراب بنویسید؛ در متن آیات و در ترجمه انتخاب‌شده جستجو می‌شود. برای رفتن مستقیم به یک آیه بنویسید «بقره ۲۵۵» یا «۲:۲۵۵». از هر نتیجه می‌توانید آیه را در مصحف ببینید، بشنوید یا سیاقش را باز کنید.</p></div></details>
     <details><summary>مرور و دکمه‌های سخت، خوب، آسان</summary><div>
       <p>هر مرور با «یادآوری معنا» شروع می‌شود: اول عنوان و گام‌های سیاق را در ذهن مرور می‌کنید، بعد آیات را از حفظ می‌خوانید.</p>
       <ul><li><b>سخت:</b> سیاق به مرحله حفظ برمی‌گردد.</li><li><b>خوب:</b> مرور بعدی حدود دو برابر فاصله قبلی.</li><li><b>آسان:</b> مرور بعدی حدود سه برابر فاصله قبلی.</li></ul>
