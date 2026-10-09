@@ -315,7 +315,7 @@ const RECITERS = [["Parhizgar_48kbps", "شهریار پرهیزگار", 48, "ir"
 const RECITER_GROUPS = [["ir", "قاریان ایرانی"], ["tr", "ترتیل"], ["mj", "تحقیق (مجوّد)"], ["edu", "آموزشی"], ["fa", "ترجمه گویای فارسی"]];
 const reciterName = r => (RECITERS.find(x => x[0] === r) || [, ""])[1];
 const reciterOptions = sel => RECITER_GROUPS.map(([g, gl]) => `<optgroup label="${gl}">${RECITERS.filter(x => x[3] === g).map(([v, l]) => `<option value="${v}" ${sel === v ? "selected" : ""}>${l}</option>`).join("")}</optgroup>`).join("");
-const QFONTS = [["qcf", "عثمان طه (مصحف مدینه)"], ["amiri", "امیری قرآن"], ["sch", "شهرزاد نو"]];
+const QFONTS = [["qcf", "عثمان طه"], ["amiri", "امیری قرآن"], ["sch", "شهرزاد نو"]];
 const TEXTFONT = {amiri: '"Amiri Quran","Amiri",serif', sch: '"Scheherazade New","Amiri Quran",serif', qcf: '"Amiri Quran","Amiri",serif'};
 const ACCENTS = [["lapis", "لاجوردی", "#1F4E79"], ["green", "سبز", "#2F6B4F"], ["teal", "فیروزه‌ای", "#0F6E73"], ["maroon", "عنابی", "#7A2E3B"]];
 const THEMES = [["system", "خودکار"], ["light", "روشن"], ["dark", "تیره"], ["sepia", "کاغذی"]];
@@ -442,7 +442,7 @@ function qcfCard(inSettings) {
   const pc = Math.round(qcf.done / qcf.total * 100);
   const running = qcf.state === "run";
   return `<section class="card" id="qcf-card"><h3>${running ? "در حال ذخیره مصحف روی گوشی" : "ذخیره مصحف عثمان طه روی گوشی"}</h3>
-    <p class="small">${running ? "می‌توانید هم‌زمان از برنامه استفاده کنید." : "متن و صفحه‌های قرآن داخل برنامه است. قلم مصحف مدینه (خط عثمان طه، حدود ۳۶ مگابایت) یک بار دریافت و روی گوشی ذخیره می‌شود تا قرآن همیشه بدون اینترنت باز شود."}</p>
+    <p class="small">${running ? "می‌توانید هم‌زمان از برنامه استفاده کنید." : "متن و صفحه‌های قرآن داخل برنامه است. قلم مصحف عثمان طه (حدود ۳۶ مگابایت) یک بار دریافت و روی گوشی ذخیره می‌شود تا قرآن همیشه بدون اینترنت باز شود."}</p>
     ${running || qcf.done ? `<div class="bar qcf-bar"><i style="width:${pc}%;background:var(--gold)"></i></div><span class="small muted qcf-num num">${FA(pc)}٪</span>` : ""}
     ${running ? "" : `<button class="btn-main" id="qcf-go">${qcf.state === "error" ? "تلاش دوباره" : qcf.done ? "ادامه دریافت" : "دریافت و ذخیره"}</button>`}</section>`;
 }
@@ -874,7 +874,7 @@ function mushaf() {
   ${Object.keys(st.err || {}).length ? `<label class="switch small"><span>نشان دادن آیه‌های نیازمند تثبیت<br><span class="muted">زیر آیه‌های اشتباه‌شده خط نقطه‌چین و کلمه‌های اشتباه رنگی می‌شوند.</span></span><input type="checkbox" id="showweak" ${cfg.showWeak ? "checked" : ""}></label>` : ""}
   <p class="small muted">نوار رنگی کنار هر سطر، وضعیت سیاق همان سطر را نشان می‌دهد. روی هر کلمه بزنید تا آیه و سیاق آن را ببینید. با کشیدن صفحه به چپ و راست ورق بزنید.</p>
   <button class="small" id="mu-audio">⬇ دانلود ترتیل برای پخش بدون اینترنت</button>
-  <p class="small muted">خط عثمان طه، مصحف مدینه (QCF4 مجمع ملک فهد).</p>`;
+  <p class="small muted">مصحف عثمان طه (QCF4، مجمع ملک فهد).</p>`;
 }
 function wireMushaf(v) {
   v.querySelector("#mushaf-surah").addEventListener("change", e => { mushafPage = pageOfSurah(+e.target.value); closeWordbar(); render(); });
@@ -1898,7 +1898,7 @@ function openSettings() {
     </section>
     <section class="card"><h3>مصحف</h3>
       <div class="field"><span class="small">قلم</span><div class="seg" data-group="qfont">${QFONTS.map(([v, l]) => `<button data-v="${v}" aria-pressed="${cfg.qfont === v}">${l}</button>`).join("")}</div>
-      <p class="small muted">صفحه‌ها همیشه مطابق مصحف مدینه (۱۵ سطر) چیده می‌شوند. قلم عثمان طه یک بار از اینترنت دریافت می‌شود.</p></div>
+      <p class="small muted">صفحه‌ها همیشه مطابق مصحف عثمان طه (۱۵ سطر) چیده می‌شوند. قلم عثمان طه یک بار از اینترنت دریافت می‌شود.</p></div>
       <div class="field"><label for="qlh">فاصله سطرها: <span class="num" id="qlh-v">${FA(cfg.qlh.toFixed(2))}</span></label><input type="range" id="qlh" min="1.5" max="2.6" step="0.05" value="${cfg.qlh}"></div>
       <div id="preview">${renderPages([previewPi], {marks: true})}</div>
     </section>
@@ -1931,7 +1931,7 @@ function openSettings() {
     </section>
     <section class="card"><h3>درباره</h3>
       <p class="small">حفظ تدبری · نسخه ${FA(VERSION)}</p>
-      <p class="small muted">مصحف: خط عثمان طه، مصحف مدینه (QCF4، مجمع ملک فهد) · صوت: everyayah.com · درس‌ها: alisaboohi.com · قلم‌ها: Amiri Quran، Scheherazade New و Vazirmatn.</p>
+      <p class="small muted">مصحف: عثمان طه (QCF4، مجمع ملک فهد) · صوت: everyayah.com · درس‌ها: alisaboohi.com · قلم‌ها: Amiri Quran، Scheherazade New و Vazirmatn.</p>
       <p class="small muted">ترجمه‌ها: Tanzil.net (انصاریان، مکارم شیرازی، فولادوند).</p>
       <div class="row"><button data-guide-open>راهنمای برنامه</button><a class="small" href="${RATE_URL}" target="_blank" rel="noopener">نظر و امتیاز در کافه‌بازار</a><a class="small" href="https://kmazraee.github.io/tadabbor-hefz/privacy.html" target="_blank" rel="noopener">حریم خصوصی</a></div>
     </section>
@@ -1992,7 +1992,7 @@ function openGuide(section) {
       <li><b>حفظ گام‌به‌گام:</b> هر گام معنایی جداگانه حفظ می‌شود و در پایان هر گام، کل آن یکجا از حفظ خوانده می‌شود.</li>
       <li><b>اتصال:</b> خواندن کل سیاق از حفظ با کمک «نقشه معنا».</li>
       <li><b>ثبت:</b> ارزیابی خودتان که زمان مرور بعدی را تعیین می‌کند.</li>
-    </ol><p>همه مراحل روی صفحه‌های مصحف مدینه انجام می‌شود؛ فقط سطرهای همان سیاق نمایش داده می‌شود و آیه‌های بیرون از سیاق کم‌رنگ‌اند.</p></div></details>
+    </ol><p>همه مراحل روی صفحه‌های مصحف عثمان طه انجام می‌شود؛ فقط سطرهای همان سیاق نمایش داده می‌شود و آیه‌های بیرون از سیاق کم‌رنگ‌اند.</p></div></details>
     <details><summary>تدبر را چطور انجام دهم؟</summary><div>
       <p><b>۱. خواندن:</b> آیات را بی‌عجله بخوانید یا بشنوید. اگر خواستید، درس استاد درباره همان سوره را ببینید یا بشنوید.</p>
       <p><b>۲. کشف گام‌ها:</b> هر جا حس کردید معنا وارد مرحله تازه‌ای شد، روی نشانه پایان آیه بزنید. نشانه طلایی یعنی گام تازه از آیه بعد شروع می‌شود. برای هر گام عنوان کوتاهی بنویسید و بعد تقسیم خودتان را با گام‌های مرجع مقایسه کنید.</p>
@@ -2016,7 +2016,7 @@ function openGuide(section) {
       <ul><li><b>سخت:</b> سیاق به مرحله حفظ برمی‌گردد.</li><li><b>خوب:</b> مرور بعدی حدود دو برابر فاصله قبلی.</li><li><b>آسان:</b> مرور بعدی حدود سه برابر فاصله قبلی.</li></ul>
     </div></details>
     <details><summary>مصحف و درس‌ها</summary><div>
-      <p><b>مصحف:</b> صفحه‌های مصحف مدینه به خط عثمان طه. با کشیدن صفحه ورق بزنید و روی هر کلمه بزنید تا آیه، سیاق و ترتیل آن را ببینید.</p>
+      <p><b>مصحف:</b> صفحه‌های مصحف به خط عثمان طه. با کشیدن صفحه ورق بزنید و روی هر کلمه بزنید تا آیه، سیاق و ترتیل آن را ببینید.</p>
       <p><b>درس‌ها:</b> فیلم (آپارات) و صوت جلسه‌های تدبر استاد صبوحی برای هر سوره، مستقیم از سایت alisaboohi.com. این بخش به اینترنت نیاز دارد.</p>
     </div></details>
     <details><summary>معنی رنگ‌ها</summary><div>${legend()}<p>رنگ هر نوار، وضعیت آن سیاق را نشان می‌دهد. طول هر نوار به اندازه تعداد آیات آن سیاق است.</p></div></details>
@@ -2065,7 +2065,7 @@ function showWelcome(err) {
 // ---------- first-run intro ----------
 const INTRO = [
   ["اول بفهم، بعد حفظ کن", "هر بخش از آیات اول تدبر می‌شود: می‌خوانید، گام‌های معنایی‌اش را پیدا می‌کنید و به چند پرسش جواب می‌دهید."],
-  ["واحد حفظ: سیاق", "آیات در قالب سیاق، یعنی مجموعه‌ای با معنای پیوسته، روی صفحه‌های مصحف مدینه حفظ می‌شوند. معنا ترتیب آیات را در ذهن نگه می‌دارد."],
+  ["واحد حفظ: سیاق", "آیات در قالب سیاق، یعنی مجموعه‌ای با معنای پیوسته، روی صفحه‌های مصحف عثمان طه حفظ می‌شوند. معنا ترتیب آیات را در ذهن نگه می‌دارد."],
   ["هر روز کمی، با مرور", "برنامه هر سیاق را درست پیش از فراموش شدن برای مرور برمی‌گرداند. داشبورد نشان می‌دهد امروز چه باید کرد."],
   ["مسیر شما قدم‌به‌قدم است", "قدم اول «مبانی تدبر» است: فیلم‌های استاد علی صبوحی یا کتاب «آشنایی با دانش تدبر در قرآن کریم». بعد سطح ۱ باز می‌شود و هر سطح، با گذراندن سطح قبل."]
 ];
