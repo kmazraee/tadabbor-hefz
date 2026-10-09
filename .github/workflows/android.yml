@@ -1,7 +1,7 @@
 name: Build Android APK
 
 on:
-  # Builds only when a version tag (e.g. v0.2.0) is pushed, or when started by hand.
+  # Never automatic on normal pushes: run by hand (Actions tab) or by pushing a version tag.
   push:
     tags: ["v*"]
   workflow_dispatch:
@@ -31,15 +31,41 @@ jobs:
         with:
           gradle-version: "8.7"
 
+      - name: Prepare release signing (only if the keystore secrets exist)
+        env:
+          KEYSTORE_B64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "SIGNING_STORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "KIND=release" >> "$GITHUB_ENV"
+          else
+            echo "No signing secrets: building a test (debug) APK"
+            echo "KIND=debug" >> "$GITHUB_ENV"
+          fi
+
       - name: Build APK
         working-directory: android
-        run: gradle --no-daemon assembleDebug
+        env:
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          if [ "$KIND" = "release" ]; then gradle --no-daemon assembleRelease; else gradle --no-daemon assembleDebug; fi
 
       - name: Name the APK
         run: |
           VERSION=$(grep -oP 'versionName "\K[^"]+' android/app/build.gradle)
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-          cp android/app/build/outputs/apk/debug/app-debug.apk "tadabbor-hefz-v$VERSION.apk"
+          if [ "$KIND" = "release" ]; then
+            SRC=android/app/build/outputs/apk/release/app-release.apk
+            OUT="tadabbor-hefz-v$VERSION.apk"
+          else
+            SRC=android/app/build/outputs/apk/debug/app-debug.apk
+            OUT="tadabbor-hefz-v$VERSION-test.apk"
+          fi
+          test -f "$SRC" || { echo "APK not found (is the release signed?)"; ls -R android/app/build/outputs/apk; exit 1; }
+          cp "$SRC" "$OUT"
           ls -la *.apk
 
       - uses: actions/upload-artifact@v4
@@ -51,11 +77,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
-          name: حفظ تدبری v${{ env.VERSION }}
-          prerelease: true
+          name: حفظ تدبری v${{ env.VERSION }}${{ env.KIND == 'debug' && ' (آزمایشی)' || '' }}
+          prerelease: ${{ env.KIND == 'debug' }}
           files: tadabbor-hefz-v*.apk
           body: |
-            نسخه آزمایشی اول اپلیکیشن حفظ تدبری (جزء ۳۰).
-            - کاملاً آفلاین؛ اینترنت فقط برای پخش صوت ترتیل لازم است.
-            - تقسیم سیاق‌ها آزمایشی است و از کتاب استاد صبوحی گرفته نشده.
-            - نسخه دیباگ (Debug) برای آزمایش؛ برای نصب، «نصب از منابع ناشناس» را برای مرورگر یا مدیر فایل فعال کنید.
+            حفظ تدبری نسخه ${{ env.VERSION }}
+            - ${{ env.KIND == 'release' && 'نسخه امضاشده برای انتشار در کافه‌بازار.' || 'نسخه آزمایشی (debug)؛ برای کافه‌بازار مناسب نیست.' }}
+            - کاملاً آفلاین؛ قلم مصحف عثمان طه بعد از نصب یک بار روی گوشی ذخیره می‌شود. ترتیل و درس‌ها اینترنت لازم دارند.

@@ -10,14 +10,23 @@ Outputs:
   data/meta.json          surahs, siyaq ranges, verse->page index
   data/pages/NNN.json     one compact file per mushaf page (loaded on demand)
 
-Siyaq ranges, titles and steps below are TEST DATA ONLY (Juz 30), not taken
-from Ali Sabouhi's books. All other surahs use ruku divisions as placeholders.
+  @ghoran/translation 0.0.9 -> Persian translations from Tanzil.net (json/fa/)
 
-Usage: python3 scripts/build_quran.py <quran-json chapters dir> <quran-qcf4 dir> <rukus.json>
+Outputs also data/trans/<id>.json: one Persian translation, as a list of
+114 lists of verse strings.
+
+Siyaq boundaries: until the book's divisions are licensed, every surah is split
+by ruku. The test Juz 30 siyaqs/titles/steps below (NOT from Ali Sabouhi's books)
+are only included with --with-test-siyaq, for development.
+
+Usage: python3 scripts/build_quran.py <quran-json chapters> <quran-qcf4 dir> <rukus.json> <ghoran json/fa dir> [--with-test-siyaq]
 """
 import json, sys, pathlib
 
-CH, QCF, RUKUS = (pathlib.Path(a) for a in sys.argv[1:4])
+args = [a for a in sys.argv[1:] if not a.startswith("--")]
+WITH_TEST = "--with-test-siyaq" in sys.argv
+CH, QCF, RUKUS, FA_DIR = (pathlib.Path(a) for a in args[:4])
+TRANSLATIONS = {"ansarian": "tanzil-ansarian.json", "makarem": "tanzil-makarem.json", "fooladvand": "tanzil-fooladvand.json"}
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT_META = ROOT / "data/meta.json"
 OUT_PAGES = ROOT / "data/pages"
@@ -89,12 +98,12 @@ surahs, total_verses = [], 0
 for sn in range(1, 115):
     ch = json.loads((CH / f"{sn}.json").read_text(encoding="utf-8"))
     total = ch["total_verses"]; total_verses += total
-    if sn in RANGES:
+    if WITH_TEST and sn in RANGES:
         ranges, src = RANGES[sn], "test"
     else:
         starts = sorted(set(ruku_starts.get(sn, [1])) | {1})
         ranges = [(a, (starts[i + 1] - 1) if i + 1 < len(starts) else total) for i, a in enumerate(starts)]
-        src = "test" if 78 <= sn <= 114 else "ruku"
+        src = "ruku"
     exp = 1
     for a, b in ranges:
         if a != exp or b < a: problems.append(f"surah {sn}: range {a}-{b} breaks continuity")
@@ -102,7 +111,7 @@ for sn in range(1, 115):
     if exp - 1 != total: problems.append(f"surah {sn}: ranges end at {exp - 1}, surah has {total}")
     siyaqs = []
     for i, (a, b) in enumerate(ranges, 1):
-        t, steps = TITLES.get((sn, i), (None, []))
+        t, steps = TITLES.get((sn, i), (None, [])) if WITH_TEST else (None, [])
         if steps:
             e2 = a
             for x, y, _ in steps:
@@ -118,13 +127,28 @@ for sn in range(1, 115):
         vp.append(pl[0])
         if len(pl) > 1: split[ay] = pl[1:]
     surahs.append({"n": sn, "name": NAMES[sn - 1], "type": ch["type"], "total": total, "src": src,
-                   "dir": DIRECTION.get(sn), "siyaqs": siyaqs, "vp": vp, "split": split})
+                   "dir": DIRECTION.get(sn) if WITH_TEST else None, "siyaqs": siyaqs, "vp": vp, "split": split})
 
 if total_verses != 6236: problems.append(f"total verses {total_verses}")
+
+# ---- Persian translations ----
+OUT_TRANS = ROOT / "data/trans"
+OUT_TRANS.mkdir(parents=True, exist_ok=True)
+for tid, fname in TRANSLATIONS.items():
+    flat = json.loads((FA_DIR / fname).read_text(encoding="utf-8"))
+    if len(flat) != 6236:
+        problems.append(f"translation {tid}: {len(flat)} verses"); continue
+    out, i = [], 0
+    for s in surahs:
+        out.append([x.strip() for x in flat[i:i + s["total"]]]); i += s["total"]
+    if any(not v for sur in out for v in sur):
+        problems.append(f"translation {tid}: empty verse")
+    (OUT_TRANS / f"{tid}.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 if len(vpages) != 6236: problems.append(f"verses on pages {len(vpages)}")
 if problems:
     print("QA FAILED:\n" + "\n".join(problems[:30])); sys.exit(1)
 OUT_META.write_text(json.dumps({"surahs": surahs}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 size = sum(f.stat().st_size for f in OUT_PAGES.glob("*.json"))
+print(f"Translations: {', '.join(TRANSLATIONS)} | test siyaq data: {'ON' if WITH_TEST else 'off'}")
 print(f"OK: 114 surahs, {total_verses} verses, {sum(len(s['siyaqs']) for s in surahs)} sections, "
       f"604 pages ({size // 1024} KB), meta {OUT_META.stat().st_size // 1024} KB")

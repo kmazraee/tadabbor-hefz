@@ -1,7 +1,7 @@
 """Build the two runnable copies of the app from the template + data.
 
-  prototype/index.html                  -> web (GitHub Pages); pages read from ../data/pages/
-  android/app/src/main/assets/          -> Android app: index.html, fonts, data/pages/ (offline)
+  prototype/index.html                  -> web (GitHub Pages); data read from ../data/
+  android/app/src/main/assets/          -> Android app: index.html, fonts, data/pages/ and data/trans/ (offline)
 
 Run from the repo root after scripts/build_quran.py:  python3 scripts/build_web.py
 """
@@ -10,7 +10,7 @@ import pathlib, re, shutil
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 tpl = (ROOT / "scripts/prototype_src.html").read_text(encoding="utf-8")
 meta = (ROOT / "data/meta.json").read_text(encoding="utf-8")
-for ph in ("/*DATA*/", "/*PAGEBASE*/"):
+for ph in ("/*DATA*/", "/*DATABASE*/"):
     assert ph in tpl, ph
 
 HEAD = ('<!doctype html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="utf-8">\n'
@@ -19,7 +19,7 @@ HEAD = ('<!doctype html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="utf
 
 
 def page(pagebase, local_fonts):
-    body = tpl.replace("/*DATA*/", meta).replace("/*PAGEBASE*/", pagebase)
+    body = tpl.replace("/*DATA*/", meta).replace("/*DATABASE*/", pagebase)
     head_part, rest = body.split("</style>", 1)
     head_part += "</style>\n"
     if local_fonts:
@@ -38,12 +38,13 @@ FACES = "\n".join(
        "@font-face{font-family:'Scheherazade New';font-weight:400;font-display:swap;src:url('fonts/scheherazade-new-arabic-400-normal.woff2') format('woff2')}",
        "@font-face{font-family:'Scheherazade New';font-weight:700;font-display:swap;src:url('fonts/scheherazade-new-arabic-700-normal.woff2') format('woff2')}"])
 
-(ROOT / "prototype/index.html").write_text(page("../data/pages/", False), encoding="utf-8")
+(ROOT / "prototype/index.html").write_text(page("../data/", False), encoding="utf-8")
 
 assets = ROOT / "android/app/src/main/assets"
-(assets / "index.html").write_text(page("data/pages/", True), encoding="utf-8")
-dst = assets / "data/pages"
-if dst.exists():
-    shutil.rmtree(dst)
-shutil.copytree(ROOT / "data/pages", dst)
-print("built prototype/index.html and android assets (index.html + 604 pages)")
+(assets / "index.html").write_text(page("data/", True), encoding="utf-8")
+for sub in ("pages", "trans"):
+    dst = assets / "data" / sub
+    if dst.exists():
+        shutil.rmtree(dst)
+    shutil.copytree(ROOT / "data" / sub, dst)
+print("built prototype/index.html and android assets (index.html, 604 pages, translations)")

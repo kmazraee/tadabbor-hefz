@@ -1,6 +1,7 @@
 package ir.tadabbor.hefz;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -18,14 +20,47 @@ import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-/** Version 0.2: hosts the bundled app in a full-screen WebView. */
+/** Hosts the bundled app (assets/index.html) in a full-screen WebView. */
 public class MainActivity extends Activity {
     private static final int PICK_FILE = 41;
+    private static final String APP_URL = "file:///android_asset/index.html";
+
+    /** Uthman Taha (QCF4) mushaf fonts: downloaded once after install and kept in app storage. */
+    private static final String QCF_CDN = "https://cdn.jsdelivr.net/npm/quran-qcf4@1.1.0/fonts-woff2/";
+    private static final String[] QCF_FILES = buildQcfList();
+
     private WebView web;
     private ValueCallback<Uri[]> fileCallback;
     private View fullscreenView;
+    private volatile boolean downloading = false;
+
+    private static String[] buildQcfList() {
+        String[] list = new String[48];
+        for (int i = 1; i <= 47; i++) list[i - 1] = String.format("QCF4_Hafs_%02d_W.woff2", i);
+        list[47] = "QCF4_QBSML.woff2";
+        return list;
+    }
+
+    private File qcfDir() {
+        File d = new File(getFilesDir(), "qcf");
+        if (!d.exists()) d.mkdirs();
+        return d;
+    }
+
+    private int qcfCount() {
+        int n = 0;
+        for (String f : QCF_FILES) {
+            File x = new File(qcfDir(), f);
+            if (x.exists() && x.length() > 0) n++;
+        }
+        return n;
+    }
 
     @SuppressWarnings("deprecation")
     @Override
@@ -35,22 +70,61 @@ public class MainActivity extends Activity {
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);                   // progress, notes and settings
-        s.setAllowFileAccess(true);
-        s.setAllowFileAccessFromFileURLs(true);         // read bundled mushaf pages
+        s.setAllowFileAccess(true);                     // bundled pages and the stored mushaf fonts
+        s.setAllowFileAccessFromFileURLs(true);
         s.setAllowUniversalAccessFromFileURLs(true);    // lessons from alisaboohi.com
         s.setMediaPlaybackRequiresUserGesture(true);
-        s.setCacheMode(WebSettings.LOAD_DEFAULT);       // keeps the downloaded mushaf font
         s.setTextZoom(100);
         web.addJavascriptInterface(new Bridge(), "Android");
-        web.setWebViewClient(new WebViewClient());
+        web.setWebViewClient(new Client());
         web.setWebChromeClient(new Chrome());
         setContentView(web);
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
-        else web.loadUrl("file:///android_asset/index.html");
+        else web.loadUrl(APP_URL);
     }
 
-    /** Called from the page: share a backup file (the user picks Google Drive). */
+    private void js(String code) {
+        runOnUiThread(() -> web.evaluateJavascript(code, null));
+    }
+
+    /** Methods the page can call through window.Android. */
     class Bridge {
+        @JavascriptInterface
+        public boolean qcfReady() { return qcfCount() == QCF_FILES.length; }
+
+        @JavascriptInterface
+        public String qcfBase() { return Uri.fromFile(qcfDir()).toString() + "/"; }
+
+        @JavascriptInterface
+        public int qcfDone() { return qcfCount(); }
+
+        @JavascriptInterface
+        public void qcfStart() {
+            if (downloading) return;
+            downloading = true;
+            new Thread(() -> {
+                int total = QCF_FILES.length;
+                try {
+                    for (String name : QCF_FILES) {
+                        File out = new File(qcfDir(), name);
+                        if (!(out.exists() && out.length() > 0)) download(QCF_CDN + name, out);
+                        js("window.__qcfProgress && __qcfProgress(" + qcfCount() + "," + total + ",'run')");
+                    }
+                    js("window.__qcfProgress && __qcfProgress(" + total + "," + total + ",'done')");
+                } catch (Exception e) {
+                    js("window.__qcfProgress && __qcfProgress(" + qcfCount() + "," + total + ",'error')");
+                } finally {
+                    downloading = false;
+                }
+            }).start();
+        }
+
+        @JavascriptInterface
+        public void qcfDelete() {
+            for (String f : QCF_FILES) new File(qcfDir(), f).delete();
+        }
+
+        /** Hand a backup file to the share sheet (the user picks Google Drive). */
         @JavascriptInterface
         public void shareFile(String name, String content) {
             try {
@@ -68,9 +142,63 @@ public class MainActivity extends Activity {
                 send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 runOnUiThread(() -> startActivity(Intent.createChooser(send, "ذخیره پشتیبان در…")));
             } catch (Exception e) {
-                runOnUiThread(() -> web.evaluateJavascript("toast('ساخت فایل پشتیبان ممکن نشد')", null));
+                js("toast('ساخت فایل پشتیبان ممکن نشد')");
             }
         }
+    }
+
+    private static void download(String url, File out) throws Exception {
+        File part = new File(out.getPath() + ".part");
+        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+        c.setConnectTimeout(20000);
+        c.setReadTimeout(30000);
+        try {
+            if (c.getResponseCode() != 200) throw new Exception("HTTP " + c.getResponseCode());
+            try (InputStream in = c.getInputStream(); OutputStream o = new FileOutputStream(part)) {
+                byte[] buf = new byte[16384];
+                int n;
+                while ((n = in.read(buf)) > 0) o.write(buf, 0, n);
+            }
+            if (part.length() == 0 || !part.renameTo(out)) throw new Exception("write failed");
+        } finally {
+            c.disconnect();
+            part.delete();
+        }
+    }
+
+    /** Links that leave the app open outside it (browser, Aparat, Bazaar). */
+    class Client extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
+            if (!req.isForMainFrame()) return false;
+            return openOutside(req.getUrl().toString());
+        }
+
+        @SuppressWarnings("deprecation")
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            return openOutside(url);
+        }
+    }
+
+    private boolean openOutside(String url) {
+        if (url.startsWith("file:///android_asset/")) return false;
+        try {
+            if (url.startsWith("bazaar://")) {
+                Intent rate = new Intent(Intent.ACTION_EDIT, Uri.parse(url));
+                rate.setPackage("com.farsitel.bazaar");
+                startActivity(rate);
+            } else {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+            }
+        } catch (ActivityNotFoundException e) {
+            if (url.startsWith("bazaar://")) {
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://cafebazaar.ir/app/" + getPackageName())));
+                } catch (Exception ignored) { }
+            }
+        }
+        return true;
     }
 
     class Chrome extends WebChromeClient {
