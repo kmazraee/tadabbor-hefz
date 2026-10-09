@@ -195,6 +195,11 @@ details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direc
 .about-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btnlink{display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none;font-size:14px}
 .about-foot{text-align:center}
+.about-actions>:last-child:nth-child(odd){grid-column:1/-1}
+.contacts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.contact{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none}
+.contact-ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none}
+.contact-ic svg{width:20px;height:20px}
 .stepper{display:flex;gap:2px;position:relative;padding-top:2px}
 .stepper::before{content:"";position:absolute;inset-inline:7%;top:19px;height:2px;background:var(--line)}
 .step{all:unset;cursor:pointer;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;position:relative;color:var(--ink);text-align:center}
@@ -430,6 +435,8 @@ const testNote = `<div class="tag-test">تا آماده شدن تقسیم‌بن
 const ICON_GEAR = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`;
 const ICON_LOCK = `<svg class="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
 const SUPPORT_EMAIL = "kmazraee@gmail.com";
+const CONTACTS = [{name: "ایتا", id: "kmazraee", url: "https://eitaa.com/kmazraee", color: "#F18A1F"}, {name: "بله", id: "kmazraee", url: "https://ble.ir/kmazraee", color: "#11A08F"}];
+const ICON_CHAT = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5" stroke-linecap="round"/></svg>`;
 const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#0F3D3A"/><g fill="none" stroke-linecap="round"><path d="M136 300a120 120 0 0 1 240 0" stroke="#E3B65C" stroke-width="22"/><path d="M176 300a80 80 0 0 1 160 0" stroke="#F2D9A0" stroke-width="22"/><path d="M216 300a40 40 0 0 1 80 0" stroke="#FFFFFF" stroke-width="22"/></g><path d="M256 330c-40-24-90-30-140-22v62c50-8 100-2 140 22z" fill="#FFFFFF"/><path d="M256 330c40-24 90-30 140-22v62c-50-8-100-2-140 22z" fill="#DCEBE8"/></svg>`;
 const ICON_SEARCH = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>`;
 const ICON_HELP = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.6V14"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg>`;
@@ -1954,9 +1961,16 @@ function openSettings() {
         <button data-guide-open>راهنمای برنامه</button>
         <a class="btnlink" href="https://kmazraee.github.io/tadabbor-hefz/privacy.html" target="_blank" rel="noopener">حریم خصوصی</a>
         <a class="btnlink" href="https://github.com/kmazraee/tadabbor-hefz/releases/latest" target="_blank" rel="noopener">آخرین نسخه</a>
-        <a class="btnlink" href="mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("حفظ تدبری " + VERSION + " - پیشنهاد یا گزارش مشکل")}">گزارش مشکل یا پیشنهاد</a>
       </div>
-      <p class="small about-foot">ارتباط با ما: <a href="mailto:${SUPPORT_EMAIL}" dir="ltr">${SUPPORT_EMAIL}</a></p>
+      <h3>ارتباط با ما</h3>
+      <div class="about-actions">
+        <a class="btnlink" href="mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("حفظ تدبری " + VERSION + " - گزارش مشکل")}&body=${encodeURIComponent("مشکل را با جزئیات بنویسید (در کدام صفحه، چه کاری کردید، چه اتفاقی افتاد):\n\n")}">🐞 گزارش مشکل</a>
+        <a class="btnlink" href="mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("حفظ تدبری " + VERSION + " - پیشنهاد برای توسعه")}&body=${encodeURIComponent("پیشنهاد من برای بهتر شدن برنامه:\n\n")}">💡 پیشنهاد برای توسعه</a>
+      </div>
+      <div class="contacts">
+        ${CONTACTS.map(c => `<a class="contact" href="${c.url}" target="_blank" rel="noopener"><span class="contact-ic" style="background:${c.color}" aria-hidden="true">${ICON_CHAT}</span><span><b>${c.name}</b><br><span class="small muted" dir="ltr">@${c.id}</span></span></a>`).join("")}
+      </div>
+      <p class="small about-foot">ایمیل: <a href="mailto:${SUPPORT_EMAIL}" dir="ltr">${SUPPORT_EMAIL}</a></p>
       <p class="small muted about-foot">رایگان و بدون تبلیغ · همه اطلاعات شما فقط روی گوشی خودتان می‌ماند</p>
     </section>
   </div></div>`);
