@@ -62,7 +62,7 @@ jobs:
             OUT="tadabbor-hefz-v$VERSION.apk"
           else
             SRC=android/app/build/outputs/apk/debug/app-debug.apk
-            OUT="tadabbor-hefz-v$VERSION-test.apk"
+            OUT="tadabbor-hefz-v$VERSION.apk"
           fi
           test -f "$SRC" || { echo "APK not found (is the release signed?)"; ls -R android/app/build/outputs/apk; exit 1; }
           cp "$SRC" "$OUT"
@@ -77,10 +77,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
-          name: حفظ تدبری v${{ env.VERSION }}${{ env.KIND == 'debug' && ' (آزمایشی)' || '' }}
-          prerelease: ${{ env.KIND == 'debug' }}
+          name: حفظ تدبری v${{ env.VERSION }}
+          # Published as a normal release (the latest) even before the store signing key is set up
+          prerelease: false
+          make_latest: true
           files: tadabbor-hefz-v*.apk
           body: |
             حفظ تدبری نسخه ${{ env.VERSION }}
-            - ${{ env.KIND == 'release' && 'نسخه امضاشده برای انتشار در کافه‌بازار.' || 'نسخه آزمایشی (debug)؛ برای کافه‌بازار مناسب نیست.' }}
+            - ${{ env.KIND == 'release' && 'امضاشده با کلید انتشار؛ مناسب کافه‌بازار.' || 'امضاشده با کلید موقت؛ برای نصب مستقیم. برای کافه‌بازار نسخه‌ای با کلید انتشار ساخته می‌شود.' }}
             - کاملاً آفلاین؛ قلم مصحف عثمان طه بعد از نصب یک بار روی گوشی ذخیره می‌شود. ترتیل و درس‌ها اینترنت لازم دارند.

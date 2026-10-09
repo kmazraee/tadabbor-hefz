@@ -287,7 +287,7 @@ let DATA = {"v":"5e57966ead","built":"2026-10-09","surahs":[{"n":1,"name":"فا�
 try { const m = JSON.parse(localStorage.getItem("tadabbor-meta")); if (m && m.surahs && m.v !== DATA.v && m.built >= DATA.built) DATA = m; } catch (e) {}
 const DATA_BASE = "data/";
 const PAGE_BASE = DATA_BASE + "pages/";
-const VERSION = "0.5.0";
+const VERSION = "0.6.0";
 const SITE_BASE = "https://kmazraee.github.io/tadabbor-hefz/";
 const REPO_API = "https://api.github.com/repos/kmazraee/tadabbor-hefz/releases?per_page=10";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
