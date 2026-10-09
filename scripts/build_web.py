@@ -42,9 +42,15 @@ FACES = "\n".join(
 
 assets = ROOT / "android/app/src/main/assets"
 (assets / "index.html").write_text(page("data/", True), encoding="utf-8")
+BUNDLED_TRANS = ("ansarian", "makarem", "fooladvand")   # the rest are downloaded inside the app
 for sub in ("pages", "trans"):
     dst = assets / "data" / sub
     if dst.exists():
         shutil.rmtree(dst)
-    shutil.copytree(ROOT / "data" / sub, dst)
-print("built prototype/index.html and android assets (index.html, 604 pages, translations)")
+    if sub == "pages":
+        shutil.copytree(ROOT / "data" / sub, dst)
+    else:
+        dst.mkdir(parents=True)
+        for tid in BUNDLED_TRANS:
+            shutil.copy(ROOT / "data/trans" / f"{tid}.json", dst / f"{tid}.json")
+print("built prototype/index.html and android assets (index.html, 604 pages, 3 bundled translations)")

@@ -26,7 +26,10 @@ import hashlib, json, re, sys, pathlib, datetime
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 WITH_TEST = "--with-test-siyaq" in sys.argv
 CH, QCF, RUKUS, FA_DIR = (pathlib.Path(a) for a in args[:4])
-TRANSLATIONS = {"ansarian": "tanzil-ansarian.json", "makarem": "tanzil-makarem.json", "fooladvand": "tanzil-fooladvand.json"}
+# All 13 Persian translations from Tanzil; the first three are bundled in the app, the rest are downloadable.
+TRANSLATIONS = {k: f"tanzil-{k}.json" for k in ["ansarian", "makarem", "fooladvand", "ayati", "bahrampour", "gharaati", "ghomshei",
+                                                "khorramdel", "khorramshahi", "moezzi", "mojtabavi", "sadeqi", "safavi"]}
+FA_NORM = str.maketrans({"ي": "ی", "ك": "ک", "ى": "ی"})
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT_META = ROOT / "data/meta.json"
 OUT_PAGES = ROOT / "data/pages"
@@ -196,9 +199,12 @@ for tid, fname in TRANSLATIONS.items():
         problems.append(f"translation {tid}: {len(flat)} verses"); continue
     out, i = [], 0
     for s in surahs:
-        out.append([x.strip() for x in flat[i:i + s["total"]]]); i += s["total"]
-    if any(not v for sur in out for v in sur):
-        problems.append(f"translation {tid}: empty verse")
+        out.append([x.strip().translate(FA_NORM) for x in flat[i:i + s["total"]]]); i += s["total"]
+    for sur in out:   # a translator may render two verses together; say so instead of leaving a gap
+        for j, v in enumerate(sur):
+            if not v:
+                if j == 0: problems.append(f"translation {tid}: empty first verse")
+                sur[j] = "(ترجمه این آیه همراه آیه قبل آمده است)"
     (OUT_TRANS / f"{tid}.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 if len(vpages) != 6236: problems.append(f"verses on pages {len(vpages)}")
 if problems:

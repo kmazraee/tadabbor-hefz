@@ -25,6 +25,12 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /** Hosts the bundled app (assets/index.html) in a full-screen WebView. */
 public class MainActivity extends Activity {
@@ -39,6 +45,9 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> fileCallback;
     private View fullscreenView;
     private volatile boolean downloading = false;
+    /** One download job at a time (translations, recitations), in the order they were asked for. */
+    private final ExecutorService jobs = Executors.newSingleThreadExecutor();
+    private final AtomicReference<String> cancelled = new AtomicReference<>("");
 
     private static String[] buildQcfList() {
         String[] list = new String[48];
@@ -119,6 +128,62 @@ public class MainActivity extends Activity {
             }).start();
         }
 
+        /** Root of the app's private storage as a file:// URL, e.g. file:///data/user/0/…/files/ */
+        @JavascriptInterface
+        public String fileBase() { return Uri.fromFile(getFilesDir()).toString() + "/"; }
+
+        /** Number of non-empty files inside a folder of app storage (e.g. "audio/Muhammad_Ayyoub_64kbps/002"). */
+        @JavascriptInterface
+        public int countFiles(String rel) {
+            File[] fs = safe(rel).listFiles();
+            int n = 0;
+            if (fs != null) for (File f : fs) if (f.isFile() && f.length() > 0 && !f.getName().endsWith(".part")) n++;
+            return n;
+        }
+
+        @JavascriptInterface
+        public boolean exists(String rel) { File f = safe(rel); return f.exists() && f.length() > 0; }
+
+        @JavascriptInterface
+        public void deletePath(String rel) { deleteTree(safe(rel)); }
+
+        @JavascriptInterface
+        public void cancelJob(String id) { cancelled.set(id); }
+
+        /**
+         * Queue a download job. files = JSON array of {url, path}; paths are relative to app storage.
+         * Progress goes back to the page as window.__dl(id, done, total, state) with state run|done|error|cancel.
+         */
+        @JavascriptInterface
+        public void downloadList(String id, String filesJson) {
+            jobs.submit(() -> {
+                int done = 0, total = 0;
+                try {
+                    JSONArray arr = new JSONArray(filesJson);
+                    total = arr.length();
+                    js("window.__dl && __dl(" + JSONObject.quote(id) + ",0," + total + ",'run')");
+                    for (int i = 0; i < arr.length(); i++) {
+                        if (id.equals(cancelled.get())) {
+                            js("window.__dl && __dl(" + JSONObject.quote(id) + "," + done + "," + total + ",'cancel')");
+                            return;
+                        }
+                        JSONObject o = arr.getJSONObject(i);
+                        File out = safe(o.getString("path"));
+                        if (!(out.exists() && out.length() > 0)) {
+                            out.getParentFile().mkdirs();
+                            download(o.getString("url"), out);
+                        }
+                        done++;
+                        if (done == total || done % 3 == 0)
+                            js("window.__dl && __dl(" + JSONObject.quote(id) + "," + done + "," + total + ",'run')");
+                    }
+                    js("window.__dl && __dl(" + JSONObject.quote(id) + "," + total + "," + total + ",'done')");
+                } catch (Exception e) {
+                    js("window.__dl && __dl(" + JSONObject.quote(id) + "," + done + "," + total + ",'error')");
+                }
+            });
+        }
+
         @JavascriptInterface
         public void qcfDelete() {
             for (String f : QCF_FILES) new File(qcfDir(), f).delete();
@@ -145,6 +210,24 @@ public class MainActivity extends Activity {
                 js("toast('ساخت فایل پشتیبان ممکن نشد')");
             }
         }
+    }
+
+    /** A path inside app storage; refuses anything that would escape it. */
+    private File safe(String rel) {
+        File base = getFilesDir();
+        File f = new File(base, rel);
+        try {
+            if (!f.getCanonicalPath().startsWith(base.getCanonicalPath())) return new File(base, "_invalid");
+        } catch (Exception e) {
+            return new File(base, "_invalid");
+        }
+        return f;
+    }
+
+    private static void deleteTree(File f) {
+        File[] kids = f.listFiles();
+        if (kids != null) for (File k : kids) deleteTree(k);
+        f.delete();
     }
 
     private static void download(String url, File out) throws Exception {
