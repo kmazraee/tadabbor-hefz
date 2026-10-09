@@ -371,6 +371,8 @@ const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 const DEFAULTS = {theme: "sepia", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
+// One-time move of earlier installs to the new defaults: Parhizgar recitation and Safavi translation
+if ((cfg.defaultsV || 0) < 2) { cfg.reciter = DEFAULTS.reciter; cfg.trans = DEFAULTS.trans; cfg.defaultsV = 2; try { localStorage.setItem("tadabbor-settings", JSON.stringify(cfg)); } catch (e) {} }
 if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";
 const saveCfg = () => store("tadabbor-settings", cfg);
 
@@ -2145,7 +2147,7 @@ function openSettings() {
   on("#reset-progress", () => { confirmReset = "progress"; openSettingsKeep(); });
   on("#no", () => { confirmReset = ""; openSettingsKeep(); });
   on("#yes-progress", () => { st = EMPTY(); save(); confirmReset = ""; openSettingsKeep(); toast("پیشرفت پاک شد"); });
-  on("#reset-settings", () => { const keep = {seenIntro: cfg.seenIntro, lastBackup: cfg.lastBackup, name: cfg.name, phone: cfg.phone}; cfg = Object.assign({}, DEFAULTS, keep); saveCfg(); applySettings(); openSettingsKeep(); toast("تنظیمات به حالت پیش‌فرض برگشت"); });
+  on("#reset-settings", () => { const keep = {seenIntro: cfg.seenIntro, lastBackup: cfg.lastBackup, name: cfg.name, phone: cfg.phone, defaultsV: 2}; cfg = Object.assign({}, DEFAULTS, keep); saveCfg(); applySettings(); openSettingsKeep(); toast("تنظیمات به حالت پیش‌فرض برگشت"); });
   on("[data-guide-open]", () => openGuide(""));
   fitPages(box);
 }
