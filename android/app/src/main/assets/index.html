@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1F4E79">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzBGM0QzQSIvPgogIDwhLS0gbmVzdGVkIGFyY3M6IGxheWVycyBvZiBtZWFuaW5nICh3b3JkLCB2ZXJzZSwgc2l5YXEpIHJpc2luZyBmcm9tIGFuIG9wZW4gYm9vayAtLT4KICA8ZyBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiPgogICAgPHBhdGggZD0iTTEzNiAzMDBhMTIwIDEyMCAwIDAgMSAyNDAgMCIgc3Ryb2tlPSIjRTNCNjVDIiBzdHJva2Utd2lkdGg9IjIyIi8+CiAgICA8cGF0aCBkPSJNMTc2IDMwMGE4MCA4MCAwIDAgMSAxNjAgMCIgc3Ryb2tlPSIjRjJEOUEwIiBzdHJva2Utd2lkdGg9IjIyIi8+CiAgICA8cGF0aCBkPSJNMjE2IDMwMGE0MCA0MCAwIDAgMSA4MCAwIiBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS13aWR0aD0iMjIiLz4KICA8L2c+CiAgPHBhdGggZD0iTTI1NiAzMzBjLTQwLTI0LTkwLTMwLTE0MC0yMnY2MmM1MC04IDEwMC0yIDE0MCAyMnoiIGZpbGw9IiNGRkZGRkYiLz4KICA8cGF0aCBkPSJNMjU2IDMzMGM0MC0yNCA5MC0zMCAxNDAtMjJ2NjJjLTUwLTgtMTAwLTItMTQwIDIyeiIgZmlsbD0iI0RDRUJFOCIvPgo8L3N2Zz4K">
 <title>حفظ تدبری</title>
 <meta name="description" content="اپلیکیشن حفظ تدبری قرآن: اول تدبر، بعد حفظ سیاق‌به‌سیاق">
 <style>
@@ -287,7 +288,7 @@ let DATA = {"v":"5e57966ead","built":"2026-10-09","surahs":[{"n":1,"name":"فا�
 try { const m = JSON.parse(localStorage.getItem("tadabbor-meta")); if (m && m.surahs && m.v !== DATA.v && m.built >= DATA.built) DATA = m; } catch (e) {}
 const DATA_BASE = "data/";
 const PAGE_BASE = DATA_BASE + "pages/";
-const VERSION = "0.6.0";
+const VERSION = "0.6.1";
 const SITE_BASE = "https://kmazraee.github.io/tadabbor-hefz/";
 const REPO_API = "https://api.github.com/repos/kmazraee/tadabbor-hefz/releases?per_page=10";
 const IS_APP = !!(window.Android && window.Android.qcfReady);

@@ -15,7 +15,9 @@ for ph in ("/*DATA*/", "/*DATABASE*/"):
 
 HEAD = ('<!doctype html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-        '<meta name="theme-color" content="#1F4E79">\n')
+        '<meta name="theme-color" content="#1F4E79">\n'
+        '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,'
+        + __import__("base64").b64encode((pathlib.Path(__file__).resolve().parent.parent / "store/logo.svg").read_bytes()).decode() + '">\n')
 
 
 def page(pagebase, local_fonts):

@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- An open book with five stacked siyaq bands on its right page -->
+<!-- Three arcs (word, verse, siyaq: layers of meaning) rising from an open mushaf. Source: store/logo.svg -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#F3F5F4"
-        android:pathData="M54,40 C47,35 38,34 30,35 L30,72 C38,71 47,72 54,77 Z" />
-    <path android:fillColor="#F3F5F4"
-        android:pathData="M54,40 C61,35 70,34 78,35 L78,72 C70,71 61,72 54,77 Z" />
-    <path android:fillColor="#B07A1E" android:pathData="M59,43 h14 v4 h-14 z" />
-    <path android:fillColor="#2E8B57" android:pathData="M59,50 h14 v4 h-14 z" />
-    <path android:fillColor="#2E8B57" android:pathData="M59,57 h10 v4 h-10 z" />
-    <path android:fillColor="#3A78C2" android:pathData="M59,64 h12 v4 h-12 z" />
+    <group android:scaleX="0.2137" android:scaleY="0.2137"
+        android:translateX="-0.707" android:translateY="-5.94">
+        <path android:strokeColor="#E3B65C" android:strokeWidth="22" android:strokeLineCap="round"
+            android:pathData="M136,300 A120,120 0 0,1 376,300" />
+        <path android:strokeColor="#F2D9A0" android:strokeWidth="22" android:strokeLineCap="round"
+            android:pathData="M176,300 A80,80 0 0,1 336,300" />
+        <path android:strokeColor="#FFFFFF" android:strokeWidth="22" android:strokeLineCap="round"
+            android:pathData="M216,300 A40,40 0 0,1 296,300" />
+        <path android:fillColor="#FFFFFF"
+            android:pathData="M256,330 C216,306 166,300 116,308 L116,370 C166,362 216,368 256,392 Z" />
+        <path android:fillColor="#DCEBE8"
+            android:pathData="M256,330 C296,306 346,300 396,308 L396,370 C346,362 296,368 256,392 Z" />
+    </group>
 </vector>
