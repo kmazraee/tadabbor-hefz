@@ -21,7 +21,7 @@ are only included with --with-test-siyaq, for development.
 
 Usage: python3 scripts/build_quran.py <quran-json chapters> <quran-qcf4 dir> <rukus.json> <ghoran json/fa dir> [--with-test-siyaq]
 """
-import json, sys, pathlib
+import json, re, sys, pathlib
 
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 WITH_TEST = "--with-test-siyaq" in sys.argv
@@ -65,6 +65,34 @@ TITLES = {
 }
 DIRECTION = {78: "از پرسش منکران قیامت آغاز می‌کند، با نشانه‌های آفرینش امکان آن را نشان می‌دهد و با وصف فرجام دو گروه، به انتخاب امروز فرا می‌خواند."}
 
+# ---- siyaq/fasl notation: data/siyaq/NNN.txt ----
+# Each siyaq is a verse range in parentheses, each fasl (chapter) in square brackets.
+# A fasl may sit inside another one (an interposed chapter), e.g. for Baqarah:
+#   [(208-215)(216-221)[(222-223)(224-227)(228-233)(234-235)(236-242)](243-253)]
+# Persian/Arabic digits and the word «تا» are accepted. Fasls are numbered in the order they open.
+DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+def parse_notation(text, total, sn):
+    text = text.translate(DIGITS).replace("تا", "-").replace("–", "-").replace("—", "-")
+    text = "".join(l.split("#", 1)[0] for l in text.splitlines())   # allow comments
+    siyaqs, fasls, stack, errs = [], [], [], []
+    for tok in re.findall(r"\[|\]|\(\s*\d+\s*(?:-\s*\d+\s*)?\)|\S", text):
+        if tok == "[":
+            f = {"n": len(fasls) + 1, "s": None, "e": None, "parent": stack[-1]["n"] if stack else None}
+            fasls.append(f); stack.append(f)
+        elif tok == "]":
+            if not stack: errs.append(f"surah {sn}: extra ]"); continue
+            stack.pop()
+        elif tok.startswith("("):
+            nums = list(map(int, re.findall(r"\d+", tok))); a, b = nums[0], nums[-1]
+            siyaqs.append({"s": a, "e": b, "fasl": stack[-1]["n"] if stack else None})
+            for f in stack:   # every open fasl covers this siyaq
+                f["s"] = a if f["s"] is None else min(f["s"], a); f["e"] = b if f["e"] is None else max(f["e"], b)
+        else:
+            errs.append(f"surah {sn}: unexpected character {tok!r}")
+    if stack: errs.append(f"surah {sn}: {len(stack)} unclosed [")
+    if not siyaqs: errs.append(f"surah {sn}: no siyaq found")
+    return siyaqs, fasls, errs
+
 problems = []
 ruku_starts = {}
 for sn, ay in json.loads(RUKUS.read_text()):
@@ -98,7 +126,14 @@ surahs, total_verses = [], 0
 for sn in range(1, 115):
     ch = json.loads((CH / f"{sn}.json").read_text(encoding="utf-8"))
     total = ch["total_verses"]; total_verses += total
-    if WITH_TEST and sn in RANGES:
+    book = ROOT / "data/siyaq" / f"{sn:03d}.txt"
+    fasls, sfasl = [], {}
+    if book.exists():
+        parsed, fasls, errs = parse_notation(book.read_text(encoding="utf-8"), total, sn)
+        problems.extend(errs)
+        ranges, src = [(q["s"], q["e"]) for q in parsed], "book"
+        sfasl = {i: q["fasl"] for i, q in enumerate(parsed, 1)}
+    elif WITH_TEST and sn in RANGES:
         ranges, src = RANGES[sn], "test"
     else:
         starts = sorted(set(ruku_starts.get(sn, [1])) | {1})
@@ -118,7 +153,9 @@ for sn in range(1, 115):
                 if x != e2: problems.append(f"surah {sn} siyaq {i}: step {x}-{y} breaks continuity")
                 e2 = y + 1
             if e2 - 1 != b: problems.append(f"surah {sn} siyaq {i}: steps end at {e2 - 1}")
-        siyaqs.append({"n": i, "s": a, "e": b, "title": t, "steps": [{"s": x, "e": y, "t": tt} for x, y, tt in steps]})
+        q = {"n": i, "s": a, "e": b, "title": t, "steps": [{"s": x, "e": y, "t": tt} for x, y, tt in steps]}
+        if sfasl.get(i): q["f"] = sfasl[i]
+        siyaqs.append(q)
     # verse -> page: first page of each verse; list extra pages only for verses split across pages
     vp, split = [], {}
     for ay in range(1, total + 1):
@@ -127,7 +164,8 @@ for sn in range(1, 115):
         vp.append(pl[0])
         if len(pl) > 1: split[ay] = pl[1:]
     surahs.append({"n": sn, "name": NAMES[sn - 1], "type": ch["type"], "total": total, "src": src,
-                   "dir": DIRECTION.get(sn) if WITH_TEST else None, "siyaqs": siyaqs, "vp": vp, "split": split})
+                   "dir": DIRECTION.get(sn) if WITH_TEST else None, "siyaqs": siyaqs, "vp": vp, "split": split,
+                   **({"fasls": fasls} if fasls else {})})
 
 if total_verses != 6236: problems.append(f"total verses {total_verses}")
 
@@ -150,5 +188,8 @@ if problems:
 OUT_META.write_text(json.dumps({"surahs": surahs}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 size = sum(f.stat().st_size for f in OUT_PAGES.glob("*.json"))
 print(f"Translations: {', '.join(TRANSLATIONS)} | test siyaq data: {'ON' if WITH_TEST else 'off'}")
+for s in surahs:
+    if s["src"] == "book":
+        print(f"  book siyaqs: surah {s['n']} {s['name']}: {len(s['siyaqs'])} siyaqs, {len(s.get('fasls', []))} fasls")
 print(f"OK: 114 surahs, {total_verses} verses, {sum(len(s['siyaqs']) for s in surahs)} sections, "
       f"604 pages ({size // 1024} KB), meta {OUT_META.stat().st_size // 1024} KB")

@@ -75,6 +75,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px;background:var(--c)}
 .siyaq-strip{display:flex;gap:3px}
 .siyaq-strip span{height:10px;border-radius:3px;background:var(--c)}
+.siyaq-strip span.fstart{margin-inline-start:5px}
+.fasl-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:6px;padding:6px 2px;border-top:2px solid var(--line)}
+.fasl-head b{font-size:15px;color:var(--lapis)}
+.fasl-head.nested{border-top-style:dashed;margin-inline-start:14px}
+.siyaq-item.nested{margin-inline-start:14px;width:calc(100% - 14px)}
 .siyaq-strip span.cur{outline:2px solid var(--gold);outline-offset:1px}
 .surah-row{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;padding:10px 0;border:none;border-bottom:1px solid var(--line);background:none;border-radius:0;text-align:right;width:100%}
 .surah-row .idx{font-size:12px;color:var(--muted);text-align:center}
@@ -306,8 +311,18 @@ function toast(msg) {
   const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
   document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
 }
+const faslOf = (s, q) => q.f && s.fasls ? s.fasls.find(f => f.n === q.f) : null;
+const sesTitle = (s, q) => { const f = faslOf(s, q); return f ? `فصل ${FA(f.n)} · ${esc(title(s, q))}` : esc(title(s, q)); };
+const sourceNote = s => s.src === "book" ? `<div class="help small">سیاق‌ها و فصل‌های این سوره بر اساس سیاق‌بندی و فصل‌بندی درس «تدبر در سوره مبارک بقره» (مرحله چهارم) استاد علی صبوحی طسوجی است.</div>` : testNote;
+function faslHead(s, q, prev) {
+  const f = faslOf(s, q); if (!f || (prev && prev.f === q.f)) return "";
+  const back = prev && prev.f && s.fasls.find(x => x.n === prev.f).parent === f.n;
+  const par = f.parent ? ` · معترضه، درون فصل ${FA(f.parent)}` : "";
+  const sCount = s.siyaqs.filter(x => x.f === f.n).length;
+  return `<div class="fasl-head${f.parent ? " nested" : ""}"><b>${back ? "ادامه " : ""}فصل ${FA(f.n)}</b><span class="small muted">آیات ${FA(f.s)} تا ${FA(f.e)}${par} · ${FA(sCount)} سیاق</span></div>`;
+}
 function strip(s, cur) {
-  return `<div class="siyaq-strip" aria-hidden="true">${s.siyaqs.map(q => `<span class="${cur === q.n ? "cur" : ""}" style="flex:${ayahCount(q)};--c:${COLORS[status(key(s.n, q.n))]}"></span>`).join("")}</div>`;
+  return `<div class="siyaq-strip" aria-hidden="true">${s.siyaqs.map((q, i) => `<span class="${cur === q.n ? "cur" : ""}${i && q.f && q.f !== s.siyaqs[i - 1].f ? " fstart" : ""}" style="flex:${ayahCount(q)};--c:${COLORS[status(key(s.n, q.n))]}"></span>`).join("")}</div>`;
 }
 const legend = () => `<div class="legend">${Object.keys(LABELS).map(k => `<span style="--c:${COLORS[k]}">${LABELS[k]}</span>`).join("")}</div>`;
 const testNote = `<div class="tag-test">تا آماده شدن تقسیم‌بندی کتاب «تدبر در قرآن کریم»، مرز سیاق‌ها بر اساس رکوع‌های مصحف است. در مرحله تدبر، گام‌های معنایی هر سیاق را خودتان مشخص می‌کنید.</div>`;
@@ -570,9 +585,9 @@ function home() {
 const siyaqButton = (x, mode) => `<button class="siyaq-item" data-start="${x.k}" data-mode="${mode}" style="--c:${COLORS[status(x.k)]}"><span class="stripe"></span><span><b>${x.s.name}</b> · ${esc(title(x.s, x.q))}<br><span class="small muted">آیات ${FA(x.q.s)} تا ${FA(x.q.e)}</span></span><span class="small muted">${FA(ayahCount(x.q))} آیه</span></button>`;
 
 function map() {
-  return `${topBar(`<h1>نقشه سیاق‌ها</h1>`)}${legend()}${testNote}
+  return `${topBar(`<h1>نقشه سیاق‌ها</h1>`)}${legend()}${testNote.replace("مرز سیاق‌ها بر اساس", "مرز سیاق‌های بیشتر سوره‌ها بر اساس")}
   <section class="card" style="gap:0;padding-block:4px">
-  ${DATA.surahs.map(s => `<button class="surah-row" data-open="${s.n}"><span class="idx num">${FA(s.n)}</span><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span class="nm"><span>${s.name}</span><span class="small muted num">${FA(s.siyaqs.length)} سیاق · ${FA(s.total)} آیه</span></span>${strip(s)}</span></button>`).join("")}
+  ${DATA.surahs.map(s => `<button class="surah-row" data-open="${s.n}"><span class="idx num">${FA(s.n)}</span><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span class="nm"><span>${s.name}</span><span class="small muted num">${s.fasls ? FA(s.fasls.length) + " فصل · " : ""}${FA(s.siyaqs.length)} سیاق · ${FA(s.total)} آیه</span></span>${strip(s)}</span></button>`).join("")}
   </section>`;
 }
 
@@ -803,10 +818,10 @@ function openSurah(n) {
   <button id="les">🎬 فیلم و صوت درس‌های تدبر این سوره</button>
   <div class="card"><label class="switch small"><span><b>از قبل حفظ هستم</b><br><span class="muted">همه سیاق‌های سوره حفظ‌شده ثبت می‌شوند و در برنامه مرور قرار می‌گیرند.</span></span><input type="checkbox" id="pre-mem" ${surahAll(s, isMem) ? "checked" : ""}></label>
   <label class="switch small"><span><b>از قبل تدبر کرده‌ام</b><br><span class="muted">مثلاً در کلاس یا با کتاب؛ سوره تدبرشده ثبت می‌شود.</span></span><input type="checkbox" id="pre-tad" ${surahAll(s, isTad) ? "checked" : ""}></label></div>
-  ${testNote}
-  ${s.siyaqs.map(q => { const k = key(s.n, q.n), stt = status(k), it = st.items[k], n2 = st.notes[k];
+  ${sourceNote(s)}
+  ${s.siyaqs.map((q, qi) => { const k = key(s.n, q.n), stt = status(k), it = st.items[k], n2 = st.notes[k], fh = faslHead(s, q, s.siyaqs[qi - 1]), nest = (faslOf(s, q) || {}).parent;
     const lbl = stt === "new" ? "شروع تدبر" : stt === "learn" ? "ادامه" : "مرور";
-    return `<div class="siyaq-item" style="--c:${COLORS[stt]}"><span class="stripe"></span><span><b>${esc(title(s, q))}</b><br><span class="small muted">آیات ${FA(q.s)} تا ${FA(q.e)} · ${LABELS[stt]}${it && it.stage < 5 ? " · مرحله " + FA(it.stage + 1) : ""}</span>${n2 && n2.title && q.title ? `<br><span class="mine">برداشت من: ${esc(n2.title)}</span>` : ""}</span>
+    return `${fh}<div class="siyaq-item${nest ? " nested" : ""}" style="--c:${COLORS[stt]}"><span class="stripe"></span><span><b>${esc(title(s, q))}</b><br><span class="small muted">آیات ${FA(q.s)} تا ${FA(q.e)} · ${LABELS[stt]}${it && it.stage < 5 ? " · مرحله " + FA(it.stage + 1) : ""}</span>${n2 && n2.title && q.title ? `<br><span class="mine">برداشت من: ${esc(n2.title)}</span>` : ""}</span>
     <button class="${stt === "new" || stt === "learn" ? "btn-main" : ""} small" data-start="${k}" data-mode="${stt === "new" || stt === "learn" ? "learn" : "review"}">${lbl}</button></div>`; }).join("")}
   </div></div>`);
   box.querySelector("#les").addEventListener("click", () => openLessons(n));
@@ -853,7 +868,7 @@ function drawSession() {
   const {s, q, step} = ses;
   const content = [stepTadabbur, stepListen, stepMemorize, stepConnect, stepRate][step]();
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="جلسه تدبر و حفظ">
-  <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>${s.name} · ${esc(title(s, q))}</h2><button class="icon-btn btn-ghost" id="shelp" aria-label="راهنمای این مرحله" aria-expanded="${ses.help}">${ICON_HELP}</button></header>
+  <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>${s.name} · ${sesTitle(s, q)}</h2><button class="icon-btn btn-ghost" id="shelp" aria-label="راهنمای این مرحله" aria-expanded="${ses.help}">${ICON_HELP}</button></header>
   <div class="steps">${STAGES.map((_, i) => `<span class="${i <= step ? "on" : ""}"></span>`).join("")}</div>
   <div class="steplabels">${STAGES.map((l, i) => `<span class="${i === step ? "on" : ""}">${l}</span>`).join("")}</div>
   <div class="body">${ses.help ? `<div class="help">${HELP[step]}</div>` : ""}${content.body}</div>
@@ -1166,6 +1181,7 @@ function openGuide(section) {
     <details open><summary>سیاق چیست و چرا واحد حفظ است؟</summary><div>
       <p>سیاق مجموعه‌ای از آیات پشت‌سرهم است که یک معنای پیوسته دارند. هر سوره از چند سیاق ساخته شده و هر سیاق از چند «گام» معنایی می‌گذرد.</p>
       <p>وقتی آیات را در قالب سیاق حفظ کنید، ترتیب آیات را از روی معنا به یاد می‌آورید، نه فقط از روی لفظ. این کار فراموشی و جابه‌جا خواندن آیات مشابه را کم می‌کند.</p>
+      <p>در سوره‌های بلند، چند سیاق هم‌جهت یک «فصل» می‌سازند. گاهی فصلی کوتاه وسط فصل دیگر می‌آید (فصل معترضه)؛ مثل فصل دهم سوره بقره که درون فصل نهم است.</p>
       <p>تقسیم‌بندی هدف برنامه، روش «تدبر در قرآن کریم» استاد علی صبوحی طسوجی است. تا آماده شدن آن، مرز سیاق‌ها بر اساس رکوع‌های مصحف است و گام‌های معنایی هر سیاق را خودتان در مرحله تدبر مشخص می‌کنید.</p>
     </div></details>
     <details ${section === "cycle" ? "open" : ""}><summary>پنج مرحله هر سیاق</summary><div><ol>
