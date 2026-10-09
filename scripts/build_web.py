@@ -56,7 +56,7 @@ assert sum(map(len, quran)) == 6236 and len(verses) == 6236, "verse text incompl
 
 assets = ROOT / "android/app/src/main/assets"
 (assets / "index.html").write_text(page("data/", True), encoding="utf-8")
-BUNDLED_TRANS = ("ansarian", "makarem", "fooladvand")   # the rest are downloaded inside the app
+BUNDLED_TRANS = ("safavi", "ansarian", "makarem", "fooladvand")   # the rest are downloaded inside the app
 for sub in ("pages", "trans"):
     dst = assets / "data" / sub
     if dst.exists():
@@ -68,4 +68,4 @@ for sub in ("pages", "trans"):
         for tid in BUNDLED_TRANS:
             shutil.copy(ROOT / "data/trans" / f"{tid}.json", dst / f"{tid}.json")
 shutil.copy(ROOT / "data/quran.json", assets / "data/quran.json")
-print("built prototype/index.html and android assets (index.html, 604 pages, full text for search, 3 bundled translations)")
+print("built prototype/index.html and android assets (index.html, 604 pages, full text for search, 4 bundled translations)")

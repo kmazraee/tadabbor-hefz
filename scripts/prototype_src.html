@@ -276,10 +276,10 @@ const IS_APP = !!(window.Android && window.Android.qcfReady);
 const BAZAAR_ID = "ir.tadabbor.hefz";
 const RATE_URL = IS_APP ? "bazaar://details?id=" + BAZAAR_ID : "https://cafebazaar.ir/app/" + BAZAAR_ID;
 // [id, translator, MB, bundled in the app]
-const TRANSLATIONS = [["ansarian", "حسین انصاریان", 1.6, 1], ["makarem", "ناصر مکارم شیرازی", 1.4, 1], ["fooladvand", "محمدمهدی فولادوند", 1.3, 1],
+const TRANSLATIONS = [["safavi", "سید محمدرضا صفوی", 1.8, 1], ["ansarian", "حسین انصاریان", 1.6, 1], ["makarem", "ناصر مکارم شیرازی", 1.4, 1], ["fooladvand", "محمدمهدی فولادوند", 1.3, 1],
   ["ayati", "عبدالمحمد آیتی", 1.1], ["bahrampour", "ابوالفضل بهرام‌پور", 1.2], ["gharaati", "محسن قرائتی", 1.4], ["ghomshei", "مهدی الهی قمشه‌ای", 1.5],
   ["khorramdel", "مصطفی خرم‌دل (با توضیح)", 4.6], ["khorramshahi", "بهاءالدین خرمشاهی", 1.2], ["moezzi", "محمدکاظم معزی", 1.1],
-  ["mojtabavi", "سید جلال‌الدین مجتبوی", 1.3], ["sadeqi", "محمد صادقی تهرانی", 1.4], ["safavi", "سید محمدرضا صفوی", 1.8], ["none", "بدون ترجمه"]];
+  ["mojtabavi", "سید جلال‌الدین مجتبوی", 1.3], ["sadeqi", "محمد صادقی تهرانی", 1.4], ["none", "بدون ترجمه"]];
 const FA = n => String(n).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
 // The reader's own name, for greetings
 const myName = () => (cfg.name || "").trim();
@@ -315,7 +315,7 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "sepia", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Abu_Bakr_Ash-Shaatree_64kbps", reps: 3, gate: true, trans: "ansarian", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: ""};
+const DEFAULTS = {theme: "sepia", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: ""};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";
@@ -610,7 +610,7 @@ function offlineBox() {
   const r = cfg.reciter, rname = reciterName(r);
   const haveS = DATA.surahs.filter(s => audioHave(r, s.n) >= s.total).length;
   return `<div class="upd">
-    <p class="small">متن و ۶۰۴ صفحه قرآن و سه ترجمه داخل خود برنامه است.</p>
+    <p class="small">متن و ۶۰۴ صفحه قرآن و چهار ترجمه داخل خود برنامه است.</p>
     <h3 style="font-size:14px">مصحف عثمان طه</h3>${qcfCard(true)}
     <div class="row between"><h3 style="font-size:14px">ترجمه‌ها</h3>${pend.length ? `<button class="small btn-main" id="tr-all">دریافت همه (${FA(pendMB.toFixed(0))} مگابایت)</button>` : `<span class="small ok">همه روی گوشی است</span>`}</div>
     <div>${rest.map(([id, nm, mb]) => `<div class="dlrow"><span class="small">${nm} <span class="muted num">· ${FA(mb)} مگابایت</span></span>${jobActive("tr-" + id) ? "" : transLocal(id) ? `<span class="row" style="gap:6px"><span class="small ok">✓</span><button class="small btn-ghost" data-trdel="${id}">حذف</button></span>` : `<button class="small" data-trget="${id}">دریافت</button>`}${jobActive("tr-" + id) ? jobBar("tr-" + id) : ""}</div>`).join("")}</div>
@@ -1885,7 +1885,7 @@ function openSettings() {
     </section>
     <section class="card"><h3>ترجمه</h3>
       <div class="field"><label for="trans">ترجمه فارسی</label><select id="trans">${TRANSLATIONS.map(([v, l]) => `<option value="${v}" ${cfg.trans === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>
-      <p class="small muted">${IS_APP ? "سه ترجمه اول داخل برنامه است؛ بقیه را در بخش «بدون اینترنت» روی گوشی بگیرید. ترجمه دانلودنشده با اینترنت خوانده می‌شود." : "۱۳ ترجمه فارسی از Tanzil.net."}</p>
+      <p class="small muted">${IS_APP ? "چهار ترجمه اول داخل برنامه است؛ بقیه را در بخش «بدون اینترنت» روی گوشی بگیرید. ترجمه دانلودنشده با اینترنت خوانده می‌شود." : "۱۳ ترجمه فارسی از Tanzil.net."}</p>
     </section>
     <section class="card" id="offline"><h3>بدون اینترنت</h3>${offlineBox()}</section>
     <section class="card"><h3>صوت</h3>
@@ -1913,7 +1913,7 @@ function openSettings() {
     <section class="card"><h3>درباره</h3>
       <p class="small">حفظ تدبری · نسخه ${FA(VERSION)}</p>
       <p class="small muted">مصحف: عثمان طه (QCF4، مجمع ملک فهد) · صوت: everyayah.com · درس‌ها: alisaboohi.com · قلم‌ها: Amiri Quran، Scheherazade New و Vazirmatn.</p>
-      <p class="small muted">ترجمه‌ها: Tanzil.net (انصاریان، مکارم شیرازی، فولادوند).</p>
+      <p class="small muted">ترجمه‌ها: Tanzil.net (صفوی، انصاریان، مکارم شیرازی، فولادوند و نه ترجمه دیگر).</p>
       <div class="row"><button data-guide-open>راهنمای برنامه</button><a class="small" href="${RATE_URL}" target="_blank" rel="noopener">نظر و امتیاز در کافه‌بازار</a><a class="small" href="https://kmazraee.github.io/tadabbor-hefz/privacy.html" target="_blank" rel="noopener">حریم خصوصی</a></div>
     </section>
   </div></div>`);
@@ -2006,7 +2006,7 @@ function openGuide(section) {
     <details><summary>پرسش‌های رایج</summary><div>
       <p><b>داده‌هایم کجا ذخیره می‌شود؟</b> روی همین دستگاه، و هر وقت پشتیبان بگیرید در گوگل‌درایو خودتان.</p>
       <p><b>چطور به‌روز کنم؟</b> در تنظیمات، «بررسی به‌روزرسانی» را بزنید. برنامه هم روزی یک بار خودش بررسی می‌کند. سیاق‌بندی سوره‌های تازه بدون نصب دوباره دریافت می‌شود و پیشرفت شما حفظ می‌شود؛ برای نسخه تازه برنامه به کافه‌بازار یا دانلود مستقیم هدایت می‌شوید.</p>
-      <p><b>بدون اینترنت کار می‌کند؟</b> بله. متن، صفحه‌ها و سه ترجمه داخل برنامه است. بعد از نصب، قلم عثمان طه و ده ترجمه دیگر خودکار روی گوشی ذخیره می‌شوند. ترتیل هر سوره را هم می‌توانید از تنظیمات ← «بدون اینترنت» یا از صفحه همان سوره، برای هر قاری جدا دانلود کنید. فقط درس‌های تدبر اینترنت لازم دارند.</p>
+      <p><b>بدون اینترنت کار می‌کند؟</b> بله. متن، صفحه‌ها و چهار ترجمه داخل برنامه است. بعد از نصب، قلم عثمان طه و نه ترجمه دیگر خودکار روی گوشی ذخیره می‌شوند. ترتیل هر سوره را هم می‌توانید از تنظیمات ← «بدون اینترنت» یا از صفحه همان سوره، برای هر قاری جدا دانلود کنید. فقط درس‌های تدبر اینترنت لازم دارند.</p>
       <p><b>ترجمه کجاست؟</b> در مرحله تدبر زیر صفحه مصحف، و با زدن روی هر آیه در مصحف. مترجم را در تنظیمات انتخاب کنید.</p>
       <p><b>چرا بعضی سوره‌ها قفل‌اند؟</b> تدبر هر سوره در سطح خودش باز می‌شود تا با پشتوانه درس‌های همان سطح انجام شود. بعد از سطح ۶ همه سوره‌ها باز می‌شوند. مصحف، ثبت سوره‌های حفظ‌شده و مرور همیشه آزادند.</p>
       <p><b>سوره‌هایی را از قبل حفظ هستم؛ چه کنم؟</b> در «نقشه سیاق» سوره را باز کنید و «از قبل حفظ هستم» را بزنید. سوره در شمارنده بالای برنامه حساب می‌شود و مرورهایش در روزهای آینده پخش می‌شود.</p>
