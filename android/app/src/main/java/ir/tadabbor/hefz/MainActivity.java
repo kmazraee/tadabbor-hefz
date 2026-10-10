@@ -57,8 +57,8 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> fileCallback;
     private View fullscreenView;
     private volatile boolean downloading = false;
-    /** One download job at a time (translations, recitations), in the order they were asked for. */
-    private final ExecutorService jobs = Executors.newSingleThreadExecutor();
+    /** Up to three download jobs at once, so a long one (a lesson video) never holds the recitations back. */
+    private final ExecutorService jobs = Executors.newFixedThreadPool(3);
     private final Set<String> cancelled = Collections.newSetFromMap(new ConcurrentHashMap<>());
     // cancelAll() bumps this; jobs queued before the bump stop at their next file
     private final AtomicInteger generation = new AtomicInteger();
@@ -175,30 +175,42 @@ public class MainActivity extends Activity {
         public void downloadList(String id, String filesJson) {
             cancelled.remove(id);
             final int gen = generation.get();
+            final String qid = JSONObject.quote(id);
+            js("window.__dl && __dl(" + qid + ",0,0,'queued')");
             jobs.submit(() -> {
-                int done = 0, total = 0;
+                int done = 0, total = 0, failed = 0, streak = 0;
+                String reason = "";
                 try {
                     JSONArray arr = new JSONArray(filesJson);
                     total = arr.length();
-                    js("window.__dl && __dl(" + JSONObject.quote(id) + ",0," + total + ",'run')");
+                    js("window.__dl && __dl(" + qid + ",0," + total + ",'run')");
                     for (int i = 0; i < arr.length(); i++) {
                         if (cancelled.remove(id) || gen != generation.get()) {
-                            js("window.__dl && __dl(" + JSONObject.quote(id) + "," + done + "," + total + ",'cancel')");
+                            js("window.__dl && __dl(" + qid + "," + done + "," + total + ",'cancel')");
                             return;
                         }
                         JSONObject o = arr.getJSONObject(i);
                         File out = safe(o.getString("path"));
                         if (!(out.exists() && out.length() > 0)) {
                             out.getParentFile().mkdirs();
-                            download(o.getString("url"), out);
+                            try {
+                                downloadRetry(o.getString("url"), out);
+                                streak = 0;
+                            } catch (Exception e) {
+                                failed++; streak++;
+                                reason = String.valueOf(e.getMessage());
+                                // nothing gets through (network down or site blocked): stop instead of failing every file
+                                if ((streak >= 4 && failed == done + 1) || streak >= 8) { done++; break; }
+                            }
                         }
                         done++;
                         if (done == total || done % 3 == 0)
-                            js("window.__dl && __dl(" + JSONObject.quote(id) + "," + done + "," + total + ",'run')");
+                            js("window.__dl && __dl(" + qid + "," + (done - failed) + "," + total + ",'run')");
                     }
-                    js("window.__dl && __dl(" + JSONObject.quote(id) + "," + total + "," + total + ",'done')");
+                    if (failed == 0 && done == total) js("window.__dl && __dl(" + qid + "," + total + "," + total + ",'done')");
+                    else js("window.__dl && __dl(" + qid + "," + (done - failed) + "," + total + ",'error'," + JSONObject.quote(reason) + ")");
                 } catch (Exception e) {
-                    js("window.__dl && __dl(" + JSONObject.quote(id) + "," + done + "," + total + ",'error')");
+                    js("window.__dl && __dl(" + qid + "," + (done - failed) + "," + total + ",'error'," + JSONObject.quote(String.valueOf(e.getMessage())) + ")");
                 }
             });
         }
@@ -303,11 +315,41 @@ public class MainActivity extends Activity {
         f.delete();
     }
 
+    /** Three tries per file, with a short pause between them (mobile networks drop often). */
+    private static void downloadRetry(String url, File out) throws Exception {
+        Exception last = null;
+        for (int t = 0; t < 3; t++) {
+            try { download(url, out); return; }
+            catch (Exception e) {
+                last = e;
+                if (e.getMessage() != null && e.getMessage().startsWith("HTTP 404")) break;
+                try { Thread.sleep(t == 0 ? 1500 : 4000); } catch (InterruptedException ie) { break; }
+            }
+        }
+        throw last;
+    }
+
     private static void download(String url, File out) throws Exception {
         File part = new File(out.getPath() + ".part");
-        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
-        c.setConnectTimeout(20000);
-        c.setReadTimeout(30000);
+        HttpURLConnection c = null;
+        // follow redirects by hand, including http <-> https, which HttpURLConnection will not do
+        for (int hop = 0; ; hop++) {
+            c = (HttpURLConnection) new URL(url).openConnection();
+            c.setConnectTimeout(20000);
+            c.setReadTimeout(30000);
+            c.setInstanceFollowRedirects(false);
+            c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ") HefzTadabbori");
+            c.setRequestProperty("Accept", "*/*");
+            int code = c.getResponseCode();
+            if (code >= 300 && code < 400 && hop < 5) {
+                String loc = c.getHeaderField("Location");
+                c.disconnect();
+                if (loc == null) throw new Exception("HTTP " + code);
+                url = new URL(new URL(url), loc).toString();
+                continue;
+            }
+            break;
+        }
         try {
             if (c.getResponseCode() != 200) throw new Exception("HTTP " + c.getResponseCode());
             try (InputStream in = c.getInputStream(); OutputStream o = new FileOutputStream(part)) {

@@ -501,10 +501,10 @@ function stepsOf(s, q) {
   return [{s: q.s, e: q.e, t: title(s, q)}];
 }
 
-function toast(msg) {
+function toast(msg, ms = 2600) {
   document.querySelectorAll(".toast").forEach(t => t.remove());
   const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
-  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+  document.body.appendChild(t); setTimeout(() => t.remove(), ms);
 }
 const qName = q => "سیاق " + FA(q.n);
 const dirBlock = s => s.dir ? `<div class="help"><b>${s.src === "book" ? "راهبرد سوره" : s.deck ? "جهت هدایتی سوره" : "جهت هدایتی سوره (آزمایشی)"}:</b> ${esc(s.dir)}${s.points ? `<ol class="small" style="margin:6px 0 0;padding-inline-start:20px">${s.points.map(x => `<li>${esc(x)}</li>`).join("")}</ol>` : ""}</div>` : "";
@@ -695,11 +695,23 @@ function transBlock(sn, a, b) {
 const P3 = n => String(n).padStart(3, "0");
 const fileExists = rel => { try { return IS_APP && Android.exists(rel); } catch (e) { return false; } };
 const JOBS = {};   // id -> {label, done, total, state}
-window.__dl = (id, done, total, state) => {
+// Why a download failed, in plain words (the native side passes the Java error message)
+function dlReason(m) {
+  m = String(m || "");
+  if (/HTTP 404/.test(m)) return "این فایل روی سایت ترتیل نیست";
+  if (/HTTP 403|HTTP 451/.test(m)) return "سایت ترتیل اجازه دانلود نداد (شاید با این اینترنت در دسترس نیست؛ با اینترنت دیگر یا فیلترشکن امتحان کنید)";
+  if (/HTTP 5\d\d/.test(m)) return "سایت ترتیل الان پاسخ نمی‌دهد؛ کمی بعد دوباره امتحان کنید";
+  if (/Trust anchor|certificat|SSL|handshake|CertPath/i.test(m)) return "اتصال امن برقرار نشد؛ تاریخ و ساعت گوشی را بررسی کنید";
+  if (/resolve host|UnknownHost|No address|ENETUNREACH|Network is unreachable/i.test(m)) return "اینترنت وصل نیست یا سایت ترتیل از این اینترنت باز نمی‌شود";
+  if (/timeout|timed out/i.test(m)) return "اینترنت کند است و اتصال قطع شد";
+  if (/ENOSPC|No space/i.test(m)) return "حافظه گوشی پر است";
+  return m ? "خطا: " + m : "";
+}
+window.__dl = (id, done, total, state, why) => {
   const j = JOBS[id] || (JOBS[id] = {}); Object.assign(j, {done, total, state});
   if (state === "done" || state === "error" || state === "cancel") {
     audioCount.clear();
-    if (state === "error") toast("دانلود «" + (j.label || "") + "» قطع شد؛ دوباره تلاش کنید");
+    if (state === "error") { j.why = dlReason(why); toast("دانلود «" + (j.label || "") + "» کامل نشد" + (total ? ` (${FA(done)} از ${FA(total)} فایل ذخیره شد)` : "") + (j.why ? "؛ " + j.why : "") + ". با «ادامه دانلود» از همان‌جا ادامه می‌دهد.", 7000); }
     refresh(); return;
   }
   document.querySelectorAll(`[data-job="${id}"] i`).forEach(i => i.style.width = Math.round(done / Math.max(total, 1) * 100) + "%");
