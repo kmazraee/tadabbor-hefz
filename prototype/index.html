@@ -171,6 +171,16 @@ details summary::after{content:"+";float:left;color:var(--muted)}
 details[open] summary::after{content:"−"}
 details > div{padding-bottom:14px;display:flex;flex-direction:column;gap:8px;font-size:14px}
 details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px}
+.dl-pill{position:fixed;bottom:calc(72px + env(safe-area-inset-bottom,0px));left:12px;z-index:25;display:flex;align-items:center;gap:6px;max-width:62%;padding:7px 12px;border-radius:99px;background:var(--lapis);color:var(--on-lapis);border:0;box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:13px}
+.dl-pill[hidden]{display:none}
+.dl-pill .dl-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-pill .dl-ic{animation:dlb 1.4s ease-in-out infinite}
+@keyframes dlb{50%{transform:translateY(2px)}}
+@media (prefers-reduced-motion:reduce){.dl-pill .dl-ic{animation:none}}
+.dl-row{display:flex;flex-direction:column;gap:4px;padding-block:10px;border-bottom:1px solid var(--line)}
+.dl-row:last-child{border-bottom:0}
+.dl-why{color:var(--danger,#b3261e)}
+body.has-dl .toast{bottom:128px}
 .toast{position:fixed;bottom:84px;inset-inline:0;margin-inline:auto;width:max-content;max-width:90%;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:10px;font-size:13px;z-index:30}
 .mw.weak{text-decoration:underline dotted var(--st-due);text-decoration-thickness:2px;text-underline-offset:6px}
 .mw.errw{background:color-mix(in srgb,var(--st-due) 28%,transparent)}
@@ -698,24 +708,103 @@ function dlReason(m) {
   if (/ENOSPC|No space/i.test(m)) return "حافظه گوشی پر است";
   return m ? "خطا: " + m : "";
 }
+// Finished and failed downloads are remembered (last 40) so the downloads page still lists them after a restart.
+const DLH_KEY = "tadabbor-dl";
+try { (JSON.parse(localStorage.getItem(DLH_KEY)) || []).forEach(h => { if (!JOBS[h.id]) JOBS[h.id] = h; }); } catch (e) {}
+function saveDlHist() {
+  const list = Object.entries(JOBS).filter(([, j]) => j.state && !jobActive2(j)).map(([id, j]) => ({id, label: j.label, state: j.state, done: j.done, total: j.total, why: j.why, at: j.at || Date.now(), files: j.files && j.files.length <= 700 ? j.files : undefined}))
+    .sort((a, b) => b.at - a.at).slice(0, 40);
+  try { localStorage.setItem(DLH_KEY, JSON.stringify(list)); } catch (e) {}
+}
+const jobActive2 = j => j && (j.state === "queued" || j.state === "run");
+const fmtMB = b => FA((b / 1048576).toFixed(b < 10485760 ? 1 : 0));
 window.__dl = (id, done, total, state, why) => {
-  const j = JOBS[id] || (JOBS[id] = {}); Object.assign(j, {done, total, state});
+  const j = JOBS[id] || (JOBS[id] = {}); Object.assign(j, {done, total: total || j.total, state});
   if (state === "done" || state === "error" || state === "cancel") {
-    audioCount.clear();
-    if (state === "error") { j.why = dlReason(why); toast("دانلود «" + (j.label || "") + "» کامل نشد" + (total ? ` (${FA(done)} از ${FA(total)} فایل ذخیره شد)` : "") + (j.why ? "؛ " + j.why : "") + ". با «ادامه دانلود» از همان‌جا ادامه می‌دهد.", 7000); }
-    refresh(); return;
+    audioCount.clear(); j.at = Date.now(); j.bytes = 0;
+    if (state === "error") { j.why = dlReason(why); toast("دانلود «" + (j.label || "") + "» کامل نشد" + (total ? ` (${FA(done)} از ${FA(total)} فایل ذخیره شد)` : "") + (j.why ? "؛ " + j.why : "") + ". از «وضعیت دانلودها» دوباره امتحان کنید.", 7000); }
+    else delete j.why;
+    saveDlHist(); dlPill();
+    // redraw only screens that show this download; everything else stays still
+    if (document.querySelector(`[data-job="${id}"], [data-dlpage]`)) refresh();
+    return;
   }
-  document.querySelectorAll(`[data-job="${id}"] i`).forEach(i => i.style.width = Math.round(done / Math.max(total, 1) * 100) + "%");
-  document.querySelectorAll(`[data-jobn="${id}"]`).forEach(x => x.textContent = FA(done) + " از " + FA(total));
+  dlPatch(id); dlPill();
 };
+// bytes of the file being fetched (useful for long lesson videos)
+window.__dlb = (id, got, size) => { const j = JOBS[id]; if (!j) return; j.bytes = got; j.btotal = size; dlPatch(id); dlPill(); };
+function jobPct(j) {
+  if (!j) return 0;
+  const part = j.btotal > 0 && j.state === "run" ? Math.min(j.bytes / j.btotal, 1) : 0;
+  return Math.round(Math.min(((j.done || 0) + part) / Math.max(j.total || 1, 1), 1) * 100);
+}
+// several files: "18 of 286 files"; one big file (a lesson video): megabytes received
+const jobText = j => j.state === "queued" ? "در صف" : j.total > 1 ? FA(j.done || 0) + " از " + FA(j.total) + " فایل"
+  : j.bytes > 0 && j.state === "run" ? fmtMB(j.bytes) + (j.btotal > 0 ? " از " + fmtMB(j.btotal) : "") + " مگابایت" : FA(jobPct(j)) + "٪";
+function dlPatch(id) {
+  const j = JOBS[id]; if (!j) return;
+  document.querySelectorAll(`[data-job="${id}"] i`).forEach(i => i.style.width = jobPct(j) + "%");
+  document.querySelectorAll(`[data-jobn="${id}"]`).forEach(x => x.textContent = jobText(j));
+}
 function startJob(id, label, files) {
   if (!IS_APP) return;
-  JOBS[id] = {label, done: 0, total: files.length, state: "queued"};
+  JOBS[id] = {label, done: 0, total: files.length, state: "queued", files, at: Date.now()};
   try { Android.downloadList(id, JSON.stringify(files)); } catch (e) { toast("دانلود ممکن نشد"); }
-  refresh();
+  dlPill(); refresh();
 }
-const jobActive = id => JOBS[id] && (JOBS[id].state === "queued" || JOBS[id].state === "run");
-const jobBar = id => `<div class="bar" data-job="${id}"><i style="width:${Math.round(((JOBS[id] || {}).done || 0) / Math.max((JOBS[id] || {}).total || 1, 1) * 100)}%;background:var(--gold)"></i></div><span class="small muted num" data-jobn="${id}">${JOBS[id].state === "queued" ? "در صف" : FA(JOBS[id].done) + " از " + FA(JOBS[id].total)}</span>`;
+const jobActive = id => jobActive2(JOBS[id]);
+const jobBar = id => `<div class="bar" data-job="${id}"><i style="width:${jobPct(JOBS[id])}%;background:var(--gold)"></i></div><span class="small muted num" data-jobn="${id}">${jobText(JOBS[id])}</span>`;
+
+// ---------- downloads page and the floating status pill ----------
+// Everything that is being saved on the phone: native jobs (recitations, translations, lessons), tafsirs and word meanings
+function dlAll() {
+  const out = Object.entries(JOBS).map(([id, j]) => ({id, ...j, kind: "job"}));
+  Object.entries(typeof TFJOBS === "object" ? TFJOBS : {}).forEach(([id, j]) => { if (j.run) out.push({id: "tf-" + id, label: "تفسیر " + tafsirOf(id)[1], state: "run", done: j.done, total: j.done + j.queue.length + 1, kind: "tf", tf: id}); });
+  if (typeof wbwAll === "object" && wbwAll) out.push({id: "wbw", label: "معنای کلمه‌به‌کلمه", state: "run", done: wbwAll.done, total: 114, kind: "wbw"});
+  return out;
+}
+function dlPill() {
+  let el = document.getElementById("dl-pill");
+  if (!el) { el = document.createElement("button"); el.id = "dl-pill"; el.className = "dl-pill"; el.addEventListener("click", openDownloads); document.body.appendChild(el); }
+  const act = dlAll().filter(jobActive2);
+  if (!act.length || document.querySelector("[data-dlpage]")) { el.hidden = true; document.body.classList.remove("has-dl"); return; }
+  const run = act.filter(j => j.state === "run"), j = run[0] || act[0];
+  el.hidden = false; document.body.classList.add("has-dl");
+  el.innerHTML = `<span class="dl-ic" aria-hidden="true">⬇</span><span class="dl-t">${act.length > 1 ? FA(act.length) + " دانلود" : esc(j.label || "دانلود")}</span><span class="dl-p num">${j.state === "queued" ? "در صف" : FA(jobPct(j)) + "٪"}</span>`;
+  el.setAttribute("aria-label", "وضعیت دانلودها: " + FA(act.length) + " دانلود در جریان");
+}
+setInterval(() => { if (dlAll().some(j => j.kind !== "job")) dlPill(); }, 2000);
+const agoText = t => { const m = Math.round((Date.now() - (t || Date.now())) / 60000); return m < 1 ? "همین حالا" : m < 60 ? FA(m) + " دقیقه پیش" : m < 1440 ? FA(Math.round(m / 60)) + " ساعت پیش" : FA(Math.round(m / 1440)) + " روز پیش"; };
+function openDownloads() {
+  lastDraw = openDownloads;
+  const all = dlAll(), act = all.filter(jobActive2), bad = all.filter(j => j.state === "error"), ok = all.filter(j => j.state === "done" || j.state === "cancel").sort((a, b) => (b.at || 0) - (a.at || 0));
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="وضعیت دانلودها" data-dlpage>
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>وضعیت دانلودها</h2></header>
+    <div class="body">
+      ${IS_APP ? "" : `<div class="help small">در نسخه وب چیزی روی دستگاه ذخیره نمی‌شود؛ ذخیره ترتیل، درس و ترجمه فقط در برنامه اندروید است. تفسیر و معنای کلمات در مرورگر هم ذخیره می‌شود.</div>`}
+      <div class="card"><div class="row between"><h3>در حال دانلود ${act.length ? `<span class="muted num">(${FA(act.length)})</span>` : ""}</h3>${act.length ? `<button class="small" id="dl-stop">توقف همه</button>` : ""}</div>
+        ${act.length ? act.map(j => `<div class="dl-row"><div class="row between"><b class="small">${esc(j.label || j.id)}</b>${j.kind === "job" ? `<button class="small btn-ghost" data-dlcancel="${esc(j.id)}">لغو</button>` : j.kind === "tf" ? `<button class="small btn-ghost" data-dltf="${esc(j.tf)}">توقف</button>` : ""}</div>
+          ${j.kind === "job" ? jobBar(j.id) : `<div class="bar"><i style="width:${Math.round(j.done / Math.max(j.total, 1) * 100)}%;background:var(--gold)"></i></div><span class="small muted num">${FA(j.done)} از ${FA(j.total)} سوره</span>`}</div>`).join("")
+          : `<p class="small muted">الان چیزی در حال دانلود نیست.</p>`}
+      </div>
+      ${bad.length ? `<div class="card"><h3>کامل نشد</h3>${bad.map(j => `<div class="dl-row"><div class="row between"><b class="small">${esc(j.label || j.id)}</b><span class="row" style="gap:4px">${j.files ? `<button class="small btn-main" data-dlretry="${esc(j.id)}">دوباره</button>` : ""}<button class="small btn-ghost" data-dlforget="${esc(j.id)}" aria-label="برداشتن از فهرست">✕</button></span></div>
+          <span class="small muted">${j.total ? FA(j.done || 0) + " از " + FA(j.total) + " فایل ذخیره شد · " : ""}${agoText(j.at)}</span>${j.why ? `<span class="small dl-why">${esc(j.why)}</span>` : ""}</div>`).join("")}</div>` : ""}
+      ${ok.length ? `<div class="card"><div class="row between"><h3>اخیر</h3><button class="small btn-ghost" id="dl-clear">پاک کردن فهرست</button></div>${ok.slice(0, 20).map(j => `<div class="dl-row"><div class="row between"><span class="small">${j.state === "done" ? `<span class="ok">✓</span>` : `<span class="muted">⏹</span>`} ${esc(j.label || j.id)}</span><span class="small muted">${j.state === "cancel" ? "لغو شد · " : ""}${agoText(j.at)}</span></div></div>`).join("")}</div>` : ""}
+      <div class="card"><h3>مدیریت فایل‌های روی گوشی</h3><div class="row"><button class="small" id="dl-au">🎧 ترتیل‌ها</button><button class="small" id="dl-set">📖 تفسیر و ترجمه (تنظیمات)</button><button class="small" data-gotab="path">🎬 درس‌ها</button></div></div>
+    </div></div>`);
+  const on = (sel, f) => box.querySelectorAll(sel).forEach(b => b.addEventListener("click", () => f(b)));
+  on("#dl-stop", () => { stopAllDownloads(); Object.values(TFJOBS || {}).forEach(t => t.stop = true); });
+  on("[data-dlcancel]", b => { const id = b.dataset.dlcancel; try { Android.cancelJob(id); } catch (e) {} if (JOBS[id] && JOBS[id].state === "queued") { JOBS[id].state = "cancel"; JOBS[id].at = Date.now(); saveDlHist(); refresh(); } });
+  on("[data-dltf]", b => { const t = TFJOBS[b.dataset.dltf]; if (t) t.stop = true; });
+  on("[data-dlretry]", b => { const j = JOBS[b.dataset.dlretry]; if (j && j.files) startJob(b.dataset.dlretry, j.label, j.files); });
+  on("[data-dlforget]", b => { delete JOBS[b.dataset.dlforget]; saveDlHist(); openDownloads(); });
+  on("#dl-clear", () => { Object.keys(JOBS).forEach(id => { if (!jobActive(id) && JOBS[id].state !== "error") delete JOBS[id]; }); saveDlHist(); openDownloads(); });
+  on("#dl-au", () => { auFrom = "settings"; openAudio(); });
+  on("#dl-set", () => openSettings());
+  on("[data-gotab]", b => { box.innerHTML = ""; tab = b.dataset.gotab; render(); window.scrollTo(0, 0); });
+  dlPill();
+}
+
 // Translations
 function downloadTrans(id) { const t2 = TRANSLATIONS.find(x => x[0] === id); startJob("tr-" + id, "ترجمه " + t2[1], [{url: SITE_BASE + "data/trans/" + id + ".json", path: "trans/" + id + ".json"}]); }
 // Recitations: one folder per reciter and surah, one mp3 per ayah (as on everyayah.com)
@@ -753,7 +842,8 @@ function offlineBox() {
     <div class="row between"><h3 style="font-size:14px">ترجمه‌ها</h3>${pend.length ? `<button class="small btn-main" id="tr-all">دریافت همه (${FA(pendMB.toFixed(0))} مگابایت)</button>` : `<span class="small ok">همه روی گوشی است</span>`}</div>
     <div>${rest.map(([id, nm, mb]) => `<div class="dlrow"><span class="small">${nm} <span class="muted num">· ${FA(mb)} مگابایت</span></span>${jobActive("tr-" + id) ? "" : transLocal(id) ? `<span class="row" style="gap:6px"><span class="small ok">✓</span><button class="small btn-ghost" data-trdel="${id}">حذف</button></span>` : `<button class="small" data-trget="${id}">دریافت</button>`}${jobActive("tr-" + id) ? jobBar("tr-" + id) : ""}</div>`).join("")}</div>
     <div class="row between"><h3 style="font-size:14px">ترتیل</h3><span class="small muted">${rname}: ${FA(haveS)} سوره روی گوشی</span></div>
-    <button id="au-open">⬇ دانلود ترتیل: انتخاب سوره‌ها، جزء یا کل قرآن</button></div>`;
+    <button id="au-open">⬇ دانلود ترتیل: انتخاب سوره‌ها، جزء یا کل قرآن</button>
+    <button data-dls>📥 وضعیت دانلودها</button></div>`;
 }
 function wireOffline(root) {
   const a = root.querySelector("#tr-all"); if (a) a.addEventListener("click", downloadAllTrans);
@@ -767,7 +857,8 @@ const juzSurahs = j => { const [a, b] = juzPages(j); return DATA.surahs.filter(s
 const auJobs = r => Object.keys(JOBS).filter(id => id.startsWith("au-" + r + "-") && jobActive(id));
 function stopAllDownloads() {
   try { Android.cancelAll(); } catch (e) { Object.keys(JOBS).filter(jobActive).forEach(id => { try { Android.cancelJob(id); } catch (e2) {} }); }
-  Object.keys(JOBS).filter(id => JOBS[id].state === "queued").forEach(id => { JOBS[id].state = "cancel"; });
+  Object.keys(JOBS).filter(id => JOBS[id].state === "queued").forEach(id => { JOBS[id].state = "cancel"; JOBS[id].at = Date.now(); });
+  saveDlHist(); dlPill();
   toast("دانلودها متوقف شد"); refresh();
 }
 // Recitation manager: pick surahs (one by one, by juz, my surahs, current level or the whole Quran) and download them for one reciter
@@ -853,7 +944,20 @@ const stopAudio = () => { queue = []; if (typeof mp !== "undefined" && mp.playin
 
 // ---------- refresh: re-run whatever is on screen (after a font arrives) ----------
 let lastDraw = () => render();
-function refresh() { clearTimeout(refresh.t); refresh.t = setTimeout(() => lastDraw(), 60); }
+// Background redraws (a page, font, translation or download arriving) must never move the screen:
+// they wait while the user is typing or a lesson is playing, and keep the scroll position (see sheet() and render()).
+let QUIET = false;
+function refresh() {
+  clearTimeout(refresh.t);
+  refresh.t = setTimeout(() => {
+    const a = document.activeElement;
+    const typing = a && (a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && !/^(checkbox|radio|range|button)$/.test(a.type)));
+    const media = [...document.querySelectorAll("#sheet video, #sheet audio, #view video, #view audio")].some(m => !m.paused);
+    if (typing || media) { refresh.t = setTimeout(refresh, 1500); return; }
+    QUIET = true;
+    try { lastDraw(); } finally { QUIET = false; }
+  }, 250);
+}
 window.addEventListener("resize", () => fitPages());
 try { document.fonts.addEventListener("loadingdone", () => fitPages()); } catch (e) {}
 
@@ -864,8 +968,11 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
 function render() {
   lastDraw = render;
   document.querySelectorAll(".tabs button").forEach(b => b.dataset.tab === tab ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
-  const v = document.getElementById("view");
-  v.innerHTML = ({home, map, review, mushaf, path})[tab]();
+  const v = document.getElementById("view"), html = ({home, map, review, mushaf, path})[tab](), same = render.tab === tab, y = window.scrollY;
+  if (QUIET && same && render.html === html) return;
+  render.tab = tab; render.html = html;
+  v.innerHTML = html;
+  if (same && y && Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
   v.querySelectorAll("[data-open]").forEach(el => el.addEventListener("click", () => openSurah(+el.dataset.open)));
   v.querySelectorAll("[data-start]").forEach(el => el.addEventListener("click", () => startSession(el.dataset.start, el.dataset.mode || "learn")));
   v.querySelectorAll("[data-settings]").forEach(el => el.addEventListener("click", openSettings));
@@ -1563,8 +1670,16 @@ let openVid = null;
 
 // ---------- generic sheet ----------
 function sheet(html, onClose) {
-  const box = document.getElementById("sheet");
-  box.innerHTML = html;
+  const box = document.getElementById("sheet"), cur = box.querySelector(".sheet");
+  const lbl = (html.match(/aria-label="([^"]*)"/) || [])[1], same = !!(cur && lbl && cur.getAttribute("aria-label") === lbl);
+  if (QUIET && same && sheet.last === html) { const d = document.createElement("div"); d.innerHTML = html; return d; }
+  const oldBody = same && cur.querySelector(".body"), y = oldBody ? oldBody.scrollTop : 0;
+  const fid = same && document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : "";
+  box.innerHTML = html; sheet.last = html;
+  if (same) {
+    const nb = box.querySelector(".body"); if (nb && y) nb.scrollTop = y;
+    if (fid) { const f = box.querySelector("#" + CSS.escape(fid)); if (f) try { f.focus({preventScroll: true}); } catch (e) {} }
+  }
   const c = box.querySelector("[data-close]");
   if (c) c.addEventListener("click", () => { stopAudio(); openVid = null; box.innerHTML = ""; onClose ? onClose() : render(); });
   return box;
@@ -2883,6 +2998,7 @@ function autoBackupDaily() {
 // ---------- one click handler for the buttons of all these tools (in pages and sheets) ----------
 const ACT = {
   "data-deck": v => openDeck(+v),
+  "data-dls": () => openDownloads(),
   "data-deckplay": v => { const n = +v; goVerse(n, 1); setTimeout(() => { mpStart(n, 1); mp.end = [n, S[n].total]; mpRefresh(); }, 150); },
   "data-tafsir": v => { const [sn, ay] = parseVk(v); openTafsir(sn, ay); },
   "data-root": v => openRoot(+v),
@@ -3041,6 +3157,7 @@ function openSettings() {
       <div class="field"><label for="reciter">قاری ترتیل</label><select id="reciter">${reciterOptions(cfg.reciter)}</select></div>
       <button id="testaudio">▶ آزمایش صدای قاری</button>
       <button id="au-open2">⬇ دانلود ترتیل: انتخاب سوره‌ها، جزء یا کل قرآن</button>
+      <button data-dls>📥 وضعیت دانلودها${dlAll().filter(jobActive2).length ? ` <span class="num">(${FA(dlAll().filter(jobActive2).length)} در جریان)</span>` : ""}</button>
       <div class="field"><span class="small">تکرار پیش‌فرض هر آیه</span><div class="seg" data-group="reps">${[1, 3, 5].map(v => `<button data-v="${v}" aria-pressed="${cfg.reps === v}">${FA(v)} بار</button>`).join("")}</div></div>
       <p class="small muted">ترتیل‌هایی که دانلود نشده‌اند هنگام پخش از اینترنت خوانده می‌شوند.</p>
     </section>

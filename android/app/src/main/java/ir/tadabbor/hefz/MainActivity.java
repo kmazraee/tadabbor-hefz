@@ -130,7 +130,7 @@ public class MainActivity extends Activity {
                 try {
                     for (String name : QCF_FILES) {
                         File out = new File(qcfDir(), name);
-                        if (!(out.exists() && out.length() > 0)) download(QCF_CDN + name, out);
+                        if (!(out.exists() && out.length() > 0)) download(QCF_CDN + name, out, null);
                         js("window.__qcfProgress && __qcfProgress(" + qcfCount() + "," + total + ",'run')");
                     }
                     js("window.__qcfProgress && __qcfProgress(" + total + "," + total + ",'done')");
@@ -194,7 +194,13 @@ public class MainActivity extends Activity {
                         if (!(out.exists() && out.length() > 0)) {
                             out.getParentFile().mkdirs();
                             try {
-                                downloadRetry(o.getString("url"), out);
+                                final long[] last = {0};
+                                downloadRetry(o.getString("url"), out, (got, size) -> {
+                                    long now = System.currentTimeMillis();
+                                    if (now - last[0] < 700) return;
+                                    last[0] = now;
+                                    js("window.__dlb && __dlb(" + qid + "," + got + "," + size + ")");
+                                });
                                 streak = 0;
                             } catch (Exception e) {
                                 failed++; streak++;
@@ -315,11 +321,14 @@ public class MainActivity extends Activity {
         f.delete();
     }
 
+    /** Bytes received so far for the file being downloaded (size is -1 when the server does not say). */
+    interface Progress { void on(long got, long size); }
+
     /** Three tries per file, with a short pause between them (mobile networks drop often). */
-    private static void downloadRetry(String url, File out) throws Exception {
+    private static void downloadRetry(String url, File out, Progress p) throws Exception {
         Exception last = null;
         for (int t = 0; t < 3; t++) {
-            try { download(url, out); return; }
+            try { download(url, out, p); return; }
             catch (Exception e) {
                 last = e;
                 if (e.getMessage() != null && e.getMessage().startsWith("HTTP 404")) break;
@@ -329,7 +338,7 @@ public class MainActivity extends Activity {
         throw last;
     }
 
-    private static void download(String url, File out) throws Exception {
+    private static void download(String url, File out, Progress p) throws Exception {
         File part = new File(out.getPath() + ".part");
         HttpURLConnection c = null;
         // follow redirects by hand, including http <-> https, which HttpURLConnection will not do
@@ -352,10 +361,11 @@ public class MainActivity extends Activity {
         }
         try {
             if (c.getResponseCode() != 200) throw new Exception("HTTP " + c.getResponseCode());
+            long size = c.getContentLength(), got = 0;
             try (InputStream in = c.getInputStream(); OutputStream o = new FileOutputStream(part)) {
                 byte[] buf = new byte[16384];
                 int n;
-                while ((n = in.read(buf)) > 0) o.write(buf, 0, n);
+                while ((n = in.read(buf)) > 0) { o.write(buf, 0, n); got += n; if (p != null) p.on(got, size); }
             }
             if (part.length() == 0 || !part.renameTo(out)) throw new Exception("write failed");
         } finally {
