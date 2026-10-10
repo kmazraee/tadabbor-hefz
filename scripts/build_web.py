@@ -10,6 +10,30 @@ import json, pathlib, re, shutil
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 tpl = (ROOT / "scripts/prototype_src.html").read_text(encoding="utf-8")
 meta = (ROOT / "data/meta.json").read_text(encoding="utf-8")
+
+# Institute slide decks per surah (data/decks/NNN.json): surah card, guidance flow and direction.
+# Where the flow boxes exactly tile a siyaq, they become that siyaq's reference steps.
+_m = json.loads(meta)
+for f in sorted((ROOT / "data/decks").glob("*.json")):
+    d = json.loads(f.read_text(encoding="utf-8"))
+    s = next(x for x in _m["surahs"] if x["n"] == int(f.stem))
+    s["deck"] = d
+    if s["src"] == "book":
+        continue
+    s["dir"] = d.get("dir") or s.get("dir")
+    s["source"] = d.get("source")
+    nodes = sorted(d.get("flow", []), key=lambda x: x["s"])
+    for q in s["siyaqs"]:
+        inside = [x for x in nodes if x["s"] >= q["s"] and x["e"] <= q["e"]]
+        tiles = inside and inside[0]["s"] == q["s"] and inside[-1]["e"] == q["e"] and all(
+            a["e"] + 1 == b["s"] for a, b in zip(inside, inside[1:]))
+        if tiles:
+            q["steps"] = [{"s": x["s"], "e": x["e"], "t": x["t"]} for x in inside]
+            if q["s"] == 1 and q["e"] == s["total"] and d.get("dir"):
+                q["title"] = d["dir"]
+                q["sum"] = [d["dirText"]] if d.get("dirText") else []
+    print(f"  deck: surah {s['n']} {s['name']}")
+meta = json.dumps(_m, ensure_ascii=False, separators=(",", ":"))
 for ph in ("/*DATA*/", "/*DATABASE*/"):
     assert ph in tpl, ph
 

@@ -123,6 +123,23 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .subnav span{flex:1;text-align:center;font-size:12px;padding:4px;border-radius:8px;background:var(--line);color:var(--muted)}
 .subnav span.on{background:var(--lapis-soft);color:var(--ink);font-weight:700}
 .help{background:var(--lapis-soft);border-radius:12px;padding:12px 14px;font-size:13px}
+.deck-btn{display:flex;align-items:center;gap:12px;text-align:start;width:100%;padding:12px 14px;border-radius:14px;background:var(--lapis-soft);border:1px solid var(--lapis)}
+.deck-ic{font-size:26px;line-height:1}
+.deck-hero{text-align:center;gap:8px}
+.deck-name{font-size:20px}
+.deck-id{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.deck-id>div{display:flex;flex-direction:column;gap:2px;background:var(--lapis-soft);border-radius:12px;padding:8px 4px}
+.deck-id b{font-size:16px}
+@media (max-width:380px){.deck-id{grid-template-columns:repeat(2,1fr)}}
+.deck-list{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.flow{display:flex;flex-direction:column;gap:8px}
+.fl-node{display:flex;flex-direction:column;gap:8px}
+.fl-kids{display:flex;flex-direction:column;gap:8px;padding-right:14px;margin-right:10px;border-right:2px solid var(--lapis)}
+.fl-box{display:flex;flex-direction:column;gap:4px;text-align:start;width:100%;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.fl-ay{font-size:12px;color:var(--lapis);font-weight:700}
+.fl-ar{font-family:var(--f-q);font-size:18px;line-height:1.9;direction:rtl}
+.deck-dua{background:var(--lapis-soft)}
+.deck-dua p{font-size:16px;line-height:2}
 .meaning{background:var(--lapis-soft);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}
 .meaning b{font-size:16px}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
@@ -471,10 +488,10 @@ function toast(msg) {
   document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
 }
 const qName = q => "سیاق " + FA(q.n);
-const dirBlock = s => s.dir ? `<div class="help"><b>${s.src === "book" ? "راهبرد سوره" : "جهت هدایتی سوره (آزمایشی)"}:</b> ${esc(s.dir)}${s.points ? `<ol class="small" style="margin:6px 0 0;padding-inline-start:20px">${s.points.map(x => `<li>${esc(x)}</li>`).join("")}</ol>` : ""}</div>` : "";
+const dirBlock = s => s.dir ? `<div class="help"><b>${s.src === "book" ? "راهبرد سوره" : s.deck ? "جهت هدایتی سوره" : "جهت هدایتی سوره (آزمایشی)"}:</b> ${esc(s.dir)}${s.points ? `<ol class="small" style="margin:6px 0 0;padding-inline-start:20px">${s.points.map(x => `<li>${esc(x)}</li>`).join("")}</ol>` : ""}</div>` : "";
 const faslOf = (s, q) => q.f && s.fasls ? s.fasls.find(f => f.n === q.f) : null;
 const sesTitle = (s, q) => { const f = faslOf(s, q); return f ? `فصل ${FA(f.n)} · ${qName(q)}` : (s.src === "book" ? qName(q) : esc(title(s, q))); };
-const sourceNote = s => s.src === "book" ? `<div class="help small">سیاق‌ها و فصل‌های این سوره بر اساس سیاق‌بندی و فصل‌بندی درس «تدبر در سوره مبارک بقره» (مرحله چهارم) استاد علی صبوحی طسوجی است.</div>` : testNote;
+const sourceNote = s => s.deck && s.src !== "book" ? `<div class="help small">جهت هدایتی و سیر هدایتی این سوره از ${esc(s.deck.source)} است. مرز سیاق‌ها هنوز بر اساس رکوع‌های مصحف است.</div>` : s.src === "book" ? `<div class="help small">سیاق‌ها و فصل‌های این سوره بر اساس سیاق‌بندی و فصل‌بندی درس «تدبر در سوره مبارک بقره» (مرحله چهارم) استاد علی صبوحی طسوجی است.</div>` : testNote;
 function faslHead(s, q, prev) {
   const f = faslOf(s, q); if (!f || (prev && prev.f === q.f)) return "";
   const back = prev && prev.f && s.fasls.find(x => x.n === prev.f).parent === f.n;
@@ -1119,6 +1136,38 @@ function wirePlayer(root) {
 }
 function mpRefresh() { const el = document.getElementById("player"); if (!el) return; el.outerHTML = mpBar(); wirePlayer(document.getElementById("player").parentNode); }
 
+// ---------- institute slide deck per surah: card, context, guidance flow, direction and prayer ----------
+const deckAr = (sn, a, b) => { let t = ""; for (let i = a; i <= b; i++) { const v = vplain(sn, i) || ""; if (!v) return ""; t += v + " ﴿" + FA(i) + "﴾ "; } return t.trim(); };
+function deckFlow(s) {
+  const d = s.deck, by = Object.fromEntries(d.flow.map(x => [x.id, x])), kids = new Set(d.flow.flatMap(x => x.to || []));
+  const node = x => `<div class="fl-node"><button class="fl-box" data-gov="${key(s.n, x.s)}" aria-label="آیات ${FA(x.s)}${x.e > x.s ? " تا " + FA(x.e) : ""} در مصحف">
+      <span class="fl-ay">${x.e > x.s ? `آیات ${FA(x.s)} تا ${FA(x.e)}` : `آیه ${FA(x.s)}`}</span>
+      ${deckAr(s.n, x.s, x.e) ? `<span class="fl-ar">${esc(deckAr(s.n, x.s, x.e))}</span>` : ""}
+      <span class="small">${esc(x.t)}</span></button>
+    ${(x.to || []).length ? `<div class="fl-kids">${x.to.map(id => node(by[id])).join("")}</div>` : ""}</div>`;
+  return d.flow.filter(x => !kids.has(x.id)).map(node).join("");
+}
+function openDeck(n, onBack) {
+  const s = S[n], d = s.deck; if (!d) return;
+  lastDraw = () => openDeck(n, onBack);
+  const id = d.id || {}, tiles = [["ترتیب نزول", id.order && FA(id.order)], ["جایگاه در قرآن", id.pos && FA(id.pos)], ["محل نزول", id.place], ["تعداد آیات", FA(id.ayat || s.total)]].filter(t => t[1]);
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="نقشه تدبر سوره ${s.name}">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="${onBack ? "بازگشت" : "بستن"}">${onBack ? "→" : "✕"}</button><h2>نقشه تدبر سوره ${s.name}</h2></header>
+    <div class="body">
+      <div class="card deck-hero"><span class="small muted">شناسه سوره</span><b class="deck-name">سوره مبارکه ${s.name}</b>
+        <div class="deck-id">${tiles.map(([l, v]) => `<div><span class="small muted">${l}</span><b>${esc(String(v))}</b></div>`).join("")}</div></div>
+      ${(d.space || []).length ? `<div class="card"><h3>فضای سخن</h3><p class="small muted">سوره با مخاطبی سخن می‌گوید که این حال‌وهوا را دارد:</p><ul class="deck-list">${d.space.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+      <div class="card"><div class="row between"><h3>قرائت سوره</h3><div class="row"><button class="small btn-main" data-deckplay="${n}">▶ پخش کل سوره</button><button class="small" data-gov="${key(n, 1)}">در مصحف</button></div></div>
+        <p class="small muted">پیش از دیدن سیر هدایتی، یک بار سوره را با دقت بشنوید و بخوانید. قاری: ${esc(reciterName(cfg.reciter))}</p></div>
+      ${(d.flow || []).length ? `<div class="card"><h3>سیر هدایتی سوره</h3><p class="small muted">هر بخش را بزنید تا در مصحف باز شود.</p><div class="flow">${deckFlow(s)}</div></div>` : ""}
+      ${d.dir ? `<div class="card"><h3>جهت هدایتی سوره</h3><div class="meaning"><b>${esc(d.dir)}</b>${d.dirText ? `<span class="small">${esc(d.dirText)}</span>` : ""}</div></div>` : ""}
+      ${d.dua ? `<div class="card deck-dua"><h3>دعا</h3><p>${esc(d.dua)}</p><button class="small" id="dk-share">اشتراک دعا</button></div>` : ""}
+      <p class="small muted">منبع: ${esc(d.source)}</p>
+    </div></div>`, onBack);
+  const sh = box.querySelector("#dk-share"); if (sh) sh.addEventListener("click", () => shareText(`${d.dua}\n\n(دعای پایان تدبر سوره ${s.name})\nاز برنامه «حفظ تدبری»`));
+  if (!QTEXT) loadText().then(() => { if (document.querySelector('#sheet [aria-label="نقشه تدبر سوره ' + s.name + '"]')) openDeck(n, onBack); }).catch(() => {});
+}
+
 // ---------- favourite verses and sharing ----------
 const isFav = vk => !!(st.fav || {})[vk];
 function toggleFav(vk) { st.fav = st.fav || {}; if (st.fav[vk]) delete st.fav[vk]; else st.fav[vk] = Date.now(); save(); toast(st.fav[vk] ? "به علاقه‌مندی‌ها اضافه شد" : "از علاقه‌مندی‌ها برداشته شد"); }
@@ -1507,6 +1556,7 @@ function openSurah(n) {
   <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>سوره ${s.name}</h2><span class="small muted">${s.type === "meccan" ? "مکی" : "مدنی"} · ${FA(s.total)} آیه</span></header>
   <div class="body">${surahInfo(s)}${strip(s)}${legend()}
   ${surahOpen(n) ? "" : (() => { const L = levelOfSurah(n); return `<div class="card startnote"><b>${ICON_LOCK} تدبر این سوره هنوز باز نیست</b><p class="small">${L ? `این سوره در «${L.t}» است و بعد از گذراندن «${blocker(L).t}» باز می‌شود.` : "این سوره بعد از گذراندن سطح ۶ باز می‌شود."} ثبت «از قبل حفظ هستم» و مرور همیشه آزاد است.</p><div class="row"><button class="small btn-main" id="go-cur">ادامه ${currentLevel().t}</button></div></div>`; })()}
+  ${s.deck ? `<button class="deck-btn" data-deck="${n}"><span class="deck-ic" aria-hidden="true">🗺</span><span><b>نقشه تدبر سوره</b><br><span class="small muted">شناسه، فضای سخن، سیر و جهت هدایتی، دعا</span></span></button>` : ""}
   ${dirBlock(s)}
   <button id="les">🎬 فیلم و صوت درس‌های تدبر این سوره</button>
   <div class="row"><button class="small" data-tafsir="${key(n, 1)}">📖 تفسیر سوره</button>${s.siyaqs.length >= 3 ? `<button class="small" data-order="${n}">🧩 تمرین ترتیب سیاق‌ها</button>` : ""}</div>
@@ -1783,14 +1833,16 @@ function stepTeacher(nav) {
     body: `${nav}
     <div class="card"><h3>قدم دوم: یادگیری تدبر این بخش از استاد</h3>
       <p class="small">حالا که معنای آیات را می‌دانید، تدبر همین بخش را از درس استاد صبوحی یاد بگیرید: فیلم یا صوت جلسه‌های این سوره را ببینید یا بشنوید، یا بخش مربوط در کتاب را بخوانید. بعد تیک «تدبر این سیاق را یاد گرفتم» را بزنید.</p>
+      ${s.deck ? `<button class="deck-btn" id="t-deck"><span class="deck-ic" aria-hidden="true">🗺</span><span><b>نقشه تدبر سوره ${s.name}</b><br><span class="small muted">اسلاید مؤسسه: سیر و جهت هدایتی سوره</span></span></button>` : ""}
       <div class="row"><button id="t-les" class="btn-main">🎬 فیلم و صوت درس‌های سوره ${s.name}</button><button data-tafsir="${key(s.n, q.s)}">📖 تفسیر این آیات (${esc(tafsirOf(cfg.tafsir)[1].split("،")[0])})</button></div></div>
-    ${q.title ? `<div class="card"><div class="row between"><h3>${s.src === "book" ? "پیام این سیاق از درس استاد" : "عنوان مرجع (آزمایشی)"}</h3><button class="small" id="t-msg" aria-expanded="${!!ses.tmsg}">${ses.tmsg ? "پنهان کن" : "نشانم بده"}</button></div>
+    ${q.title ? `<div class="card"><div class="row between"><h3>${s.src === "book" ? "پیام این سیاق از درس استاد" : s.deck ? "جهت و سیر هدایتی (اسلاید مؤسسه)" : "عنوان مرجع (آزمایشی)"}</h3><button class="small" id="t-msg" aria-expanded="${!!ses.tmsg}">${ses.tmsg ? "پنهان کن" : "نشانم بده"}</button></div>
       ${ses.tmsg ? `<div class="meaning"><b>${esc(q.title)}</b>${(q.sum || []).map(x => `<span class="small">${esc(x)}</span>`).join("")}</div>${q.steps.length ? `<ol class="small" style="margin:0;padding-inline-start:20px">${q.steps.map(x => `<li>${esc(x.t)} <span class="muted">(آیات ${FA(x.s)}${x.e > x.s ? " تا " + FA(x.e) : ""})</span></li>`).join("")}</ol>` : ""}${s.source ? `<p class="small muted">از ${esc(s.source)}</p>` : ""}` : `<p class="small muted">بعد از دیدن درس، پیام استاد درباره این سیاق را اینجا ببینید.</p>`}</div>` : ""}
     ${booksCard(books, "📚 کتاب‌های تدبر این سوره")}
     <div class="card ${n.learned ? "okcard" : ""}"><label class="switch"><span><b>تدبر این سیاق را یاد گرفتم</b><br><span class="small muted">از درس، کتاب یا کلاس استاد</span></span><input type="checkbox" id="t-ok" ${n.learned ? "checked" : ""}></label></div>`,
     foot: `<button id="back">قبلی</button><button class="btn-main" id="next">برو به کشف گام‌ها</button>`,
     wire: b => {
       b.querySelector("#t-les").addEventListener("click", () => { stopAudio(); const back = () => drawSession(); openLessons(s.n); lastDraw = () => {}; const c = document.querySelector("#sheet [data-close]"); c.replaceWith(c.cloneNode(true)); document.querySelector("#sheet [data-close]").addEventListener("click", back); });
+      const dk = b.querySelector("#t-deck"); if (dk) dk.addEventListener("click", () => { stopAudio(); openDeck(s.n, () => drawSession()); });
       const m = b.querySelector("#t-msg"); if (m) m.addEventListener("click", () => { ses.tmsg = !ses.tmsg; redraw(); });
       b.querySelector("#t-ok").addEventListener("change", e => { n.learned = e.target.checked; save(); redraw(); });
       b.querySelector("#back").addEventListener("click", () => { ses.sub = 0; drawSession(); });
@@ -1818,7 +1870,7 @@ function openTadReview(k, phase) {
           ${mineSteps.length ? `<ol class="small" style="margin:0;padding-inline-start:20px">${mineSteps.map(([a, t]) => `<li>${esc(t)} <span class="muted">(از آیه ${FA(a)})</span></li>`).join("")}</ol>` : ""}
           ${(n.answers || []).some(a => a && a.trim()) ? `<details><summary class="small">پاسخ‌های شما به پرسش‌های تدبری</summary><div>${QUESTIONS.map((qq, i) => n.answers[i] && n.answers[i].trim() ? `<p class="small"><b>${esc(qq)}</b><br>${esc(n.answers[i])}</p>` : "").join("")}</div></details>` : ""}
           ${(n.extra || []).length ? `<details><summary class="small">برداشت‌های بعدی (${FA(n.extra.length)})</summary><div>${n.extra.map(x => `<p class="small">${esc(x.text)}</p>`).join("")}</div></details>` : ""}</div>
-        ${q.title || steps.filter(g => g.t).length > 1 ? `<div class="card"><h3>${s.src === "book" ? "پیام استاد" : "گام‌های مرجع"}</h3>${q.title ? `<div class="meaning"><b>${esc(q.title)}</b>${(q.sum || []).map(x => `<span class="small">${esc(x)}</span>`).join("")}</div>` : ""}
+        ${q.title || steps.filter(g => g.t).length > 1 ? `<div class="card"><h3>${s.src === "book" ? "پیام استاد" : s.deck ? "جهت و سیر هدایتی سوره" : "گام‌های مرجع"}</h3>${q.title ? `<div class="meaning"><b>${esc(q.title)}</b>${(q.sum || []).map(x => `<span class="small">${esc(x)}</span>`).join("")}</div>` : ""}
           ${steps.length > 1 ? `<ol class="small" style="margin:0;padding-inline-start:20px">${steps.map(g => `<li>${esc(g.t)}</li>`).join("")}</ol>` : ""}</div>` : ""}
         <div class="field"><label for="tr-ins">برداشت تازه امروز (اختیاری)</label><textarea id="tr-ins" rows="2"></textarea></div>` : ""}
     </div>
@@ -1880,7 +1932,7 @@ function stepTadabbur() {
     <div class="card"><h3>پرسش‌های تدبری</h3><p class="small">کوتاه و به زبان خودتان بنویسید. پاسخ درست و غلط ندارد؛ هدف، ارتباط گرفتن با آیات پیش از حفظ است.</p></div>
     ${QUESTIONS.map((qq, i) => `<div class="field"><label for="qa-${i}">${FA(i + 1)}. ${qq}</label><textarea id="qa-${i}" data-qa="${i}" rows="2">${esc(n.answers[i] || "")}</textarea></div>`).join("")}
     <div class="field"><label for="mytitle"><b>عنوان این سیاق به زبان من</b></label><input type="text" id="mytitle" value="${esc(n.title)}" placeholder="در یک جمله کوتاه"></div>
-    ${q.title ? `<div class="card"><div class="row between"><h3>${s.src === "book" ? "مقایسه با برداشت استاد" : "عنوان مرجع (آزمایشی)"}</h3><button class="small" id="cmp2" aria-expanded="${!!ses.cmp2}">${ses.cmp2 ? "پنهان کن" : "نشانم بده"}</button></div>
+    ${q.title ? `<div class="card"><div class="row between"><h3>${s.src === "book" ? "مقایسه با برداشت استاد" : s.deck ? "مقایسه با جهت هدایتی سوره" : "عنوان مرجع (آزمایشی)"}</h3><button class="small" id="cmp2" aria-expanded="${!!ses.cmp2}">${ses.cmp2 ? "پنهان کن" : "نشانم بده"}</button></div>
       ${ses.cmp2 ? `<div class="meaning"><b>${esc(q.title)}</b>${(q.sum || []).map(x => `<span class="small">${esc(x)}</span>`).join("")}</div>${s.source ? `<p class="small muted">از ${esc(s.source)}</p>` : ""}` : `<p class="small muted">اول برداشت خودتان را بنویسید، بعد با پیام اصلی این سیاق مقایسه کنید.</p>`}</div>` : ""}`,
     foot: `<button id="back">قبلی</button><button class="btn-main" id="next">تدبر تمام شد؛ برو به شنیدن</button>`,
     wire: b => {
@@ -2808,6 +2860,8 @@ function autoBackupDaily() {
 
 // ---------- one click handler for the buttons of all these tools (in pages and sheets) ----------
 const ACT = {
+  "data-deck": v => openDeck(+v),
+  "data-deckplay": v => { const n = +v; goVerse(n, 1); setTimeout(() => { mpStart(n, 1); mp.end = [n, S[n].total]; mpRefresh(); }, 150); },
   "data-tafsir": v => { const [sn, ay] = parseVk(v); openTafsir(sn, ay); },
   "data-root": v => openRoot(+v),
   "data-similar": v => loadSimilar().then(() => openSimilar(v)).catch(() => toast("داده آیات مشابه باز نشد")),
