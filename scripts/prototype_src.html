@@ -220,6 +220,16 @@ details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direc
 .flash{align-items:center;text-align:center;gap:12px;padding:28px 16px}
 .flash-ar{font-size:44px}
 .flash-fa{font-size:22px;font-weight:700;color:var(--lapis)}
+.sinfo{gap:10px}
+.sinfo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.sinfo-grid div{display:flex;flex-direction:column;background:var(--paper);border-radius:10px;padding:6px 2px}
+.sinfo-grid b{font-size:18px}
+.sinfo-time{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px}
+.tracks4{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+.tr4 .bar{margin:2px 0 0}
+.chips4{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.c4{font-size:11px;padding:1px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.c4.on{border-color:var(--c);color:var(--ink);background:color-mix(in srgb,var(--c) 18%,transparent)}
 .stepper{display:flex;gap:2px;position:relative;padding-top:2px}
 .stepper::before{content:"";position:absolute;inset-inline:7%;top:19px;height:2px;background:var(--line)}
 .step{all:unset;cursor:pointer;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;position:relative;color:var(--ink);text-align:center}
@@ -342,7 +352,7 @@ const S = Object.fromEntries(DATA.surahs.map(s => [s.n, s]));
 const key = (sn, i) => sn + ":" + i;
 const STAGES = ["تدبر", "شنیدن", "حفظ", "اتصال", "ثبت"];
 const COLORS = {new: "var(--st-new)", learn: "var(--st-learn)", solid: "var(--st-solid)", due: "var(--st-due)"};
-const LABELS = {new: "شروع‌نشده", learn: "در حال حفظ", solid: "تثبیت‌شده", due: "نیاز به مرور"};
+const LABELS = {new: "شروع‌نشده", learn: "در حال حفظ", solid: "حفظ‌شده", due: "نیاز به مرور"};
 // [folder on everyayah.com, name, kbps, group]; Mishary Alafasy is left out on purpose
 const RECITERS = [["Parhizgar_48kbps", "شهریار پرهیزگار", 48, "ir"], ["Karim_Mansoori_40kbps", "کریم منصوری", 40, "ir"], ["Abu_Bakr_Ash-Shaatree_64kbps", "ابوبکر الشاطری", 64, "tr"], ["Muhammad_Ayyoub_64kbps", "محمد ایوب", 64, "tr"], ["Abdul_Basit_Murattal_64kbps", "عبدالباسط عبدالصمد (ترتیل)", 64, "tr"], ["Husary_64kbps", "محمود خلیل الحصری (ترتیل)", 64, "tr"], ["Menshawi_32kbps", "محمد صدیق المنشاوی (ترتیل)", 32, "tr"], ["Abdurrahmaan_As-Sudais_64kbps", "عبدالرحمن السدیس", 64, "tr"], ["Saood_ash-Shuraym_64kbps", "سعود الشریم", 64, "tr"], ["Maher_AlMuaiqly_64kbps", "ماهر المعیقلی", 64, "tr"], ["Hudhaify_64kbps", "علی الحذیفی", 64, "tr"], ["Abdullah_Basfar_64kbps", "عبدالله بصفر", 64, "tr"], ["Ghamadi_40kbps", "سعد الغامدی", 40, "tr"], ["Hani_Rifai_64kbps", "هانی الرفاعی", 64, "tr"], ["Ibrahim_Akhdar_64kbps", "ابراهیم الاخضر", 64, "tr"], ["Muhammad_Jibreel_64kbps", "محمد جبریل", 64, "tr"], ["Ahmed_ibn_Ali_al-Ajamy_64kbps_QuranExplorer.Com", "احمد بن علی العجمی", 64, "tr"], ["Salaah_AbdulRahman_Bukhatir_128kbps", "صلاح بوخاطر", 128, "tr"], ["Muhsin_Al_Qasim_192kbps", "محسن القاسم", 192, "tr"], ["Abdullaah_3awwaad_Al-Juhaynee_128kbps", "عبدالله عواد الجهنی", 128, "tr"], ["Salah_Al_Budair_128kbps", "صلاح البدیر", 128, "tr"], ["Abdullah_Matroud_128kbps", "عبدالله مطرود", 128, "tr"], ["Muhammad_AbdulKareem_128kbps", "محمد عبدالکریم", 128, "tr"], ["khalefa_al_tunaiji_64kbps", "خلیفه الطنیجی", 64, "tr"], ["Khaalid_Abdullaah_al-Qahtaanee_192kbps", "خالد القحطانی", 192, "tr"], ["Yasser_Ad-Dussary_128kbps", "یاسر الدوسری", 128, "tr"], ["Nasser_Alqatami_128kbps", "ناصر القطامی", 128, "tr"], ["Ali_Hajjaj_AlSuesy_128kbps", "علی حجاج السویسی", 128, "tr"], ["Sahl_Yassin_128kbps", "سهل یاسین", 128, "tr"], ["aziz_alili_128kbps", "عزیز علیلی", 128, "tr"], ["Yaser_Salamah_128kbps", "یاسر سلامه", 128, "tr"], ["Akram_AlAlaqimy_128kbps", "اکرم العلاقمی", 128, "tr"], ["Ali_Jaber_64kbps", "علی جابر", 64, "tr"], ["Fares_Abbad_64kbps", "فارس عباد", 64, "tr"], ["Abdul_Basit_Mujawwad_128kbps", "عبدالباسط عبدالصمد (تحقیق)", 128, "mj"], ["Husary_Mujawwad_64kbps", "محمود خلیل الحصری (تحقیق)", 64, "mj"], ["Minshawy_Mujawwad_64kbps", "محمد صدیق المنشاوی (تحقیق)", 64, "mj"], ["Mustafa_Ismail_48kbps", "مصطفی اسماعیل", 48, "mj"], ["Mohammad_al_Tablaway_64kbps", "محمد محمود الطبلاوی", 64, "mj"], ["mahmoud_ali_al_banna_32kbps", "محمود علی البنا", 32, "mj"], ["Ahmed_Neana_128kbps", "احمد نعینع", 128, "mj"], ["Husary_Muallim_128kbps", "الحصری معلّم (با مکث برای تکرار)", 128, "edu"], ["Ayman_Sowaid_64kbps", "ایمن سوید", 64, "edu"], ["translations/Makarem_Kabiri_16Kbps", "ترجمه گویای مکارم شیرازی (کبیری)", 16, "fa"], ["translations/Fooladvand_Hedayatfar_40Kbps", "ترجمه گویای فولادوند (هدایت‌فر)", 40, "fa"]];
 const RECITER_GROUPS = [["ir", "قاریان ایرانی"], ["tr", "ترتیل"], ["mj", "تحقیق (مجوّد)"], ["edu", "آموزشی"], ["fa", "ترجمه گویای فارسی"]];
@@ -800,6 +810,7 @@ function render() {
   v.querySelectorAll("[data-search]").forEach(el => el.addEventListener("click", openSearch));
   v.querySelectorAll("[data-books]").forEach(el => el.addEventListener("click", openBooks));
   v.querySelectorAll("[data-weak]").forEach(el => el.addEventListener("click", openWeak));
+  v.querySelectorAll("[data-tadrev]").forEach(el => el.addEventListener("click", () => openTadReview(el.dataset.tadrev)));
   v.querySelectorAll("[data-vocab]").forEach(el => el.addEventListener("click", () => openVocab()));
   v.querySelectorAll("[data-drill]").forEach(el => el.addEventListener("click", () => openDrill(weakOpen().slice(0, 10).map(x => x.vk), 0)));
   if (tab === "mushaf") wireMushaf(v);
@@ -869,6 +880,8 @@ function home() {
     <div class="row between"><h2>صف مرور امروز</h2>${due.length ? `<button class="btn-ghost small" data-start="${due[0].k}" data-mode="review">شروع مرور</button>` : ""}</div>
     ${due.length ? due.map(x => siyaqButton(x, "review")).join("") : `<p class="muted small">مرور امروز تمام است.</p>`}
   </section>` : ""}
+  ${(() => { const td = all.filter(x => tadDue(x.k)); return td.length ? `<section class="card"><div class="row between"><h2>مرور تدبر امروز</h2><span class="pill">${FA(td.length)} سیاق</span></div>${td.slice(0, 3).map(tadReviewButton).join("")}${td.length > 3 ? `<button class="small btn-ghost" data-goto="review">همه مرورها</button>` : ""}</section>` : ""; })()}
+  ${fresh ? "" : (() => { const started = all.filter(x => status(x.k) !== "new" || isTad(x.k)).map(x => x.k); return started.length ? `<section class="card"><h2>چهار مرحله یادگیری</h2><p class="small muted">از ${FA(started.length)} سیاقی که شروع کرده‌اید:</p>${trackBars(trackCounts(started))}</section>` : ""; })()}
   ${weakCard()}
   ${anyPre ? "" : `<section class="card"><h3>سوره‌هایی را از قبل حفظ هستید؟</h3><p class="small">آن‌ها را از «نقشه سیاق» ثبت کنید تا از همین حالا مرورشان شروع شود. این کار به قدم‌های مسیر ربطی ندارد و همیشه آزاد است.</p><div class="row"><button class="small" data-goto="map">ثبت سوره‌های حفظ‌شده</button></div></section>`}
   ${fresh ? "" : `<section class="card">
@@ -899,7 +912,8 @@ function review() {
   <p class="muted small">هر مرور با یادآوری معنا شروع می‌شود: اول عنوان و گام‌های سیاق را به خاطر بیاورید، بعد آیات را از حفظ بخوانید. اشتباه‌های هر آیه را ثبت کنید تا در «دفتر اشتباهات» بماند.</p>
   <section class="card"><div class="row between"><h2>لغت‌نامه من</h2><button class="small" data-vocab>${Object.keys(st.vocab || {}).length ? "تمرین و فهرست" : "باز کن"}</button></div><p class="small muted">${Object.keys(st.vocab || {}).length ? FA(Object.keys(st.vocab).length) + " کلمه که در «فهم آیات» یا مصحف نشان کرده‌اید؛ با کارت تمرینشان کنید." : "کلمه‌هایی که معنایشان را نمی‌دانستید اینجا جمع می‌شوند."}</p></section>
   ${weakCard() || `<section class="card"><div class="row between"><h2>دفتر اشتباهات</h2><button class="small" data-weak>باز کن</button></div><p class="small muted">${Object.keys(st.err || {}).length ? "همه آیه‌های ثبت‌شده تثبیت شده‌اند." : "اشتباه‌هایی که در حفظ و مرور ثبت کنید اینجا جمع می‌شوند."}</p></section>`}
-  <section class="card"><h2>سررسید امروز (${FA(due.length)})</h2>
+  ${(() => { const td = all.filter(x => tadDue(x.k)); return `<section class="card"><h2>مرور تدبر امروز (${FA(td.length)})</h2><p class="small muted">تثبیت تدبر: پیام و گام‌های هر سیاق را به یاد بیاورید و با برداشت خودتان و پیام استاد مقایسه کنید. هر سیاق با ${FA(TAD_FIX)} بار یادآوری کامل، تثبیت می‌شود.</p>${td.length ? td.map(tadReviewButton).join("") : `<p class="muted small">مرور تدبری برای امروز نمانده.</p>`}</section>`; })()}
+  <section class="card"><h2>مرور حفظ امروز (${FA(due.length)})</h2>
   ${due.length ? due.map(x => siyaqButton(x, "review")).join("") : `<p class="muted small">چیزی برای مرور نمانده.</p>`}</section>
   <section class="card"><h2>مرورهای آینده</h2>
   ${soon.map(x => `<div class="row between small"><span>${x.s.name} · ${esc(title(x.s, x.q))}</span><span class="muted num">${st.items[x.k].due - today() === 1 ? "فردا" : FA(st.items[x.k].due - today()) + " روز دیگر"}</span></div>`).join("")}</section>`;
@@ -1442,7 +1456,7 @@ function openSurah(n) {
   lastDraw = () => openSurah(n);
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="سوره ${s.name}">
   <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>سوره ${s.name}</h2><span class="small muted">${s.type === "meccan" ? "مکی" : "مدنی"} · ${FA(s.total)} آیه</span></header>
-  <div class="body">${strip(s)}${legend()}
+  <div class="body">${surahInfo(s)}${strip(s)}${legend()}
   ${surahOpen(n) ? "" : (() => { const L = levelOfSurah(n); return `<div class="card startnote"><b>${ICON_LOCK} تدبر این سوره هنوز باز نیست</b><p class="small">${L ? `این سوره در «${L.t}» است و بعد از گذراندن «${blocker(L).t}» باز می‌شود.` : "این سوره بعد از گذراندن سطح ۶ باز می‌شود."} ثبت «از قبل حفظ هستم» و مرور همیشه آزاد است.</p><div class="row"><button class="small btn-main" id="go-cur">ادامه ${currentLevel().t}</button></div></div>`; })()}
   ${dirBlock(s)}
   <button id="les">🎬 فیلم و صوت درس‌های تدبر این سوره</button>
@@ -1454,7 +1468,7 @@ function openSurah(n) {
   ${sourceNote(s)}
   ${s.siyaqs.map((q, qi) => { const k = key(s.n, q.n), stt = status(k), it = st.items[k], n2 = st.notes[k], fh = faslHead(s, q, s.siyaqs[qi - 1]), nest = (faslOf(s, q) || {}).parent;
     const lbl = stt === "new" ? (surahOpen(n) ? "شروع تدبر" : ICON_LOCK) : stt === "learn" ? "ادامه" : "مرور";
-    return `${fh}<div class="siyaq-item${nest ? " nested" : ""}" style="--c:${COLORS[stt]}"><span class="stripe"></span><span><b>${s.src === "book" ? qName(q) : esc(title(s, q))}</b>${s.src === "book" && q.title ? `<br><span class="small clamp2">${esc(q.title)}</span>` : ""}<br><span class="small muted">آیات ${FA(q.s)} تا ${FA(q.e)} · ${LABELS[stt]}${it && it.stage < 5 ? " · مرحله " + FA(it.stage + 1) : ""}</span>${n2 && n2.title && q.title ? `<br><span class="mine">برداشت من: ${esc(n2.title)}</span>` : ""}</span>
+    return `${fh}<div class="siyaq-item${nest ? " nested" : ""}" style="--c:${COLORS[stt]}"><span class="stripe"></span><span><b>${s.src === "book" ? qName(q) : esc(title(s, q))}</b>${s.src === "book" && q.title ? `<br><span class="small clamp2">${esc(q.title)}</span>` : ""}<br><span class="small muted">آیات ${FA(q.s)} تا ${FA(q.e)} · ${LABELS[stt]}${it && it.stage < 5 ? " · مرحله " + FA(it.stage + 1) : ""}</span>${n2 && n2.title && q.title ? `<br><span class="mine">برداشت من: ${esc(n2.title)}</span>` : ""}${stt !== "new" || isTad(k) ? `<br>${trackChips(k)}` : ""}${tadDue(k) ? `<br><button class="small" data-tadrev="${k}">مرور تدبر</button>` : ""}</span>
     <button class="${(stt === "new" && surahOpen(n)) || stt === "learn" ? "btn-main" : ""} small" ${stt === "new" && !surahOpen(n) ? `aria-label="قفل"` : ""} data-start="${k}" data-mode="${stt === "new" || stt === "learn" ? "learn" : "review"}">${lbl}</button></div>`; }).join("")}
   </div></div>`);
   box.querySelector("#les").addEventListener("click", () => openLessons(n));
@@ -1468,11 +1482,12 @@ function openSurah(n) {
   });
   box.querySelector("#pre-tad").addEventListener("change", e => {
     s.siyaqs.forEach(q => { const k = key(s.n, q.n), nn = note(k);
-      if (e.target.checked) { if (!nn.done) { nn.done = true; nn.pre = true; } }
+      if (e.target.checked) { if (!nn.done) { markTadDone(nn, 1 + (q.n % 7)); nn.pre = true; } }
       else if (nn.pre) { nn.done = false; delete nn.pre; } });
     save(); openSurah(n); toast(e.target.checked ? "سوره " + s.name + " تدبرشده ثبت شد" : "ثبت تدبر برداشته شد");
   });
   box.querySelectorAll("[data-start]").forEach(el => el.addEventListener("click", () => startSession(el.dataset.start, el.dataset.mode)));
+  box.querySelectorAll("[data-tadrev]").forEach(el => el.addEventListener("click", () => openTadReview(el.dataset.tadrev)));
 }
 
 // ---------- session ----------
@@ -1656,18 +1671,122 @@ function stepUnderstand(nav) {
       b.querySelectorAll("[data-got]").forEach(x => x.addEventListener("change", () => { n.got[+x.dataset.got] = x.checked; save(); redraw(); }));
       b.querySelector("#next").addEventListener("click", () => {
         if (cfg.gate && got < ays.length) { toast("هر آیه را که فهمیدید تیک بزنید؛ " + FA(ays.length - got) + " آیه مانده"); const el = b.querySelector(`#uv-${ays.find(a => !n.got[a])}`); if (el) el.scrollIntoView({behavior: "smooth", block: "center"}); return; }
-        ses.sub = 1; ses.word = null; drawSession(); });
-      const sk = b.querySelector("#skip"); if (sk) sk.addEventListener("click", () => { n.done = true; save(); advance(); });
+        ses.sub = 3; ses.word = null; drawSession(); });
+      const sk = b.querySelector("#skip"); if (sk) sk.addEventListener("click", () => { markTadDone(n); save(); advance(); });
     }
   };
 }
 
-// Stage 1: tadabbur, in three parts
+// ---------- the four tracks of learning a siyaq: tadabbur, consolidating tadabbur, memorizing, consolidating memorization ----------
+const TAD_FIX = 3;          // meaning reviews recalled in full before tadabbur counts as consolidated
+const MEM_FIX = 21;         // review interval (days) from which memorization counts as consolidated
+const isTadFix = k => ((st.notes[k] || {}).tok || 0) >= TAD_FIX;
+const isMemFix = k => { const it = st.items[k]; return !!it && it.stage >= 5 && (it.ivl || 0) >= MEM_FIX; };
+const tadDue = k => { const n = st.notes[k]; return !!n && n.done && !!n.tdue && n.tdue <= today(); };
+// Called whenever the tadabbur stage of a siyaq is completed: its first meaning review comes three days later
+function markTadDone(n, offset) { n.done = true; if (!n.tdue) { n.tivl = n.tivl || 3; n.tdue = today() + (offset || 3); } }
+const TRACKS = [["tad", "تدبر", isTad, "var(--lapis)"], ["tadFix", "تثبیت تدبر", isTadFix, "var(--gold)"], ["mem", "حفظ", isMem, "var(--st-learn)"], ["memFix", "تثبیت حفظ", isMemFix, "var(--st-solid)"]];
+function trackCounts(list) {   // list of siyaq keys
+  const o = {}; TRACKS.forEach(([id, , f]) => { o[id] = list.filter(f).length; }); o.total = list.length; return o;
+}
+const surahKeys = s => s.siyaqs.map(q => key(s.n, q.n));
+const trackBars = c => `<div class="tracks4">${TRACKS.map(([id, l, , col]) => `<div class="tr4"><div class="row between"><span class="small">${l}</span><span class="small muted num">${FA(c[id])} از ${FA(c.total)}</span></div>${miniBar(c.total ? c[id] / c.total : 0, col)}</div>`).join("")}</div>`;
+const trackChips = k => `<span class="chips4">${TRACKS.map(([id, l, f, col]) => `<span class="c4${f(k) ? " on" : ""}" style="--c:${col}" title="${l}">${f(k) ? "✓ " : ""}${l}</span>`).join("")}</span>`;
+
+// Rough time estimates for a surah, from its length in mushaf pages and verses
+const fmtMin = m => m < 1 ? "کمتر از یک دقیقه" : m < 60 ? "حدود " + FA(Math.max(1, Math.round(m))) + " دقیقه" : "حدود " + FA(Math.round(m / 30) / 2).replace(".", "٫") + " ساعت";
+function surahEstimates(s) {
+  const pages = surahPages(s.n);
+  return {read: pages * 1.5, tad: s.total * 3 + s.siyaqs.length * 15, mem: pages * 75};
+}
+const surahInfo = s => { const e = surahEstimates(s), c = trackCounts(surahKeys(s));
+  return `<div class="card sinfo">
+    <div class="sinfo-grid">
+      <div><b>${s.type === "meccan" ? "مکی" : "مدنی"}</b><span class="small muted">نزول</span></div>
+      <div><b class="num">${FA(s.total)}</b><span class="small muted">آیه</span></div>
+      <div><b class="num">${FA(s.siyaqs.length)}</b><span class="small muted">سیاق</span></div>
+      ${s.fasls && s.fasls.length ? `<div><b class="num">${FA(s.fasls.length)}</b><span class="small muted">فصل</span></div>` : `<div><b class="num">${FA(Math.max(0.1, Math.round(surahPages(s.n) * 10) / 10)).replace(".", "٫")}</b><span class="small muted">صفحه</span></div>`}
+    </div>
+    <div class="sinfo-time">
+      <span>📖 خواندن: <b>${fmtMin(e.read)}</b></span>
+      <span>🧠 تدبر: <b>${fmtMin(e.tad)}</b></span>
+      <span>🔁 حفظ: <b>${fmtMin(e.mem)}</b></span>
+    </div>
+    <p class="small muted">زمان‌ها تخمینی است: خواندن با سرعت معمولی، تدبر با فهم آیات و درس استاد و کشف گام‌ها، حفظ برای یک حافظ معمولی. درس‌های ویدیویی استاد جدا حساب نشده است.</p>
+    <h3>پیشرفت شما در این سوره</h3>${trackBars(c)}
+  </div>`; };
+
+// Tadabbur, part 2: learning the tadabbur of this siyaq from the teacher (lessons, books, his reading of the siyaq)
+function stepTeacher(nav) {
+  const {s, q} = ses, n = note(ses.k), books = booksForSurah(s.n);
+  return {
+    body: `${nav}
+    <div class="card"><h3>قدم دوم: یادگیری تدبر این بخش از استاد</h3>
+      <p class="small">حالا که معنای آیات را می‌دانید، تدبر همین بخش را از درس استاد صبوحی یاد بگیرید: فیلم یا صوت جلسه‌های این سوره را ببینید یا بشنوید، یا بخش مربوط در کتاب را بخوانید. بعد تیک «تدبر این سیاق را یاد گرفتم» را بزنید.</p>
+      <div class="row"><button id="t-les" class="btn-main">🎬 فیلم و صوت درس‌های سوره ${s.name}</button></div></div>
+    ${q.title ? `<div class="card"><div class="row between"><h3>${s.src === "book" ? "پیام این سیاق از درس استاد" : "عنوان مرجع (آزمایشی)"}</h3><button class="small" id="t-msg" aria-expanded="${!!ses.tmsg}">${ses.tmsg ? "پنهان کن" : "نشانم بده"}</button></div>
+      ${ses.tmsg ? `<div class="meaning"><b>${esc(q.title)}</b>${(q.sum || []).map(x => `<span class="small">${esc(x)}</span>`).join("")}</div>${q.steps.length ? `<ol class="small" style="margin:0;padding-inline-start:20px">${q.steps.map(x => `<li>${esc(x.t)} <span class="muted">(آیات ${FA(x.s)}${x.e > x.s ? " تا " + FA(x.e) : ""})</span></li>`).join("")}</ol>` : ""}${s.source ? `<p class="small muted">از ${esc(s.source)}</p>` : ""}` : `<p class="small muted">بعد از دیدن درس، پیام استاد درباره این سیاق را اینجا ببینید.</p>`}</div>` : ""}
+    ${booksCard(books, "📚 کتاب‌های تدبر این سوره")}
+    <div class="card ${n.learned ? "okcard" : ""}"><label class="switch"><span><b>تدبر این سیاق را یاد گرفتم</b><br><span class="small muted">از درس، کتاب یا کلاس استاد</span></span><input type="checkbox" id="t-ok" ${n.learned ? "checked" : ""}></label></div>`,
+    foot: `<button id="back">قبلی</button><button class="btn-main" id="next">برو به کشف گام‌ها</button>`,
+    wire: b => {
+      b.querySelector("#t-les").addEventListener("click", () => { stopAudio(); const back = () => drawSession(); openLessons(s.n); lastDraw = () => {}; const c = document.querySelector("#sheet [data-close]"); c.replaceWith(c.cloneNode(true)); document.querySelector("#sheet [data-close]").addEventListener("click", back); });
+      const m = b.querySelector("#t-msg"); if (m) m.addEventListener("click", () => { ses.tmsg = !ses.tmsg; redraw(); });
+      b.querySelector("#t-ok").addEventListener("change", e => { n.learned = e.target.checked; save(); redraw(); });
+      b.querySelector("#back").addEventListener("click", () => { ses.sub = 0; drawSession(); });
+      b.querySelector("#next").addEventListener("click", () => {
+        if (cfg.gate && !n.learned) { toast("بعد از یادگیری تدبر این بخش از استاد، تیک «یاد گرفتم» را بزنید"); return; }
+        ses.sub = 1; drawSession(); });
+    }
+  };
+}
+
+// Consolidating tadabbur: recall the message and steps of a siyaq, then check against your notes and the teacher's
+function openTadReview(k, phase) {
+  const [sn, qn] = k.split(":").map(Number), s = S[sn], q = s.siyaqs[qn - 1], n = note(k), steps = stepsOf(s, q);
+  lastDraw = () => openTadReview(k, phase);
+  const show = phase === "show";
+  const mineSteps = Object.entries(n.stepTitles || {}).filter(([, t]) => t && t.trim()).sort((a, b) => a[0] - b[0]);
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="مرور تدبر">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>مرور تدبر · ${s.name} · سیاق ${FA(qn)}</h2></header>
+    <div class="body">
+      <div class="card"><span class="small muted">آیات ${FA(q.s)} تا ${FA(q.e)} · تثبیت تدبر: ${FA(Math.min(n.tok || 0, TAD_FIX))} از ${FA(TAD_FIX)}</span>
+        <h3>بدون نگاه به یادداشت‌ها به یاد بیاورید</h3>
+        <ol class="small" style="margin:0;padding-inline-start:20px"><li>این سیاق درباره چیست و چه پیامی دارد؟</li><li>از چه گام‌هایی می‌گذرد؟</li><li>چه پیامی برای زندگی امروز شما دارد؟</li></ol>
+        <button class="small" id="tr-listen">▶ شنیدن آیات</button></div>
+      ${show ? `<div class="card"><h3>برداشت شما</h3>${n.title ? `<p><b>${esc(n.title)}</b></p>` : `<p class="small muted">عنوانی ننوشته بودید.</p>`}
+          ${mineSteps.length ? `<ol class="small" style="margin:0;padding-inline-start:20px">${mineSteps.map(([a, t]) => `<li>${esc(t)} <span class="muted">(از آیه ${FA(a)})</span></li>`).join("")}</ol>` : ""}
+          ${(n.answers || []).some(a => a && a.trim()) ? `<details><summary class="small">پاسخ‌های شما به پرسش‌های تدبری</summary><div>${QUESTIONS.map((qq, i) => n.answers[i] && n.answers[i].trim() ? `<p class="small"><b>${esc(qq)}</b><br>${esc(n.answers[i])}</p>` : "").join("")}</div></details>` : ""}
+          ${(n.extra || []).length ? `<details><summary class="small">برداشت‌های بعدی (${FA(n.extra.length)})</summary><div>${n.extra.map(x => `<p class="small">${esc(x.text)}</p>`).join("")}</div></details>` : ""}</div>
+        ${q.title || steps.filter(g => g.t).length > 1 ? `<div class="card"><h3>${s.src === "book" ? "پیام استاد" : "گام‌های مرجع"}</h3>${q.title ? `<div class="meaning"><b>${esc(q.title)}</b>${(q.sum || []).map(x => `<span class="small">${esc(x)}</span>`).join("")}</div>` : ""}
+          ${steps.length > 1 ? `<ol class="small" style="margin:0;padding-inline-start:20px">${steps.map(g => `<li>${esc(g.t)}</li>`).join("")}</ol>` : ""}</div>` : ""}
+        <div class="field"><label for="tr-ins">برداشت تازه امروز (اختیاری)</label><textarea id="tr-ins" rows="2"></textarea></div>` : ""}
+    </div>
+    <footer>${show ? `<button data-tr="0">یادم نبود</button><button data-tr="1">نیمه</button><button class="btn-main" data-tr="2">کامل یادم بود</button>` : `<button class="btn-main" id="tr-show">به یاد آوردم؛ نشانم بده</button>`}</footer></div>`, () => render());
+  const on = (sel, f) => box.querySelectorAll(sel).forEach(x => x.addEventListener("click", () => f(x)));
+  on("#tr-listen", () => playQueue(range(q.s, q.e).map(i => [sn, i])));
+  on("#tr-show", () => openTadReview(k, "show"));
+  on("[data-tr]", x => {
+    const r = +x.dataset.tr, ins = (box.querySelector("#tr-ins") || {}).value;
+    if (ins && ins.trim()) { n.extra = n.extra || []; n.extra.push({day: today(), text: ins.trim()}); }
+    const ivl = n.tivl || 3;
+    if (r === 2) { n.tok = (n.tok || 0) + 1; n.tivl = Math.max(7, Math.round(ivl * 2.5)); }
+    else if (r === 1) { n.tivl = Math.max(2, Math.round(ivl * 1.2)); }
+    else { n.tivl = 1; n.tok = Math.max(0, (n.tok || 0) - 1); }
+    n.tdue = today() + n.tivl; markActive(); save();
+    toast(r === 2 && n.tok === TAD_FIX ? "تدبر این سیاق تثبیت شد" : "ثبت شد · مرور تدبر بعدی " + FA(n.tivl) + " روز دیگر");
+    stopAudio(); document.getElementById("sheet").innerHTML = ""; render();
+  });
+}
+const tadReviewButton = x => `<button class="siyaq-item" data-tadrev="${x.k}" style="--c:var(--gold)"><span class="stripe"></span><span><b>${x.s.name}</b> · ${esc(title(x.s, x.q))}<br><span class="small muted">مرور تدبر · ${FA(Math.min((st.notes[x.k] || {}).tok || 0, TAD_FIX))} از ${FA(TAD_FIX)}</span></span><span class="small muted">${FA(ayahCount(x.q))} آیه</span></button>`;
+
+// Stage 1: tadabbur, in four parts: understanding, the teacher's lesson, finding the steps, questions
 function stepTadabbur() {
   const {s, q} = ses, n = note(ses.k);
   const sub = ses.sub;
-  const nav = `<div class="subnav">${["فهم آیات", "کشف گام‌ها", "پرسش‌ها"].map((l, i) => `<span class="${i === sub ? "on" : ""}">${FA(i + 1)}. ${l}</span>`).join("")}</div>`;
+  const nav = `<div class="subnav">${[[0, "فهم آیات"], [3, "درس استاد"], [1, "کشف گام‌ها"], [2, "پرسش‌ها"]].map(([id, l], i) => `<span class="${id === sub ? "on" : ""}">${FA(i + 1)}. ${l}</span>`).join("")}</div>`;
   if (sub === 0) return stepUnderstand(nav);
+  if (sub === 3) return stepTeacher(nav);
   if (sub === 1) {
     const cuts = new Set(n.cuts.filter(c => c > q.s && c <= q.e).map(c => key(s.n, c - 1)));
     const segs = [q.s, ...n.cuts.filter(c => c > q.s && c <= q.e).sort((a, b) => a - b)];
@@ -1691,7 +1810,7 @@ function stepTadabbur() {
         });
         b.querySelectorAll("[data-stitle]").forEach(x => x.addEventListener("input", () => { n.stepTitles[x.dataset.stitle] = x.value; save(); }));
         const c = b.querySelector("#cmp"); if (c) c.addEventListener("click", () => { ses.cmp = !ses.cmp; redraw(); });
-        b.querySelector("#back").addEventListener("click", () => { ses.sub = 0; drawSession(); });
+        b.querySelector("#back").addEventListener("click", () => { ses.sub = 3; drawSession(); });
         b.querySelector("#next").addEventListener("click", () => { ses.sub = 2; drawSession(); });
       }
     };
@@ -1711,7 +1830,7 @@ function stepTadabbur() {
       b.querySelector("#back").addEventListener("click", () => { ses.sub = 1; drawSession(); });
       b.querySelector("#next").addEventListener("click", () => {
         if (cfg.gate && !n.title.trim() && !n.answers.some(a => a.trim())) { toast("دست‌کم به یک پرسش پاسخ دهید یا عنوانی بنویسید"); return; }
-        n.done = true; markActive(); save(); advance();
+        markTadDone(n); markActive(); save(); advance();
       });
     }
   };
@@ -2287,8 +2406,15 @@ function openGuide(section) {
       <p>در سوره‌های بلند، چند سیاق هم‌جهت یک «فصل» می‌سازند. گاهی فصلی کوتاه وسط فصل دیگر می‌آید (فصل معترضه)؛ مثل فصل دهم سوره بقره که درون فصل نهم است.</p>
       <p>تقسیم‌بندی هدف برنامه، روش «تدبر در قرآن کریم» استاد علی صبوحی طسوجی است. تا آماده شدن آن، مرز سیاق‌ها بر اساس رکوع‌های مصحف است و گام‌های معنایی هر سیاق را خودتان در مرحله تدبر مشخص می‌کنید.</p>
     </div></details>
+    <details><summary>چهار مرحله یادگیری: تدبر، تثبیت تدبر، حفظ، تثبیت حفظ</summary><div>
+      <p>یادگیری هر سیاق چهار مرحله دارد که پیشرفت هر کدام جدا نشان داده می‌شود (در داشبورد، صفحه هر سوره و کنار هر سیاق):</p>
+      <ul><li><b>تدبر:</b> فهم آیات (معنای کلمه‌ها و ترجمه)، یادگیری تدبر همان بخش از درس یا کتاب استاد و زدن تیک «یاد گرفتم»، کشف گام‌ها و پاسخ به پرسش‌ها.</li>
+      <li><b>تثبیت تدبر:</b> مرورهای فاصله‌دار معنا: پیام و گام‌های سیاق را به یاد می‌آورید و با برداشت خودتان و پیام استاد مقایسه می‌کنید. با ${FA(3)} بار یادآوری کامل، تدبر سیاق تثبیت می‌شود.</li>
+      <li><b>حفظ:</b> شنیدن، حفظ گام‌به‌گام و اتصال کل سیاق.</li>
+      <li><b>تثبیت حفظ:</b> مرورهای فاصله‌دار حفظ؛ وقتی فاصله مرور به ${FA(21)} روز برسد، حفظ سیاق تثبیت‌شده حساب می‌شود.</li></ul>
+      <p>صفحه هر سوره، نوع سوره (مکی یا مدنی)، تعداد آیه‌ها و سیاق‌ها و زمان تقریبی خواندن، تدبر و حفظ آن را هم نشان می‌دهد.</p></div></details>
     <details ${section === "cycle" ? "open" : ""}><summary>پنج مرحله هر سیاق</summary><div><ol>
-      <li><b>تدبر:</b> فهم آیات (معنای کلمه‌به‌کلمه و ترجمه)، پیدا کردن گام‌های معنایی به دست خودتان، و پاسخ به چند پرسش تدبری.</li>
+      <li><b>تدبر:</b> فهم آیات (معنای کلمه‌به‌کلمه و ترجمه)، یادگیری تدبر همان بخش از درس استاد، پیدا کردن گام‌های معنایی به دست خودتان، و پاسخ به چند پرسش تدبری.</li>
       <li><b>شنیدن:</b> گوش دادن به ترتیل کل سیاق با تکرار دلخواه.</li>
       <li><b>حفظ گام‌به‌گام:</b> هر گام معنایی جداگانه حفظ می‌شود و در پایان هر گام، کل آن یکجا از حفظ خوانده می‌شود.</li>
       <li><b>اتصال:</b> خواندن کل سیاق از حفظ با کمک «نقشه معنا».</li>
