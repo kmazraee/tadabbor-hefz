@@ -22,7 +22,7 @@ for f in sorted((ROOT / "data/decks").glob("*.json")):
         continue
     s["dir"] = d.get("dir") or s.get("dir")
     s["source"] = d.get("source")
-    nodes = sorted(d.get("flow", []), key=lambda x: x["s"])
+    nodes = sorted([x for x in d.get("flow", []) if "s" in x], key=lambda x: x["s"])
     for q in s["siyaqs"]:
         inside = [x for x in nodes if x["s"] >= q["s"] and x["e"] <= q["e"]]
         tiles = inside and inside[0]["s"] == q["s"] and inside[-1]["e"] == q["e"] and all(
