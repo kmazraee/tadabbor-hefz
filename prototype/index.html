@@ -209,6 +209,24 @@ details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direc
 .pl-set .seg button{padding:7px 2px;font-size:13px}
 .me.fav{color:var(--gold)!important;text-shadow:0 0 1px var(--gold)}
 .fav-star{color:var(--gold);font-size:18px}
+.uv{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.uv.got{border-color:var(--st-solid)}
+.wbw{display:flex;flex-wrap:wrap;gap:6px;direction:rtl}
+.wb{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;border-radius:10px;background:var(--paper);border:1px solid var(--line);min-width:52px}
+.wb.on{border-color:var(--lapis);background:var(--lapis-soft)}
+.wb.mine{box-shadow:inset 0 -3px 0 var(--gold)}
+.wb-ar{font-size:22px;line-height:1.7}
+.wb-fa{font-size:12px;color:var(--muted);line-height:1.5;text-align:center;max-width:120px}
+.wsel{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--gold-soft)}
+.wsel .ar{font-size:24px}
+.uv-tr{font-size:14px;margin:0}
+.uv-ok{border-top:1px dashed var(--line);padding-top:6px}
+.vrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.vrow:last-child{border-bottom:none}
+.vrow-ar{font-size:24px}
+.flash{align-items:center;text-align:center;gap:12px;padding:28px 16px}
+.flash-ar{font-size:44px}
+.flash-fa{font-size:22px;font-weight:700;color:var(--lapis)}
 .stepper{display:flex;gap:2px;position:relative;padding-top:2px}
 .stepper::before{content:"";position:absolute;inset-inline:7%;top:19px;height:2px;background:var(--line)}
 .step{all:unset;cursor:pointer;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;position:relative;color:var(--ink);text-align:center}
@@ -792,6 +810,7 @@ function render() {
   v.querySelectorAll("[data-search]").forEach(el => el.addEventListener("click", openSearch));
   v.querySelectorAll("[data-books]").forEach(el => el.addEventListener("click", openBooks));
   v.querySelectorAll("[data-weak]").forEach(el => el.addEventListener("click", openWeak));
+  v.querySelectorAll("[data-vocab]").forEach(el => el.addEventListener("click", () => openVocab()));
   v.querySelectorAll("[data-drill]").forEach(el => el.addEventListener("click", () => openDrill(weakOpen().slice(0, 10).map(x => x.vk), 0)));
   if (tab === "mushaf") wireMushaf(v);
   v.querySelectorAll("[data-goto]").forEach(el => el.addEventListener("click", () => { tab = el.dataset.goto; render(); window.scrollTo(0, 0); }));
@@ -888,6 +907,7 @@ function review() {
   const soon = all.filter(x => status(x.k) === "solid").sort((a, b) => st.items[a.k].due - st.items[b.k].due);
   return `${topBar(`<h1>مرور</h1>`)}
   <p class="muted small">هر مرور با یادآوری معنا شروع می‌شود: اول عنوان و گام‌های سیاق را به خاطر بیاورید، بعد آیات را از حفظ بخوانید. اشتباه‌های هر آیه را ثبت کنید تا در «دفتر اشتباهات» بماند.</p>
+  <section class="card"><div class="row between"><h2>لغت‌نامه من</h2><button class="small" data-vocab>${Object.keys(st.vocab || {}).length ? "تمرین و فهرست" : "باز کن"}</button></div><p class="small muted">${Object.keys(st.vocab || {}).length ? FA(Object.keys(st.vocab).length) + " کلمه که در «فهم آیات» یا مصحف نشان کرده‌اید؛ با کارت تمرینشان کنید." : "کلمه‌هایی که معنایشان را نمی‌دانستید اینجا جمع می‌شوند."}</p></section>
   ${weakCard() || `<section class="card"><div class="row between"><h2>دفتر اشتباهات</h2><button class="small" data-weak>باز کن</button></div><p class="small muted">${Object.keys(st.err || {}).length ? "همه آیه‌های ثبت‌شده تثبیت شده‌اند." : "اشتباه‌هایی که در حفظ و مرور ثبت کنید اینجا جمع می‌شوند."}</p></section>`}
   <section class="card"><h2>سررسید امروز (${FA(due.length)})</h2>
   ${due.length ? due.map(x => siyaqButton(x, "review")).join("") : `<p class="muted small">چیزی برای مرور نمانده.</p>`}</section>
@@ -925,7 +945,7 @@ function wireMushaf(v) {
   let x0 = null;
   box.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, {passive: true});
   box.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 60) go(dx > 0 ? 1 : -1); });
-  box.addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (w) openWordbar(w.dataset.vk); });
+  box.addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (w) openWordbar(w.dataset.vk, w.dataset.t === "w" ? +w.dataset.i : 0); });
   v.querySelector("#mu-audio").addEventListener("click", () => openAudio());
   v.querySelector("#mu-favs").addEventListener("click", openFavs);
   wirePlayer(v);
@@ -933,11 +953,14 @@ function wireMushaf(v) {
   if (selVk) markSel(selVk);
 }
 function markSel(vk) { document.querySelectorAll(".sel").forEach(e => e.classList.remove("sel")); document.querySelectorAll(`#mushaf-page [data-vk="${vk}"]`).forEach(e => e.classList.add("sel")); }
-function openWordbar(vk) {
+function openWordbar(vk, wi) {
   selVk = vk; markSel(vk);
   const [sn, ay] = parseVk(vk), s = S[sn], q = siyaqOf(sn, ay), k = key(sn, q.n);
+  const wm = wi ? wordMeaning(sn, ay, wi) : null;
+  if (wi && !wm && !wbw(sn)) loadWbw(sn).then(() => { if (selVk === vk) openWordbar(vk, wi); }).catch(() => {});
   const box = document.getElementById("wordbar");
   box.innerHTML = `<div class="wordbar"><div class="card"><div class="row between"><b>سوره ${s.name} · آیه ${FA(ay)}</b><button class="icon-btn btn-ghost" id="wb-x" aria-label="بستن">✕</button></div>
+    ${wm ? `<div class="wsel"><span class="ar">${esc(wm[0])}</span><b>${esc(wm[1])}</b><span class="row" style="gap:6px">${wm[2] ? `<button class="small" id="wb-say">🔊</button>` : ""}<button class="small" id="wb-vocab">${inVocab(vocabKey(sn, ay, wi)) ? "✓ در لغت‌نامه" : "+ لغت‌نامه من"}</button></span></div>` : ""}
     <span class="small muted">سیاق ${FA(q.n)}: ${esc(title(s, q))} · ${LABELS[status(k)]}</span>
     ${trans(sn, ay) ? `<p class="tr" style="font-size:14px">${esc(trans(sn, ay))}</p>` : ""}
     ${errOf(vk) ? `<span class="small" style="color:var(--st-due)">${FA(errOf(vk).n)} بار اشتباه · ${errOpen(vk) ? "نیاز به تثبیت" : "تثبیت‌شده"}</span>` : ""}
@@ -945,8 +968,10 @@ function openWordbar(vk) {
     <div class="row">${errOpen(vk) ? `<button id="wb-drill" class="small">تمرین تثبیت</button>` : ""}<button id="wb-open" class="small">باز کردن سیاق</button><button id="wb-les" class="small">درس‌های سوره</button></div></div></div>`;
   box.querySelector("#wb-x").addEventListener("click", closeWordbar);
   box.querySelector("#wb-play").addEventListener("click", () => play(sn, ay));
+  const wsay = box.querySelector("#wb-say"); if (wsay) wsay.addEventListener("click", () => playWord(wm[2]));
+  const wvoc = box.querySelector("#wb-vocab"); if (wvoc) wvoc.addEventListener("click", () => { toggleVocab(sn, ay, wi); openWordbar(vk, wi); });
   box.querySelector("#wb-from").addEventListener("click", () => { closeWordbar(); mpStart(sn, ay); });
-  box.querySelector("#wb-fav").addEventListener("click", () => { toggleFav(vk); openWordbar(vk); document.querySelectorAll(`#mushaf-page .me[data-vk="${vk}"]`).forEach(e => e.classList.toggle("fav", isFav(vk))); });
+  box.querySelector("#wb-fav").addEventListener("click", () => { toggleFav(vk); openWordbar(vk, wi); document.querySelectorAll(`#mushaf-page .me[data-vk="${vk}"]`).forEach(e => e.classList.toggle("fav", isFav(vk))); });
   box.querySelector("#wb-share").addEventListener("click", () => shareVerse(sn, ay));
   const wd = box.querySelector("#wb-drill"); if (wd) wd.addEventListener("click", () => { closeWordbar(); openDrill([vk], 0); });
   box.querySelector("#wb-open").addEventListener("click", () => { closeWordbar(); startSession(k, status(k) === "solid" || status(k) === "due" ? "review" : "learn"); });
@@ -1463,7 +1488,7 @@ function openSurah(n) {
 // ---------- session ----------
 let ses;
 const HELP = [
-  "تدبر پیش از حفظ: اول آیات را آرام بخوانید، بعد خودتان گام‌های معنایی سیاق را پیدا کنید و به چند پرسش پاسخ دهید. همین گام‌ها بعداً سرنخ حفظ می‌شوند.",
+  "تدبر پیش از حفظ، در سه قدم: اول «فهم آیات»: معنای کلمه‌به‌کلمه و ترجمه هر آیه را یاد بگیرید. بعد گام‌های معنایی سیاق را خودتان پیدا کنید و به چند پرسش پاسخ دهید. همین گام‌ها بعداً سرنخ حفظ می‌شوند.",
   "شنیدن: کل سیاق را با ترتیل بشنوید. آیه‌ای که پخش می‌شود روی صفحه رنگی می‌شود. تعداد تکرار را می‌توانید انتخاب کنید.",
   "حفظ گام‌به‌گام: هر گام معنایی جدا حفظ می‌شود. کلمات در چهار سطح محو می‌شوند؛ در سطح «معنا» فقط عنوان گام می‌ماند. آخر هر گام، کل گام را یکجا از حفظ می‌خوانید.",
   "اتصال: کل سیاق را از حفظ بخوانید. نقشه معنا (عنوان گام‌ها) بالای سطرها کمک می‌کند ترتیب را از روی معنا به یاد بیاورید. روی هر آیه بزنید تا دیده شود.",
@@ -1522,28 +1547,137 @@ function advance() {
   drawSession();
 }
 
+// ---------- word-by-word meanings (Persian, from Quran.com), fetched once per surah and kept on the phone ----------
+const WBW_API = "https://api.qurancdn.com/api/qdc/verses/by_chapter/";
+const WBW_AUDIO = "https://audio.qurancdn.com/";
+const WBW = {}, WBW_LOADING = {};
+const wbwKey = sn => "tadabbor-wbw-" + sn;
+// WBW[sn][ay] = [[arabic, meaning, audio], ...] in reading order (verse-end signs left out)
+function wbw(sn) {
+  if (WBW[sn]) return WBW[sn];
+  const c = load(wbwKey(sn), null); if (c) return (WBW[sn] = c);
+  return null;
+}
+function storeWbw(sn, data) {
+  const v = JSON.stringify(data);
+  try { localStorage.setItem(wbwKey(sn), v); return; } catch (e) {}
+  // storage full: forget the meanings of other surahs (they are fetched again when needed)
+  Object.keys(localStorage).filter(k => k.startsWith("tadabbor-wbw-") && k !== wbwKey(sn)).forEach(k => localStorage.removeItem(k));
+  try { localStorage.setItem(wbwKey(sn), v); } catch (e) {}
+}
+function loadWbw(sn) {
+  if (wbw(sn)) return Promise.resolve(WBW[sn]);
+  if (WBW_LOADING[sn]) return WBW_LOADING[sn];
+  return WBW_LOADING[sn] = (async () => {
+    const out = {};
+    for (let page = 1; page <= 10; page++) {
+      const j = await getJSON(`${WBW_API}${sn}?words=true&word_translation_language=fa&word_fields=text_uthmani&fields=text_uthmani&per_page=50&page=${page}`);
+      (j.verses || []).forEach(v => { out[v.verse_number] = (v.words || []).filter(w => w.char_type_name === "word").map(w => [w.text_uthmani || w.text, ((w.translation || {}).text || "").trim(), w.audio_url || ""]); });
+      if (!j.pagination || !j.pagination.next_page) break;
+    }
+    if (Object.keys(out).length < S[sn].total) throw new Error("incomplete");
+    WBW[sn] = out; storeWbw(sn, out); return out;
+  })().finally(() => { WBW_LOADING[sn] = null; });
+}
+const wordMeaning = (sn, ay, i) => { const w = wbw(sn); return w && w[ay] && w[ay][i - 1] ? w[ay][i - 1] : null; };
+function playWord(src) { if (!src) return; stopAudio(); try { audio = new Audio(WBW_AUDIO + src); audio.play().catch(() => toast("پخش تلفظ کلمه به اینترنت نیاز دارد")); } catch (e) {} }
+
+// ---------- my vocabulary: words the reader did not know ----------
+// st.vocab["2:255:3"] = {ar, fa, au, at: added (ms), ok: times known in practice}
+const vocabKey = (sn, ay, i) => `${sn}:${ay}:${i}`;
+const inVocab = k => !!(st.vocab || {})[k];
+function toggleVocab(sn, ay, i) {
+  const k = vocabKey(sn, ay, i), m = wordMeaning(sn, ay, i); st.vocab = st.vocab || {};
+  if (st.vocab[k]) delete st.vocab[k]; else if (m) st.vocab[k] = {ar: m[0], fa: m[1], au: m[2], at: Date.now(), ok: 0};
+  save(); toast(st.vocab[k] ? "به لغت‌نامه من اضافه شد" : "از لغت‌نامه برداشته شد");
+}
+let vocabCard = null;
+function openVocab(mode) {
+  lastDraw = () => openVocab(mode);
+  const list = Object.entries(st.vocab || {}).sort((a, b) => (a[1].ok - b[1].ok) || (b[1].at - a[1].at));
+  if (mode === "cards" && list.length) {
+    if (!vocabCard || !st.vocab[vocabCard.k]) vocabCard = {k: list[0][0], show: false, i: 0};
+    const [k, v] = [vocabCard.k, st.vocab[vocabCard.k]], [sn, ay] = k.split(":").map(Number);
+    const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="تمرین لغت‌ها">
+      <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>تمرین لغت‌ها · ${FA(vocabCard.i + 1)}</h2></header>
+      <div class="body"><div class="card flash"><div class="ar flash-ar">${esc(v.ar)}</div>
+        ${vocabCard.show ? `<div class="flash-fa">${esc(v.fa)}</div><span class="small muted">سوره ${S[sn].name} · آیه ${FA(ay)}</span>` : `<span class="small muted">معنی این کلمه چیست؟ اول در ذهن بگویید، بعد ببینید.</span>`}
+        ${v.au ? `<button class="small" id="vc-say">🔊 تلفظ</button>` : ""}</div></div>
+      <footer>${vocabCard.show ? `<button id="vc-no">بلد نبودم</button><button class="btn-main" id="vc-yes">بلد بودم</button>` : `<button class="btn-main" id="vc-show">نشانم بده</button>`}</footer></div>`, () => { vocabCard = null; openVocab(); });
+    const on = (s, f) => { const el = box.querySelector(s); if (el) el.addEventListener("click", f); };
+    on("#vc-say", () => playWord(v.au));
+    on("#vc-show", () => { vocabCard.show = true; openVocab("cards"); });
+    const next = known => { v.ok = known ? (v.ok || 0) + 1 : 0; save(); const rest = list.filter(([kk]) => kk !== k); const pick = rest.length ? rest[Math.floor(Math.random() * Math.min(rest.length, 8))][0] : k; vocabCard = {k: pick, show: false, i: vocabCard.i + 1}; openVocab("cards"); };
+    on("#vc-yes", () => next(true)); on("#vc-no", () => next(false));
+    return;
+  }
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="لغت‌نامه من">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>لغت‌نامه من</h2></header>
+    <div class="body">${list.length ? `<p class="small muted">${FA(list.length)} کلمه. کلمه‌هایی که کمتر بلد بوده‌اید بالاترند.</p><button class="btn-main" id="vc-go">تمرین با کارت</button>
+      <section class="card" style="gap:0;padding-block:4px">${list.map(([k, v]) => { const [sn, ay] = k.split(":").map(Number);
+        return `<div class="vrow"><span class="ar vrow-ar">${esc(v.ar)}</span><span class="vrow-fa">${esc(v.fa)}<br><span class="small muted">${S[sn].name} · ${FA(ay)}${v.ok ? " · ✓ " + FA(v.ok) : ""}</span></span>
+          <span class="row" style="gap:4px;flex-wrap:nowrap">${v.au ? `<button class="small icon-btn" data-vsay="${k}" aria-label="تلفظ">🔊</button>` : ""}<button class="small icon-btn btn-ghost" data-vdel="${k}" aria-label="برداشتن">✕</button></span></div>`; }).join("")}</section>`
+      : `<div class="card"><p class="small">هنوز کلمه‌ای اضافه نکرده‌اید. در مرحله «فهم آیات» یا در مصحف روی هر کلمه بزنید و «+ لغت‌نامه من» را انتخاب کنید.</p></div>`}</div></div>`);
+  const go = box.querySelector("#vc-go"); if (go) go.addEventListener("click", () => { vocabCard = null; openVocab("cards"); });
+  box.querySelectorAll("[data-vsay]").forEach(b => b.addEventListener("click", () => playWord(st.vocab[b.dataset.vsay].au)));
+  box.querySelectorAll("[data-vdel]").forEach(b => b.addEventListener("click", () => { delete st.vocab[b.dataset.vdel]; save(); openVocab(); }));
+}
+
+// Stage 1, part 1: understanding the verses, word by word and verse by verse
+function stepUnderstand(nav) {
+  const {s, q} = ses, n = note(ses.k), ays = range(q.s, q.e);
+  n.got = n.got || {};
+  const W = wbw(s.n), got = ays.filter(a => n.got[a]).length;
+  if (!W && !ses.wbwTried) { ses.wbwTried = true; loadWbw(s.n).then(() => { if (ses && ses.s.n === s.n) redraw(); }).catch(() => { ses.wbwFail = true; if (ses) redraw(); }); }
+  const sel = ses.word;     // [ay, i] of the tapped word
+  const verse = a => {
+    const words = W && W[a];
+    return `<div class="uv${n.got[a] ? " got" : ""}" id="uv-${a}">
+      <div class="row between"><span class="small muted">آیه ${FA(a)}</span><button class="small icon-btn btn-ghost" data-uplay="${a}" aria-label="شنیدن آیه ${FA(a)}">▶</button></div>
+      ${words ? `<div class="wbw">${words.map(([ar, fa], i) => `<button class="wb${sel && sel[0] === a && sel[1] === i + 1 ? " on" : ""}${inVocab(vocabKey(s.n, a, i + 1)) ? " mine" : ""}" data-w="${a}:${i + 1}"><span class="ar wb-ar">${esc(ar)}</span><span class="wb-fa">${esc(fa)}</span></button>`).join("")}</div>`
+        : `<div class="ar">${esc(vplain(s.n, a) || vtext(s.n, a))}</div>`}
+      ${sel && sel[0] === a && words ? (() => { const [ar, fa, au] = words[sel[1] - 1], k = vocabKey(s.n, a, sel[1]);
+        return `<div class="wsel"><span class="ar">${esc(ar)}</span><b>${esc(fa)}</b><span class="row" style="gap:6px">${au ? `<button class="small" id="w-say">🔊 تلفظ</button>` : ""}<button class="small" id="w-vocab">${inVocab(k) ? "✓ در لغت‌نامه" : "+ لغت‌نامه من"}</button></span></div>`; })() : ""}
+      ${trans(s.n, a) ? `<p class="tr uv-tr">${esc(trans(s.n, a))}</p>` : ""}
+      <label class="switch small uv-ok"><span>این آیه را فهمیدم</span><input type="checkbox" data-got="${a}" ${n.got[a] ? "checked" : ""}></label></div>`;
+  };
+  return {
+    body: `${nav}
+    <div class="card"><div class="small muted">سیاق ${FA(q.n)} از ${FA(s.siyaqs.length)} سوره ${s.name} · آیات ${FA(q.s)} تا ${FA(q.e)}</div>${strip(s, q.n)}
+    ${faslOf(s, q) && faslOf(s, q).t ? `<p class="small"><b>فصل ${FA(faslOf(s, q).n)}:</b> ${esc(faslOf(s, q).t)}</p>` : ""}
+    <h3>قدم اول: فهم آیات</h3>
+    <p class="small">پیش از تدبر باید بدانید آیات چه می‌گویند. هر آیه را کلمه‌به‌کلمه با معنایش بخوانید، روی کلمه‌ای که نمی‌شناسید بزنید تا تلفظش را بشنوید و اگر خواستید به «لغت‌نامه من» اضافه‌اش کنید. بعد ترجمه کامل آیه را بخوانید و وقتی معنایش را فهمیدید، تیک بزنید.</p>
+    <div class="row"><button id="listen">▶ شنیدن کل سیاق</button><button id="les">🎬 درس استاد درباره این سوره</button></div>
+    ${!W ? `<p class="small muted">${ses.wbwFail ? "معنای کلمه‌به‌کلمه دریافت نشد؛ برای بار اول به اینترنت نیاز است. فعلاً ترجمه کامل آیات آمده است." : "در حال دریافت معنای کلمه‌به‌کلمه…"}</p>${ses.wbwFail ? `<button class="small" id="w-retry">تلاش دوباره</button>` : ""}` : ""}
+    <div class="small muted">فهمیده‌شده: <span class="num">${FA(got)} از ${FA(ays.length)}</span> آیه · ترجمه کامل: ${transName()}</div>${miniBar(got / ays.length, "var(--lapis)")}</div>
+    ${ays.map(verse).join("")}
+    <p class="small muted">معنای کلمه‌به‌کلمه: Quran.com</p>`,
+    foot: `${cfg.gate ? "" : `<button class="btn-ghost" id="skip">رد شدن از تدبر</button>`}<button class="btn-main" id="next">${got < ays.length ? `فهمیدم (${FA(got)}/${FA(ays.length)})؛ برو به کشف گام‌ها` : "فهمیدم؛ برو به کشف گام‌ها"}</button>`,
+    wire: b => {
+      b.querySelector("#listen").addEventListener("click", () => playQueue(ays.map(i => [s.n, i])));
+      b.querySelector("#les").addEventListener("click", () => { stopAudio(); const back = () => drawSession(); openLessons(s.n); lastDraw = () => {}; const c = document.querySelector("#sheet [data-close]"); c.replaceWith(c.cloneNode(true)); document.querySelector("#sheet [data-close]").addEventListener("click", back); });
+      b.querySelectorAll("[data-uplay]").forEach(x => x.addEventListener("click", () => play(s.n, +x.dataset.uplay, 1)));
+      b.querySelectorAll("[data-w]").forEach(x => x.addEventListener("click", () => {
+        const [a, i] = x.dataset.w.split(":").map(Number); ses.word = sel && sel[0] === a && sel[1] === i ? null : [a, i];
+        const m = ses.word && wordMeaning(s.n, a, i); if (m && m[2]) playWord(m[2]); redraw(); }));
+      const say = b.querySelector("#w-say"); if (say) say.addEventListener("click", () => { const m = wordMeaning(s.n, sel[0], sel[1]); if (m) playWord(m[2]); });
+      const voc = b.querySelector("#w-vocab"); if (voc) voc.addEventListener("click", () => { toggleVocab(s.n, sel[0], sel[1]); redraw(); });
+      const rt = b.querySelector("#w-retry"); if (rt) rt.addEventListener("click", () => { ses.wbwTried = false; ses.wbwFail = false; redraw(); });
+      b.querySelectorAll("[data-got]").forEach(x => x.addEventListener("change", () => { n.got[+x.dataset.got] = x.checked; save(); redraw(); }));
+      b.querySelector("#next").addEventListener("click", () => {
+        if (cfg.gate && got < ays.length) { toast("هر آیه را که فهمیدید تیک بزنید؛ " + FA(ays.length - got) + " آیه مانده"); const el = b.querySelector(`#uv-${ays.find(a => !n.got[a])}`); if (el) el.scrollIntoView({behavior: "smooth", block: "center"}); return; }
+        ses.sub = 1; ses.word = null; drawSession(); });
+      const sk = b.querySelector("#skip"); if (sk) sk.addEventListener("click", () => { n.done = true; save(); advance(); });
+    }
+  };
+}
+
 // Stage 1: tadabbur, in three parts
 function stepTadabbur() {
   const {s, q} = ses, n = note(ses.k);
   const sub = ses.sub;
-  const nav = `<div class="subnav">${["خواندن", "کشف گام‌ها", "پرسش‌ها"].map((l, i) => `<span class="${i === sub ? "on" : ""}">${FA(i + 1)}. ${l}</span>`).join("")}</div>`;
-  if (sub === 0) return {
-    body: `${nav}
-    <div class="card"><div class="small muted">سیاق ${FA(q.n)} از ${FA(s.siyaqs.length)} سوره ${s.name} · آیات ${FA(q.s)} تا ${FA(q.e)}</div>${strip(s, q.n)}
-    ${faslOf(s, q) && faslOf(s, q).t ? `<p class="small"><b>فصل ${FA(faslOf(s, q).n)}:</b> ${esc(faslOf(s, q).t)}</p>` : ""}
-    ${s.dir ? `<p class="small"><b>${s.src === "book" ? "راهبرد سوره" : "جهت هدایتی سوره (آزمایشی)"}:</b> ${esc(s.dir)}</p>` : ""}
-    <p class="small">آیات را آرام و با توجه بخوانید یا بشنوید. هنوز قصد حفظ نداشته باشید؛ فقط بپرسید: این آیات درباره چیست و چه می‌خواهد؟</p>
-    <div class="row"><button id="listen">▶ شنیدن کل سیاق</button><button id="les">🎬 درس استاد درباره این سوره</button></div></div>
-    ${sesPages(q.s, q.e)}
-    ${transBlock(s.n, q.s, q.e)}`,
-    foot: `${cfg.gate ? "" : `<button class="btn-ghost" id="skip">رد شدن از تدبر</button>`}<button class="btn-main" id="next">خواندم؛ برو به کشف گام‌ها</button>`,
-    wire: b => {
-      b.querySelector("#listen").addEventListener("click", () => playQueue(range(q.s, q.e).map(i => [s.n, i])));
-      b.querySelector("#les").addEventListener("click", () => { stopAudio(); const back = () => drawSession(); openLessons(s.n); lastDraw = () => {}; const c = document.querySelector("#sheet [data-close]"); c.replaceWith(c.cloneNode(true)); document.querySelector("#sheet [data-close]").addEventListener("click", back); });
-      b.querySelector("#next").addEventListener("click", () => { ses.sub = 1; drawSession(); });
-      const sk = b.querySelector("#skip"); if (sk) sk.addEventListener("click", () => { n.done = true; save(); advance(); });
-    }
-  };
+  const nav = `<div class="subnav">${["فهم آیات", "کشف گام‌ها", "پرسش‌ها"].map((l, i) => `<span class="${i === sub ? "on" : ""}">${FA(i + 1)}. ${l}</span>`).join("")}</div>`;
+  if (sub === 0) return stepUnderstand(nav);
   if (sub === 1) {
     const cuts = new Set(n.cuts.filter(c => c > q.s && c <= q.e).map(c => key(s.n, c - 1)));
     const segs = [q.s, ...n.cuts.filter(c => c > q.s && c <= q.e).sort((a, b) => a - b)];
@@ -2164,14 +2298,14 @@ function openGuide(section) {
       <p>تقسیم‌بندی هدف برنامه، روش «تدبر در قرآن کریم» استاد علی صبوحی طسوجی است. تا آماده شدن آن، مرز سیاق‌ها بر اساس رکوع‌های مصحف است و گام‌های معنایی هر سیاق را خودتان در مرحله تدبر مشخص می‌کنید.</p>
     </div></details>
     <details ${section === "cycle" ? "open" : ""}><summary>پنج مرحله هر سیاق</summary><div><ol>
-      <li><b>تدبر:</b> خواندن آرام، پیدا کردن گام‌های معنایی به دست خودتان، و پاسخ به چند پرسش تدبری.</li>
+      <li><b>تدبر:</b> فهم آیات (معنای کلمه‌به‌کلمه و ترجمه)، پیدا کردن گام‌های معنایی به دست خودتان، و پاسخ به چند پرسش تدبری.</li>
       <li><b>شنیدن:</b> گوش دادن به ترتیل کل سیاق با تکرار دلخواه.</li>
       <li><b>حفظ گام‌به‌گام:</b> هر گام معنایی جداگانه حفظ می‌شود و در پایان هر گام، کل آن یکجا از حفظ خوانده می‌شود.</li>
       <li><b>اتصال:</b> خواندن کل سیاق از حفظ با کمک «نقشه معنا».</li>
       <li><b>ثبت:</b> ارزیابی خودتان که زمان مرور بعدی را تعیین می‌کند.</li>
     </ol><p>همه مراحل روی صفحه‌های مصحف عثمان طه انجام می‌شود؛ فقط سطرهای همان سیاق نمایش داده می‌شود و آیه‌های بیرون از سیاق کم‌رنگ‌اند.</p></div></details>
     <details><summary>تدبر را چطور انجام دهم؟</summary><div>
-      <p><b>۱. خواندن:</b> آیات را بی‌عجله بخوانید یا بشنوید. اگر خواستید، درس استاد درباره همان سوره را ببینید یا بشنوید.</p>
+      <p><b>۱. فهم آیات:</b> هر آیه کلمه‌به‌کلمه با معنای فارسی هر کلمه نمایش داده می‌شود. روی هر کلمه بزنید تا تلفظش را بشنوید؛ کلمه‌هایی را که نمی‌دانستید به «لغت‌نامه من» اضافه کنید تا بعداً با کارت تمرینشان کنید (در صفحه مرور). بعد ترجمه کامل آیه را بخوانید و «این آیه را فهمیدم» را بزنید. درس استاد درباره همان سوره هم از همین‌جا در دسترس است. معنای کلمه‌ها یک بار برای هر سوره از اینترنت گرفته و روی گوشی نگه داشته می‌شود.</p>
       <p><b>۲. کشف گام‌ها:</b> هر جا حس کردید معنا وارد مرحله تازه‌ای شد، روی نشانه پایان آیه بزنید. نشانه طلایی یعنی گام تازه از آیه بعد شروع می‌شود. برای هر گام عنوان کوتاهی بنویسید و بعد تقسیم خودتان را با گام‌های مرجع مقایسه کنید.</p>
       <p><b>۳. پرسش‌ها:</b> به چهار پرسش کوتاه جواب دهید و عنوان سیاق را به زبان خودتان بنویسید.</p>
       <p>همه این‌ها ذخیره می‌شوند و در حفظ و مرور به‌عنوان سرنخ معنایی به کار می‌روند.</p>
