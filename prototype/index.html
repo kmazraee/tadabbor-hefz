@@ -186,6 +186,9 @@ details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direc
 .about-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btnlink{display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none;font-size:14px}
 .about-foot{text-align:center}
+.about-feats{display:flex;flex-wrap:wrap;gap:6px}
+.about-feats span{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--lapis-soft)}
+.about-row{grid-template-columns:30px 82px 1fr}
 .about-actions>:last-child:nth-child(odd){grid-column:1/-1}
 .contact-row{display:flex;flex-direction:column;align-items:stretch;gap:12px;text-align:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .contact-title{font-weight:700;font-size:14px}
@@ -3002,9 +3005,19 @@ function openSettings() {
     <section class="card about" aria-label="درباره برنامه">
       <div class="about-head"><span class="about-logo">${LOGO_SVG}</span>
         <div><h2>حفظ تدبری</h2><span class="small muted">نسخه ${FA(VERSION)}</span><p class="small">حفظ قرآن با تدبر، سیاق به سیاق</p></div></div>
-      <p class="small">اول فهم، بعد حفظ: هر سیاق اول تدبر می‌شود و بعد با تکیه بر همان معنا حفظ و مرور می‌شود. مسیر و تقسیم‌بندی‌ها بر پایه روش «تدبر در قرآن کریم» استاد <b>علی صبوحی طسوجی</b> است.</p>
+      <p class="small">اول فهم، بعد حفظ: هر سیاق اول فهمیده و تدبر می‌شود و بعد با تکیه بر همان معنا حفظ می‌شود. یادگیری هر سیاق چهار مرحله دارد: <b>تدبر، تثبیت تدبر، حفظ و تثبیت حفظ</b>. مسیر، سطح‌ها و تقسیم‌بندی‌ها بر پایه روش «تدبر در قرآن کریم» استاد <b>علی صبوحی طسوجی</b> است.</p>
+      <div class="about-feats">${["مسیر قدم‌به‌قدم از مبانی تا سطح ۶", "فهم آیات کلمه‌به‌کلمه", "تفسیر و ریشه کلمات", "مرور فاصله‌دار حفظ و تدبر", "دفتر اشتباهات و آیات مشابه", "آزمون، هدف و کارنامه", "پخش با تکرار و ترجمه گویا", "کار بدون اینترنت"].map(t => `<span>${t}</span>`).join("")}</div>
       <div class="about-list">
-        ${[["📖", "مصحف", "عثمان طه · QCF4، مجمع ملک فهد"], ["🌐", "ترجمه‌ها", FA(13) + " ترجمه فارسی · Tanzil.net"], ["🎧", "ترتیل", FA(RECITERS.filter(r => r[3] !== "fa").length) + " قاری · everyayah.com"], ["🎬", "درس‌ها", "alisaboohi.com"], ["📚", "کتاب‌ها", "انتشارات تدبر · tadabborpub.ir"], ["🔤", "قلم‌ها", "وزیرمتن، امیری قرآن، شهرزاد"]]
+        ${[["📖", "مصحف", "عثمان طه · QCF4، مجمع ملک فهد"],
+          ["🌐", "ترجمه‌ها", FA(13) + " ترجمه فارسی · Tanzil.net"],
+          ["🔍", "معنای کلمات", "فارسی کلمه‌به‌کلمه و تلفظ · Quran.com"],
+          ["🌿", "ریشه کلمات", FA(1944) + " ریشه · Quranic Arabic Corpus"],
+          ["≈", "آیات مشابه", "بیش از " + FA(2800) + " آیه، محاسبه از متن قرآن"],
+          ["📜", "تفسیرها", FA(TAFSIRS.length) + " تفسیر؛ المیزان · altafsir.com، بقیه · tafsir_api"],
+          ["🎧", "ترتیل", FA(RECITERS.filter(r => r[3] !== "fa").length) + " قاری و " + FA(RECITERS.filter(r => r[3] === "fa").length) + " ترجمه گویا · everyayah.com"],
+          ["🎬", "درس‌ها", "استاد صبوحی · alisaboohi.com و آپارات"],
+          ["📚", "کتاب‌ها", "انتشارات تدبر · tadabborpub.ir"],
+          ["🔤", "قلم‌ها", "وزیرمتن، امیری قرآن، شهرزاد"]]
           .map(([i, k, v]) => `<div class="about-row"><span class="about-ic" aria-hidden="true">${i}</span><span class="small muted">${k}</span><span class="small">${v}</span></div>`).join("")}
       </div>
       <div class="about-actions">
