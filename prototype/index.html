@@ -88,6 +88,23 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .fasl-head .fdesc{flex-basis:100%;color:var(--ink)}
 .clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .upd{display:flex;flex-direction:column;gap:8px}
+.upd-app{display:flex;flex-direction:column;gap:8px}
+.rc-h{margin:14px 4px 6px;font-size:15px}
+.rc-list{padding:4px 12px}
+.rc-row{display:flex;align-items:center;gap:10px;padding-block:10px;border-bottom:1px solid var(--line)}
+.rc-row:last-child{border-bottom:0}
+.rc-row.cur .rc-main b{color:var(--lapis)}
+.rc-play{width:38px;height:38px;border-radius:50%;padding:0;flex:none;display:grid;place-items:center}
+.rc-main{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.rc-act{display:flex;flex-direction:column;gap:4px;align-items:stretch}
+.rc-def{font-size:11px;background:var(--lapis);color:var(--on-lapis);border-radius:99px;padding:1px 8px}
+.rc-b{font-size:12px;border-radius:99px;padding:1px 8px;align-self:flex-start}
+.rc-b.ok{background:var(--lapis-soft);color:var(--lapis);font-weight:700}
+.rc-b.part{background:color-mix(in srgb,var(--gold) 18%,transparent);color:var(--ink)}
+.rc-b.run{background:color-mix(in srgb,var(--gold) 30%,transparent);color:var(--ink)}
+.rc-b.none{color:var(--muted,#888);border:1px dashed var(--line)}
+.upd-meta{display:flex;flex-wrap:wrap;gap:4px 14px}
+.upd-msg{margin:0}
 .dlrow{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .dlrow:last-child{border-bottom:none}
 .dlrow .bar{grid-column:1/-1}
@@ -804,7 +821,7 @@ function openDownloads() {
   on("[data-dlretry]", b => { const j = JOBS[b.dataset.dlretry]; if (j && j.files) startJob(b.dataset.dlretry, j.label, j.files); });
   on("[data-dlforget]", b => { delete JOBS[b.dataset.dlforget]; saveDlHist(); openDownloads(); });
   on("#dl-clear", () => { Object.keys(JOBS).forEach(id => { if (!jobActive(id) && JOBS[id].state !== "error") delete JOBS[id]; }); saveDlHist(); openDownloads(); });
-  on("#dl-au", () => { auFrom = "settings"; openAudio(); });
+  on("#dl-au", () => openReciters());
   on("#dl-set", () => openSettings());
   on("[data-gotab]", b => { box.innerHTML = ""; tab = b.dataset.gotab; render(); window.scrollTo(0, 0); });
   dlPill();
@@ -870,6 +887,7 @@ function offlineBox() {
     <div>${rest.map(([id, nm, mb]) => `<div class="dlrow"><span class="small">${nm} <span class="muted num">· ${FA(mb)} مگابایت</span></span>${jobActive("tr-" + id) ? "" : transLocal(id) ? `<span class="row" style="gap:6px"><span class="small ok">✓</span><button class="small btn-ghost" data-trdel="${id}">حذف</button></span>` : `<button class="small" data-trget="${id}">دریافت</button>`}${jobActive("tr-" + id) ? jobBar("tr-" + id) : ""}</div>`).join("")}</div>
     <div class="row between"><h3 style="font-size:14px">ترتیل</h3><span class="small muted">${rname}: ${FA(haveS)} سوره روی گوشی</span></div>
     <button id="au-open">⬇ دانلود ترتیل: انتخاب سوره‌ها، جزء یا کل قرآن</button>
+    <button data-reciters>🎙 فهرست قاری‌ها</button>
     <button data-dls>📥 وضعیت دانلودها</button></div>`;
 }
 function wireOffline(root) {
@@ -889,6 +907,42 @@ function stopAllDownloads() {
   toast("دانلودها متوقف شد"); refresh();
 }
 // Recitation manager: pick surahs (one by one, by juz, my surahs, current level or the whole Quran) and download them for one reciter
+// ---------- reciters list: every reciter, and what of each is on the phone ----------
+let recFilter = "all", recSample = null;
+function audioSummary() { try { return IS_APP && Android.audioSummary ? JSON.parse(Android.audioSummary()) : {}; } catch (e) { return {}; } }
+function openReciters() {
+  lastDraw = openReciters;
+  const sum = audioSummary(), mbTxt = b => b >= 1073741824 ? FA((b / 1073741824).toFixed(1)) + " گیگابایت" : fmtMB(b) + " مگابایت";
+  const info = r => { const x = sum[r] || {s: {}, b: 0}, full = DATA.surahs.filter(s => (x.s[P3(s.n)] || 0) >= s.total).length, part = Object.keys(x.s).length;
+    return {full, part, bytes: x.b || 0, busy: auJobs(r).length}; };
+  const rows = RECITERS.map(x => ({r: x, i: info(x[0])}));
+  const onPhone = rows.filter(x => x.i.part), totalB = onPhone.reduce((a, x) => a + x.i.bytes, 0);
+  const pass = x => recFilter === "all" || (recFilter === "have" ? x.i.part || x.i.busy : !x.i.part && !x.i.busy);
+  const badge = i => i.busy ? `<span class="rc-b run">⬇ در حال دانلود</span>` : i.full === 114 ? `<span class="rc-b ok">✓ کل قرآن</span>`
+    : i.part ? `<span class="rc-b part">${FA(i.full)} سوره کامل${i.part > i.full ? ` · ${FA(i.part - i.full)} ناقص` : ""}</span>` : `<span class="rc-b none">دانلود نشده</span>`;
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="قاری‌ها">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>قاری‌ها</h2></header>
+    <div class="body">
+      <div class="card"><p class="small">${FA(RECITERS.length)} قاری و ترجمه گویا. ${IS_APP ? `<b>${FA(onPhone.length)}</b> مورد روی گوشی است${onPhone.length ? ` (${mbTxt(totalB)})` : ""}.` : "در نسخه وب ترتیل از اینترنت پخش می‌شود و چیزی ذخیره نمی‌شود."}</p>
+        ${IS_APP ? `<div class="seg" role="group" aria-label="نمایش">${[["all", "همه"], ["have", "روی گوشی"], ["none", "دانلودنشده"]].map(([v, l]) => `<button data-recf="${v}" aria-pressed="${recFilter === v}">${l}</button>`).join("")}</div>` : ""}</div>
+      ${RECITER_GROUPS.map(([g, gl]) => { const list = rows.filter(x => x.r[3] === g && pass(x)); return list.length ? `<h3 class="rc-h">${gl}</h3>
+        <div class="card rc-list">${list.map(({r: [id, name, kb], i}) => `<div class="rc-row${cfg.reciter === id ? " cur" : ""}">
+          <button class="rc-play" data-recplay="${esc(id)}" aria-label="شنیدن نمونه ${esc(name)}">${recSample === id ? "■" : "▶"}</button>
+          <div class="rc-main"><span><b>${esc(name)}</b>${cfg.reciter === id ? ` <span class="rc-def">پیش‌فرض</span>` : ""}</span><span class="small muted">${FA(kb)} کیلوبیت${i.bytes ? " · " + mbTxt(i.bytes) : ""}</span>${IS_APP ? badge(i) : ""}</div>
+          <div class="rc-act">${IS_APP ? `<button class="small" data-recdl="${esc(id)}">${i.part || i.busy ? "مدیریت" : "دانلود"}</button>` : ""}${cfg.reciter === id ? "" : `<button class="small btn-ghost" data-recdef="${esc(id)}">پیش‌فرض شود</button>`}</div>
+        </div>`).join("")}</div>` : ""; }).join("")}
+    </div></div>`, () => { if (recSample) { try { audio.pause(); } catch (e) {} recSample = null; } render(); });
+  const on = (sel, f) => box.querySelectorAll(sel).forEach(b => b.addEventListener("click", () => f(b)));
+  on("[data-recf]", b => { recFilter = b.dataset.recf; openReciters(); });
+  on("[data-recdef]", b => { cfg.reciter = b.dataset.recdef; saveCfg(); toast("قاری پیش‌فرض: " + reciterName(cfg.reciter)); openReciters(); });
+  on("[data-recdl]", b => { auReciter = b.dataset.recdl; auFrom = "reciters"; openAudio(); });
+  on("[data-recplay]", b => { const id = b.dataset.recplay; stopAudio();
+    if (recSample === id) { recSample = null; return openReciters(); }
+    recSample = id; audio = new Audio(audioHave(id, 1) >= 7 ? Android.fileBase() + localAudio(id, 1, 1) : remoteAudio(id, 1, 1));
+    audio.onended = () => { recSample = null; if (lastDraw === openReciters) openReciters(); };
+    audio.play().catch(() => { recSample = null; toast("پخش نمونه ممکن نشد؛ اینترنت را بررسی کنید"); openReciters(); }); openReciters(); });
+}
+
 function openAudio() {
   const r = auReciter || cfg.reciter, rname = reciterName(r);
   lastDraw = () => { const b = document.querySelector(".sheet .body"); const y = b ? b.scrollTop : 0; openAudio(); const nb = document.querySelector(".sheet .body"); if (nb) nb.scrollTop = y; };
@@ -907,7 +961,7 @@ function openAudio() {
     <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>دانلود ترتیل</h2></header>
     <div class="body">
       ${IS_APP ? "" : `<div class="card startnote"><p class="small">ذخیره ترتیل روی گوشی فقط در <b>برنامه اندروید</b> کار می‌کند. در نسخه وب ترتیل هنگام پخش از اینترنت خوانده می‌شود.</p></div>`}
-      <div class="field"><label for="au-r">قاری</label><select id="au-r">${reciterOptions(r)}</select></div>
+      <div class="field"><div class="row between"><label for="au-r">قاری</label><button class="small btn-ghost" data-reciters>همه قاری‌ها و وضعیت دانلود</button></div><select id="au-r">${reciterOptions(r)}</select></div>
       <div class="card"><div class="row between"><span class="small"><b>روی گوشی:</b> ${FA(have.length)} سوره از ۱۱۴ <span class="muted">(${mbTxt(haveMB)})</span></span>${have.length ? `<button class="small btn-ghost" id="au-delall">${auConfirm ? "مطمئنید؟ دوباره بزنید" : "حذف همه"}</button>` : ""}</div>
         ${miniBar(have.length / 114)}
         ${active.length ? `<div class="row between"><span class="small">در حال دانلود: ${FA(active.length)} سوره</span><button class="small" id="au-stop">توقف همه</button></div>` : ""}</div>
@@ -927,7 +981,7 @@ function openAudio() {
           ${act ? jobBar(id) : ""}</div>`; }).join("") || `<p class="small muted">سوره‌ای پیدا نشد.</p>`}</section>
       <p class="small muted">حجم‌ها تقریبی است. سوره‌ها به‌ترتیب و یکی‌یکی دانلود می‌شوند و اگر اینترنت قطع شود، با دانلود دوباره از همان‌جا ادامه پیدا می‌کنند. ترتیل‌های دانلودشده بدون اینترنت پخش می‌شوند.</p>
     </div>
-    <footer><button class="btn-main" id="au-go" ${sel.length && IS_APP ? "" : "disabled"}>${sel.length ? `دانلود ${FA(sel.length)} سوره (${mbTxt(selMB)})` : "سوره‌ها را انتخاب کنید"}</button></footer></div>`, () => { auReciter = null; auConfirm = false; if (auFrom === "settings") { auFrom = ""; openSettingsKeep(); } else render(); });
+    <footer><button class="btn-main" id="au-go" ${sel.length && IS_APP ? "" : "disabled"}>${sel.length ? `دانلود ${FA(sel.length)} سوره (${mbTxt(selMB)})` : "سوره‌ها را انتخاب کنید"}</button></footer></div>`, () => { auReciter = null; auConfirm = false; if (auFrom === "settings") { auFrom = ""; openSettingsKeep(); } else if (auFrom === "reciters") { auFrom = ""; openReciters(); } else render(); });
   const on = (sel2, ev, fn) => box.querySelectorAll(sel2).forEach(x => x.addEventListener(ev, () => fn(x)));
   on("#au-r", "change", x => { auReciter = x.value; auSel.clear(); openAudio(); });
   on("[data-ausel]", "change", x => { const n = +x.dataset.ausel; x.checked ? auSel.add(n) : auSel.delete(n); lastDraw(); });
@@ -1065,7 +1119,8 @@ function home() {
   const backupOld = !cfg.lastBackup || (Date.now() - cfg.lastBackup) > 7 * 864e5;
   return `
   ${topBar(myName() ? `<h1>سلام ${esc(myName())}</h1><span class="small muted">حفظ تدبری</span>` : `<h1>حفظ تدبری</h1>`)}
-  ${upd.app || upd.meta ? `<section class="card"><div class="row between"><span class="small"><b>به‌روزرسانی آماده است:</b> ${[upd.app ? "نسخه " + FA(upd.app.v) + " برنامه" : "", upd.meta ? "محتوای تازه سیاق‌ها" : ""].filter(Boolean).join(" و ")}</span><button class="small btn-main" data-settings>مشاهده</button></div></section>` : ""}
+  ${upd.app ? `<section class="card">${appUpdHtml()}</section>` : ""}
+  ${upd.meta ? `<section class="card"><div class="row between"><span class="small"><b>به‌روزرسانی آماده است:</b> محتوای تازه سیاق‌ها</span><button class="small btn-main" data-settings>مشاهده</button></div></section>` : ""}
   ${qcfCard()}
   ${IS_APP && TRANSLATIONS.some(x => jobActive("tr-" + x[0])) ? `<section class="card"><h3>ذخیره ترجمه‌ها روی گوشی</h3><p class="small muted">${FA(TRANSLATIONS.filter(x => x[0] !== "none" && (x[3] || transLocal(x[0]))).length)} از ۱۳ ترجمه روی گوشی است.</p></section>` : ""}
   <section class="card"><div class="row between"><h2>${myName() ? "مسیر " + esc(myName()) : "مسیر شما"}</h2><button class="small btn-ghost" data-goto="path">همه قدم‌ها</button></div>${stepper()}
@@ -3026,6 +3081,7 @@ function autoBackupDaily() {
 const ACT = {
   "data-deck": v => openDeck(+v),
   "data-dls": () => openDownloads(),
+  "data-reciters": () => openReciters(),
   "data-deckplay": v => { const n = +v; goVerse(n, 1); setTimeout(() => { mpStart(n, 1); mp.end = [n, S[n].total]; mpRefresh(); }, 150); },
   "data-tafsir": v => { const [sn, ay] = parseVk(v); openTafsir(sn, ay); },
   "data-root": v => openRoot(+v),
@@ -3098,7 +3154,9 @@ async function checkUpdates(silent) {
   }).catch(() => { upd.err = true; }));
   if (IS_APP) jobs.push(fetch(REPO_API).then(r => r.ok ? r.json() : []).then(list => {
     const rel = (list || []).filter(r => !r.draft && r.tag_name).sort((a, b) => newer(a.tag_name, b.tag_name) ? -1 : 1)[0];
-    upd.app = rel && newer(rel.tag_name, VERSION) ? {v: rel.tag_name.replace(/^v/, ""), url: ((rel.assets || [])[0] || {}).browser_download_url || rel.html_url, test: rel.prerelease} : null;
+    const apk = rel && (rel.assets || []).find(a => /\.apk$/i.test(a.name));
+    upd.app = rel && newer(rel.tag_name, VERSION) ? {v: rel.tag_name.replace(/^v/, ""), url: apk ? apk.browser_download_url : rel.html_url, page: rel.html_url,
+      name: apk ? apk.name : "", size: apk ? apk.size : 0, date: rel.published_at || (apk && apk.updated_at) || "", test: rel.prerelease} : null;
   }).catch(() => { upd.err = true; }));
   await Promise.all(jobs);
   upd.state = "done"; cfg.lastUpdateCheck = Date.now(); saveCfg();
@@ -3140,10 +3198,51 @@ function updBox() {
   const names = upd.changed.map(n => (upd.meta.surahs[n - 1] || {}).name).filter(Boolean);
   return `<div class="upd" id="upd-box">
     <p class="small">نسخه برنامه ${FA(VERSION)} · محتوای سیاق‌ها ${built}</p>
-    ${upd.app ? `<div class="help"><b>نسخه ${FA(upd.app.v)} برنامه منتشر شده است.</b>${upd.app.test ? " (نسخه آزمایشی)" : ""}<div class="row" style="margin-top:6px"><a class="small" href="https://cafebazaar.ir/app/${BAZAAR_ID}" target="_blank" rel="noopener">به‌روزرسانی از کافه‌بازار</a><a class="small" href="${esc(upd.app.url)}" target="_blank" rel="noopener">دانلود مستقیم</a></div></div>` : ""}
+    ${upd.app ? appUpdHtml() : ""}
     ${upd.meta ? `<div class="help"><b>محتوای تازه آماده است.</b> ${names.length ? "سوره‌های تغییرکرده: " + esc(names.join("، ")) + "." : ""} پیشرفت شما حفظ می‌شود.<div class="row" style="margin-top:6px"><button class="btn-main small" id="upd-apply">دریافت محتوا</button></div></div>` : ""}
     <button id="upd-check" ${upd.state === "checking" ? "disabled" : ""}>${upd.state === "checking" ? "در حال بررسی…" : "بررسی به‌روزرسانی"}</button></div>`;
 }
+// ---------- in-app update: download the new APK with a progress bar, then Android's install window ----------
+const shamsi = d => { try { return new Date(d).toLocaleDateString("fa-IR", {year: "numeric", month: "long", day: "numeric"}); } catch (e) { return ""; } };
+const updDl = {state: "idle", got: 0, size: 0, why: ""};   // idle | run | done | install | perm | error
+function appUpdHtml() {
+  const a = upd.app, d = updDl, size = a.size || d.size, pct = d.size > 0 ? Math.round(d.got / d.size * 100) : 0;
+  const msg = {run: `در حال دانلود… <span data-updtxt>${fmtMB(d.got)} از ${fmtMB(size)} مگابایت · ${FA(pct)}٪</span>`,
+    done: "دانلود کامل شد؛ پنجره نصب باز می‌شود…", install: "پنجره نصب باز شد. «به‌روزرسانی» یا «نصب» را بزنید.",
+    perm: "برای نصب، یک بار اجازه «نصب از این منبع» را برای «حفظ تدبری» روشن کنید و برگردید؛ نصب خودش ادامه پیدا می‌کند.",
+    error: "دانلود کامل نشد" + (d.why ? "؛ " + esc(d.why) : "") + "."}[d.state] || "";
+  return `<div class="help upd-app"><b>نسخه ${FA(a.v)} برنامه منتشر شده است${a.test ? " (آزمایشی)" : ""}.</b>
+    <div class="upd-meta small">${size ? `<span>حجم: <b class="num">${fmtMB(size)} مگابایت</b></span>` : ""}${a.date ? `<span>تاریخ انتشار: <b>${esc(shamsi(a.date))}</b></span>` : ""}<span>نسخه فعلی: <b class="num">${FA(VERSION)}</b></span></div>
+    ${d.state === "run" || d.state === "done" ? `<div class="bar" data-updbar><i style="width:${pct}%;background:var(--gold)"></i></div>` : ""}
+    ${msg ? `<p class="small upd-msg${d.state === "error" ? " dl-why" : ""}">${msg}</p>` : ""}
+    <div class="row">${!IS_APP ? `<a class="small" href="${esc(a.page || a.url)}" target="_blank" rel="noopener">صفحه دانلود</a>`
+      : d.state === "run" ? `<button class="small" data-updcancel>لغو</button>`
+      : `<button class="small btn-main" data-updgo>${d.state === "error" ? "دوباره امتحان کنید" : d.state === "install" || d.state === "perm" || d.state === "done" ? "باز کردن دوباره پنجره نصب" : "دریافت و نصب"}</button>`}</div>
+    <p class="small muted">داده‌ها و پیشرفت شما با به‌روزرسانی حفظ می‌شود.</p></div>`;
+}
+function updStart() {
+  const a = upd.app; if (!a || !IS_APP) return;
+  if (!a.name || !Android.downloadUpdate) { try { window.open(a.page || a.url, "_blank"); } catch (e) {} return; }
+  Object.assign(updDl, {state: "run", got: 0, size: a.size || 0, why: ""});
+  Android.downloadUpdate(a.url, a.name); updPaint();
+}
+window.__upd = (state, got, size, why) => {
+  const prev = updDl.state;
+  Object.assign(updDl, {state, got: got || updDl.got, size: size > 0 ? size : updDl.size, why: state === "error" ? dlReason(why) : ""});
+  if (state === "run" && prev === "run") {   // just move the bar; no redraw
+    const pct = updDl.size > 0 ? Math.round(updDl.got / updDl.size * 100) : 0;
+    document.querySelectorAll("[data-updbar] i").forEach(i => i.style.width = pct + "%");
+    document.querySelectorAll("[data-updtxt]").forEach(x => x.textContent = `${fmtMB(updDl.got)} از ${fmtMB(updDl.size)} مگابایت · ${FA(pct)}٪`);
+    return;
+  }
+  if (state === "error") toast("دانلود نسخه تازه کامل نشد" + (updDl.why ? "؛ " + updDl.why : ""), 6000);
+  updPaint();
+};
+function updPaint() { document.querySelectorAll(".upd-app").forEach(el => { const t = document.createElement("div"); t.innerHTML = appUpdHtml(); el.replaceWith(t.firstElementChild); }); }
+document.addEventListener("click", e => {
+  if (e.target.closest("[data-updgo]")) { e.preventDefault(); updStart(); }
+  else if (e.target.closest("[data-updcancel]")) { e.preventDefault(); try { Android.cancelUpdate(); } catch (x) {} Object.assign(updDl, {state: "idle", got: 0}); updPaint(); }
+});
 function wireUpd(root) {
   const c = root.querySelector("#upd-check"); if (c) c.addEventListener("click", () => checkUpdates(false));
   const a = root.querySelector("#upd-apply"); if (a) a.addEventListener("click", applyContent);
@@ -3184,6 +3283,7 @@ function openSettings() {
       <div class="field"><label for="reciter">قاری ترتیل</label><select id="reciter">${reciterOptions(cfg.reciter)}</select></div>
       <button id="testaudio">▶ آزمایش صدای قاری</button>
       <button id="au-open2">⬇ دانلود ترتیل: انتخاب سوره‌ها، جزء یا کل قرآن</button>
+      <button data-reciters>🎙 فهرست قاری‌ها و وضعیت دانلود هر کدام</button>
       <button data-dls>📥 وضعیت دانلودها${dlAll().filter(jobActive2).length ? ` <span class="num">(${FA(dlAll().filter(jobActive2).length)} در جریان)</span>` : ""}</button>
       <div class="field"><span class="small">تکرار پیش‌فرض هر آیه</span><div class="seg" data-group="reps">${[1, 3, 5].map(v => `<button data-v="${v}" aria-pressed="${cfg.reps === v}">${FA(v)} بار</button>`).join("")}</div></div>
       <p class="small muted">ترتیل‌هایی که دانلود نشده‌اند هنگام پخش از اینترنت خوانده می‌شوند.</p>

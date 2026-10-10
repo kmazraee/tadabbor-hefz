@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.webkit.PermissionRequest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -85,6 +86,40 @@ public class MainActivity extends Activity {
         return n;
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // back from "allow installs from this app": continue the update that was waiting for it
+        if (pendingApk != null && (Build.VERSION.SDK_INT < 26 || getPackageManager().canRequestPackageInstalls())) {
+            File f = pendingApk; pendingApk = null; openInstaller(f);
+        }
+    }
+
+    private volatile File pendingApk = null;
+    private final AtomicInteger updGen = new AtomicInteger();
+
+    /** Hand the downloaded APK to Android's installer (asks once for "install unknown apps" on Android 8+). */
+    private void openInstaller(File apk) {
+        runOnUiThread(() -> {
+            try {
+                if (Build.VERSION.SDK_INT >= 26 && !getPackageManager().canRequestPackageInstalls()) {
+                    pendingApk = apk;
+                    js("window.__upd && __upd('perm',0,0,'')");
+                    startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())));
+                    return;
+                }
+                Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".files", apk);
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setDataAndType(uri, "application/vnd.android.package-archive");
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(i);
+                js("window.__upd && __upd('install',0,0,'')");
+            } catch (Exception e) {
+                js("window.__upd && __upd('error',0,0," + JSONObject.quote(String.valueOf(e.getMessage())) + ")");
+            }
+        });
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,6 +180,57 @@ public class MainActivity extends Activity {
         /** Root of the app's private storage as a file:// URL, e.g. file:///data/user/0/…/files/ */
         @JavascriptInterface
         public String fileBase() { return Uri.fromFile(getFilesDir()).toString() + "/"; }
+
+        /** Download a new version of the app inside the app (with progress), then open the installer. */
+        @JavascriptInterface
+        public void downloadUpdate(String url, String name) {
+            final int gen = updGen.incrementAndGet();
+            new Thread(() -> {
+                File dir = new File(getCacheDir(), "update");
+                File[] old = dir.listFiles();
+                if (old != null) for (File f : old) if (!f.getName().equals(name)) f.delete();
+                dir.mkdirs();
+                File out = new File(dir, name.replaceAll("[^A-Za-z0-9._-]", "_"));
+                try {
+                    if (!(out.exists() && out.length() > 0)) {
+                        final long[] last = {0};
+                        downloadRetry(url, out, (got, size) -> {
+                            if (gen != updGen.get()) throw new RuntimeException("cancelled");
+                            long now = System.currentTimeMillis();
+                            if (now - last[0] < 300) return;
+                            last[0] = now;
+                            js("window.__upd && __upd('run'," + got + "," + size + ",'')");
+                        });
+                    }
+                    if (gen != updGen.get()) return;
+                    js("window.__upd && __upd('done'," + out.length() + "," + out.length() + ",'')");
+                    openInstaller(out);
+                } catch (Exception e) {
+                    out.delete();
+                    if (gen == updGen.get()) js("window.__upd && __upd('error',0,0," + JSONObject.quote(String.valueOf(e.getMessage())) + ")");
+                }
+            }).start();
+        }
+
+        @JavascriptInterface
+        public void cancelUpdate() { updGen.incrementAndGet(); }
+
+        /** Recitations on the phone: {reciter: {s: {surah folder: file count}, b: bytes}} for the reciters list. */
+        @JavascriptInterface
+        public String audioSummary() {
+            JSONObject o = new JSONObject();
+            try {
+                File[] rs = safe("audio").listFiles();
+                if (rs != null) for (File r : rs) {
+                    if (!r.isDirectory()) continue;
+                    if (r.getName().equals("translations")) {
+                        File[] ts = r.listFiles();
+                        if (ts != null) for (File t : ts) if (t.isDirectory()) o.put("translations/" + t.getName(), reciterJson(t));
+                    } else o.put(r.getName(), reciterJson(r));
+                }
+            } catch (Exception e) { /* return what we have */ }
+            return o.toString();
+        }
 
         /** Where downloads live and how much each folder takes, for the downloads page. */
         @JavascriptInterface
@@ -322,6 +408,22 @@ public class MainActivity extends Activity {
     }
 
     /** A path inside app storage; refuses anything that would escape it. */
+    private static JSONObject reciterJson(File r) throws Exception {
+        JSONObject j = new JSONObject(), c = new JSONObject();
+        long bytes = 0;
+        File[] ss = r.listFiles();
+        if (ss != null) for (File s : ss) {
+            if (!s.isDirectory()) continue;
+            int n = 0;
+            File[] fs = s.listFiles();
+            if (fs != null) for (File f : fs) if (f.isFile() && f.length() > 0 && !f.getName().endsWith(".part")) { n++; bytes += f.length(); }
+            if (n > 0) c.put(s.getName(), n);
+        }
+        j.put("s", c);
+        j.put("b", bytes);
+        return j;
+    }
+
     private static long sizeOf(File f) {
         if (f.isFile()) return f.length();
         long n = 0;
@@ -357,7 +459,7 @@ public class MainActivity extends Activity {
             try { download(url, out, p); return; }
             catch (Exception e) {
                 last = e;
-                if (e.getMessage() != null && e.getMessage().startsWith("HTTP 404")) break;
+                if (e.getMessage() != null && (e.getMessage().startsWith("HTTP 404") || e.getMessage().equals("cancelled"))) break;
                 try { Thread.sleep(t == 0 ? 1500 : 4000); } catch (InterruptedException ie) { break; }
             }
         }

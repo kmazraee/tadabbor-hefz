@@ -9,6 +9,8 @@
     <!-- Recording your own recitation to compare with the reciter (asked for only when you press record) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- In-app update: the new version is downloaded inside the app and handed to Android's installer -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:allowBackup="true"
