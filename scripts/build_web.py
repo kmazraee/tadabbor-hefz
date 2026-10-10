@@ -27,7 +27,12 @@ for f in sorted((ROOT / "data/decks").glob("*.json")):
         inside = [x for x in nodes if x["s"] >= q["s"] and x["e"] <= q["e"]]
         tiles = inside and inside[0]["s"] == q["s"] and inside[-1]["e"] == q["e"] and all(
             a["e"] + 1 == b["s"] for a, b in zip(inside, inside[1:]))
-        if tiles:
+        if d.get("steps"):
+            q["steps"] = [x for x in d["steps"] if q["s"] <= x["s"] and x["e"] <= q["e"]]
+            if q["s"] == 1 and q["e"] == s["total"] and d.get("dir"):
+                q["title"] = d["dir"]
+                q["sum"] = [d["dirText"]] if d.get("dirText") else []
+        elif tiles:
             q["steps"] = [{"s": x["s"], "e": x["e"], "t": x["t"]} for x in inside]
             if q["s"] == 1 and q["e"] == s["total"] and d.get("dir"):
                 q["title"] = d["dir"]

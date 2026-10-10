@@ -154,6 +154,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .fl-kids{display:flex;flex-direction:column;gap:8px;padding-right:14px;margin-right:10px;border-right:2px solid var(--lapis)}
 .fl-box{display:flex;flex-direction:column;gap:4px;text-align:start;width:100%;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
 .fl-lbl{background:var(--lapis-soft);border-color:var(--lapis);text-align:center}
+.fl-pre{padding-bottom:12px;margin-bottom:6px;border-bottom:1px dashed var(--line)}
+.fl-note{margin:2px 0 0;color:var(--muted,#777)}
 .fl-ay{font-size:12px;color:var(--lapis);font-weight:700}
 .fl-ar{font-family:var(--f-q);font-size:18px;line-height:1.9;direction:rtl}
 .deck-dua{background:var(--lapis-soft)}
@@ -1340,14 +1342,14 @@ function mpRefresh() { const el = document.getElementById("player"); if (!el) re
 
 // ---------- institute slide deck per surah: card, context, guidance flow, direction and prayer ----------
 const deckAr = (sn, a, b) => { let t = ""; for (let i = a; i <= b; i++) { const v = vplain(sn, i) || ""; if (!v) return ""; t += v + " ﴿" + FA(i) + "﴾ "; } return t.trim(); };
-function deckFlow(s) {
-  const d = s.deck, by = Object.fromEntries(d.flow.map(x => [x.id, x])), kids = new Set(d.flow.flatMap(x => x.to || []));
+function deckFlow(s, flow) {
+  const fl = flow || s.deck.flow, by = Object.fromEntries(fl.map(x => [x.id, x])), kids = new Set(fl.flatMap(x => x.to || []));
   const node = x => `<div class="fl-node">${x.s ? `<button class="fl-box" data-gov="${key(s.n, x.s)}" aria-label="آیات ${FA(x.s)}${x.e > x.s ? " تا " + FA(x.e) : ""} در مصحف">
       <span class="fl-ay">${x.e > x.s ? `آیات ${FA(x.s)} تا ${FA(x.e)}` : `آیه ${FA(x.s)}`}</span>
-      ${deckAr(s.n, x.s, x.e) ? `<span class="fl-ar">${esc(deckAr(s.n, x.s, x.e))}</span>` : ""}
+      ${x.ar || deckAr(s.n, x.s, x.e) ? `<span class="fl-ar">${esc(x.ar || deckAr(s.n, x.s, x.e))}</span>` : ""}
       <span class="small">${esc(x.t)}</span></button>` : `<div class="fl-box fl-lbl"><b class="small">${esc(x.t)}</b></div>`}
     ${(x.to || []).length ? `<div class="fl-kids">${x.to.map(id => node(by[id])).join("")}</div>` : ""}</div>`;
-  return d.flow.filter(x => !kids.has(x.id)).map(node).join("");
+  return fl.filter(x => !kids.has(x.id)).map(node).join("");
 }
 function openDeck(n, onBack) {
   const s = S[n], d = s.deck; if (!d) return;
@@ -1361,7 +1363,7 @@ function openDeck(n, onBack) {
       ${(d.space || []).length ? `<div class="card"><h3>فضای سخن</h3><p class="small muted">سوره با مخاطبی سخن می‌گوید که این حال‌وهوا را دارد:</p><ul class="deck-list">${d.space.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
       <div class="card"><div class="row between"><h3>قرائت سوره</h3><div class="row"><button class="small btn-main" data-deckplay="${n}">▶ پخش کل سوره</button><button class="small" data-gov="${key(n, 1)}">در مصحف</button></div></div>
         <p class="small muted">پیش از دیدن سیر هدایتی، یک بار سوره را با دقت بشنوید و بخوانید. قاری: ${esc(reciterName(cfg.reciter))}</p></div>
-      ${(d.flow || []).length ? `<div class="card"><h3>سیر هدایتی سوره</h3><p class="small muted">هر بخش را بزنید تا در مصحف باز شود.</p><div class="flow">${deckFlow(s)}</div></div>` : ""}
+      ${(d.flow || []).length ? `<div class="card"><h3>سیر هدایتی سوره</h3><p class="small muted">هر بخش را بزنید تا در مصحف باز شود.</p><div class="flow">${(d.pre || []).map(p => `<div class="flow fl-pre">${deckFlow(s, p.flow)}${p.note ? `<p class="small fl-note">${esc(p.note)}</p>` : ""}</div>`).join("")}${deckFlow(s)}</div></div>` : ""}
       ${d.dir ? `<div class="card"><h3>جهت هدایتی سوره</h3><div class="meaning"><b>${esc(d.dir)}</b>${d.dirText ? `<span class="small">${esc(d.dirText)}</span>` : ""}</div></div>` : ""}
       ${d.dua ? `<div class="card deck-dua"><h3>دعا</h3><p>${esc(d.dua)}</p><button class="small" id="dk-share">اشتراک دعا</button></div>` : ""}
       <p class="small muted">منبع: ${esc(d.source)}</p>
