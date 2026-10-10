@@ -180,6 +180,10 @@ details ol,details ul{margin:0;padding-inline-start:20px;display:flex;flex-direc
 .dl-row{display:flex;flex-direction:column;gap:4px;padding-block:10px;border-bottom:1px solid var(--line)}
 .dl-row:last-child{border-bottom:0}
 .dl-why{color:var(--danger,#b3261e)}
+.path{font-size:12px;background:var(--lapis-soft);border-radius:8px;padding:6px 10px;word-break:break-all;text-align:left}
+.path-s{font-size:11px;word-break:break-all;unicode-bidi:isolate}
+.store-list{display:flex;flex-direction:column;gap:8px;margin-block:8px}
+.store-list>.row{padding-bottom:6px;border-bottom:1px solid var(--line)}
 body.has-dl .toast{bottom:128px}
 .toast{position:fixed;bottom:84px;inset-inline:0;margin-inline:auto;width:max-content;max-width:90%;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:10px;font-size:13px;z-index:30}
 .mw.weak{text-decoration:underline dotted var(--st-due);text-decoration-thickness:2px;text-underline-offset:6px}
@@ -790,6 +794,7 @@ function openDownloads() {
       ${bad.length ? `<div class="card"><h3>کامل نشد</h3>${bad.map(j => `<div class="dl-row"><div class="row between"><b class="small">${esc(j.label || j.id)}</b><span class="row" style="gap:4px">${j.files ? `<button class="small btn-main" data-dlretry="${esc(j.id)}">دوباره</button>` : ""}<button class="small btn-ghost" data-dlforget="${esc(j.id)}" aria-label="برداشتن از فهرست">✕</button></span></div>
           <span class="small muted">${j.total ? FA(j.done || 0) + " از " + FA(j.total) + " فایل ذخیره شد · " : ""}${agoText(j.at)}</span>${j.why ? `<span class="small dl-why">${esc(j.why)}</span>` : ""}</div>`).join("")}</div>` : ""}
       ${ok.length ? `<div class="card"><div class="row between"><h3>اخیر</h3><button class="small btn-ghost" id="dl-clear">پاک کردن فهرست</button></div>${ok.slice(0, 20).map(j => `<div class="dl-row"><div class="row between"><span class="small">${j.state === "done" ? `<span class="ok">✓</span>` : `<span class="muted">⏹</span>`} ${esc(j.label || j.id)}</span><span class="small muted">${j.state === "cancel" ? "لغو شد · " : ""}${agoText(j.at)}</span></div></div>`).join("")}</div>` : ""}
+      <div class="card" id="dl-store"><h3>محل ذخیره فایل‌ها</h3>${storeHtml()}</div>
       <div class="card"><h3>مدیریت فایل‌های روی گوشی</h3><div class="row"><button class="small" id="dl-au">🎧 ترتیل‌ها</button><button class="small" id="dl-set">📖 تفسیر و ترجمه (تنظیمات)</button><button class="small" data-gotab="path">🎬 درس‌ها</button></div></div>
     </div></div>`);
   const on = (sel, f) => box.querySelectorAll(sel).forEach(b => b.addEventListener("click", () => f(b)));
@@ -803,6 +808,28 @@ function openDownloads() {
   on("#dl-set", () => openSettings());
   on("[data-gotab]", b => { box.innerHTML = ""; tab = b.dataset.gotab; render(); window.scrollTo(0, 0); });
   dlPill();
+  fillStore();
+}
+// Where each kind of file is kept, with its size (folders inside the app's private storage)
+const STORE_ROWS = [["audio", "🎧 ترتیل‌ها"], ["lessons", "🎬 فیلم و صوت درس‌ها"], ["trans", "🌐 ترجمه‌ها"], ["qcf", "🔤 قلم مصحف عثمان طه"]];
+let STORE = null, STORE_IDB = null;
+function storeHtml() {
+  if (!IS_APP) return `<p class="small">در نسخه وب، تفسیر و معنای کلمات در حافظه همین مرورگر ذخیره می‌شود${STORE_IDB != null ? ` (حدود ${fmtMB(STORE_IDB)} مگابایت)` : ""}. پاک کردن داده‌های مرورگر آن‌ها را پاک می‌کند.</p>`;
+  if (!STORE) return `<p class="small muted">در حال خواندن…</p>`;
+  const base = STORE.base || "", sz = STORE.sizes || {};
+  return `<p class="small">همه فایل‌های دانلودی در <b>حافظه داخلی خود برنامه</b> روی گوشی ذخیره می‌شوند:</p>
+    <div class="path num" dir="ltr">${esc(base)}</div>
+    <div class="store-list">${STORE_ROWS.map(([k, l]) => `<div class="row between small"><span>${l}<br><bdi class="muted path-s" dir="ltr">files/${k}/</bdi></span><b class="num">${fmtMB(sz[k] || 0)} مگابایت</b></div>`).join("")}
+      <div class="row between small"><span>📖 تفسیرها و معنای کلمات<br><span class="muted">در پایگاه داده داخلی برنامه</span></span><b class="num">${STORE_IDB != null ? fmtMB(STORE_IDB) + " مگابایت" : "…"}</b></div>
+      <div class="row between small"><span>💾 پشتیبان خودکار روزانه</span><bdi class="path-s" dir="ltr"><b>${esc(STORE.backup || "")}</b></bdi></div>
+      ${STORE.free ? `<div class="row between small"><span class="muted">فضای خالی گوشی</span><b class="num">${FA((STORE.free / 1073741824).toFixed(1))} گیگابایت</b></div>` : ""}</div>
+    <p class="small muted">این پوشه مخصوص برنامه است: در فایل‌منیجر گوشی دیده نمی‌شود و با حذف برنامه پاک می‌شود. پشتیبان‌ها در پوشه Download گوشی است و با حذف برنامه می‌ماند.</p>`;
+}
+function fillStore() {
+  try { if (IS_APP && Android.storageInfo) STORE = JSON.parse(Android.storageInfo()); } catch (e) {}
+  const done = () => { const el = document.getElementById("dl-store"); if (el) el.innerHTML = "<h3>محل ذخیره فایل‌ها</h3>" + storeHtml(); };
+  done();
+  try { navigator.storage.estimate().then(e => { STORE_IDB = e.usage || 0; done(); }).catch(() => {}); } catch (e) {}
 }
 
 // Translations

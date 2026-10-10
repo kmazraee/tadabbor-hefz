@@ -146,6 +146,24 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String fileBase() { return Uri.fromFile(getFilesDir()).toString() + "/"; }
 
+        /** Where downloads live and how much each folder takes, for the downloads page. */
+        @JavascriptInterface
+        public String storageInfo() {
+            JSONObject o = new JSONObject();
+            try {
+                File base = getFilesDir();
+                o.put("base", base.getAbsolutePath());
+                JSONObject sz = new JSONObject();
+                File[] fs = base.listFiles();
+                if (fs != null) for (File f : fs) sz.put(f.getName(), sizeOf(f));
+                o.put("sizes", sz);
+                o.put("free", base.getUsableSpace());
+                o.put("backup", Build.VERSION.SDK_INT >= 29 ? Environment.DIRECTORY_DOWNLOADS + "/HefzTadabbori"
+                        : "Android/data/" + getPackageName() + "/files/backups");
+            } catch (Exception e) { /* return what we have */ }
+            return o.toString();
+        }
+
         /** Number of non-empty files inside a folder of app storage (e.g. "audio/Muhammad_Ayyoub_64kbps/002"). */
         @JavascriptInterface
         public int countFiles(String rel) {
@@ -304,6 +322,14 @@ public class MainActivity extends Activity {
     }
 
     /** A path inside app storage; refuses anything that would escape it. */
+    private static long sizeOf(File f) {
+        if (f.isFile()) return f.length();
+        long n = 0;
+        File[] c = f.listFiles();
+        if (c != null) for (File x : c) n += sizeOf(x);
+        return n;
+    }
+
     private File safe(String rel) {
         File base = getFilesDir();
         File f = new File(base, rel);
