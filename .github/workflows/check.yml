@@ -1,0 +1,26 @@
+name: Check Android build
+
+# Compiles the app without publishing anything (run by hand from the Actions tab)
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rebuild app page from template and data
+        run: python3 scripts/build_web.py
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+      - name: Compile
+        working-directory: android
+        run: gradle --no-daemon assembleDebug

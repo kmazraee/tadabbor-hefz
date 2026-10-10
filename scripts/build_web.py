@@ -67,5 +67,6 @@ for sub in ("pages", "trans"):
         dst.mkdir(parents=True)
         for tid in BUNDLED_TRANS:
             shutil.copy(ROOT / "data/trans" / f"{tid}.json", dst / f"{tid}.json")
-shutil.copy(ROOT / "data/quran.json", assets / "data/quran.json")
+for f in ("quran.json", "roots.json", "similar.json"):      # full text, word roots, similar verses
+    shutil.copy(ROOT / "data" / f, assets / "data" / f)
 print("built prototype/index.html and android assets (index.html, 604 pages, full text for search, 4 bundled translations)")

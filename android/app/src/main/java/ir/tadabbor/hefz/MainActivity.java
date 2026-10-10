@@ -1,6 +1,15 @@
 package ir.tadabbor.hefz;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.webkit.PermissionRequest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
@@ -199,6 +208,51 @@ public class MainActivity extends Activity {
             for (String f : QCF_FILES) new File(qcfDir(), f).delete();
         }
 
+        /** Daily reminder at hour:minute; asks for the notification permission on Android 13+. */
+        @JavascriptInterface
+        public void setReminder(boolean on, int hour, int minute, String title, String text) {
+            if (on && Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+                runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 51));
+            Reminder.save(MainActivity.this, on, hour, minute, title, text);
+        }
+
+        /** Fill the home-screen widget. */
+        @JavascriptInterface
+        public void setWidget(String title, String line, String verse, String meaning) { Widget.save(MainActivity.this, title, line, verse, meaning); }
+
+        /** Daily automatic backup into Downloads/HefzTadabbori (overwritten each day). Returns where it went, or "". */
+        @JavascriptInterface
+        public String autoBackup(String name, String content) {
+            byte[] data = content.getBytes(StandardCharsets.UTF_8);
+            try {
+                if (Build.VERSION.SDK_INT >= 29) {
+                    ContentResolver cr = getContentResolver();
+                    String dir = Environment.DIRECTORY_DOWNLOADS + "/HefzTadabbori/";
+                    Uri uri = null;
+                    try (Cursor c = cr.query(MediaStore.Downloads.EXTERNAL_CONTENT_URI, new String[]{MediaStore.MediaColumns._ID},
+                            MediaStore.MediaColumns.DISPLAY_NAME + "=? AND " + MediaStore.MediaColumns.RELATIVE_PATH + "=?", new String[]{name, dir}, null)) {
+                        if (c != null && c.moveToFirst()) uri = Uri.withAppendedPath(MediaStore.Downloads.EXTERNAL_CONTENT_URI, String.valueOf(c.getLong(0)));
+                    }
+                    if (uri == null) {
+                        ContentValues v = new ContentValues();
+                        v.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+                        v.put(MediaStore.MediaColumns.MIME_TYPE, "application/json");
+                        v.put(MediaStore.MediaColumns.RELATIVE_PATH, dir);
+                        uri = cr.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
+                    }
+                    if (uri == null) return "";
+                    try (OutputStream o = cr.openOutputStream(uri, "wt")) { o.write(data); }
+                    return "Download/HefzTadabbori/" + name;
+                }
+                File d = new File(getExternalFilesDir(null), "backups");
+                d.mkdirs();
+                try (FileOutputStream o = new FileOutputStream(new File(d, name))) { o.write(data); }
+                return "Android/data/" + getPackageName() + "/files/backups/" + name;
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
         /** Share plain text (a verse with its translation) through the share sheet. */
         @JavascriptInterface
         public void shareText(String text) {
@@ -303,7 +357,25 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    private PermissionRequest pendingMic;
+
     class Chrome extends WebChromeClient {
+        // Microphone for recording your own recitation
+        @Override
+        public void onPermissionRequest(PermissionRequest request) {
+            runOnUiThread(() -> {
+                boolean audio = false;
+                for (String r : request.getResources()) if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(r)) audio = true;
+                if (!audio) { request.deny(); return; }
+                if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                    request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+                } else {
+                    pendingMic = request;
+                    requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 52);
+                }
+            });
+        }
+
         // File picker for restoring a backup (Google Drive appears in the system picker)
         @Override
         public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
@@ -345,6 +417,16 @@ public class MainActivity extends Activity {
             Uri uri = (resultCode == RESULT_OK && data != null) ? data.getData() : null;
             fileCallback.onReceiveValue(uri != null ? new Uri[]{uri} : null);
             fileCallback = null;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, String[] perms, int[] results) {
+        super.onRequestPermissionsResult(code, perms, results);
+        if (code == 52 && pendingMic != null) {
+            if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) pendingMic.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+            else { pendingMic.deny(); js("toast('برای ضبط صدا، اجازه میکروفون لازم است')"); }
+            pendingMic = null;
         }
     }
 

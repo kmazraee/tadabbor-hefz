@@ -3,6 +3,12 @@
 
     <!-- Used for recitation audio, lesson videos and audio, and the Uthman Taha mushaf font; reading and memorizing work offline -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Daily study reminder (asked for only when the reader turns the reminder on) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Recording your own recitation to compare with the reciter (asked for only when you press record) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <application
         android:allowBackup="true"
@@ -20,6 +26,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".Reminder" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="ir.tadabbor.hefz.REMIND" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".Widget" android:exported="false" android:label="حفظ تدبری">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info" />
+        </receiver>
 
         <!-- Lets the backup file be handed to Google Drive through the share sheet -->
         <provider
