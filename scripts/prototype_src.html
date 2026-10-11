@@ -408,7 +408,20 @@ let DATA = /*DATA*/;
 try { const m = JSON.parse(localStorage.getItem("tadabbor-meta")); if (m && m.surahs && m.v !== DATA.v && m.built >= DATA.built) DATA = m; } catch (e) {}
 const DATA_BASE = "/*DATABASE*/";
 const PAGE_BASE = DATA_BASE + "pages/";
-const VERSION = "0.10.0";
+// In the app WebView.fetch() cannot read file:// URLs, so bundled and downloaded files come through the Android bridge instead
+function jsonOf(url) {
+  if (window.Android && Android.readAsset && !/^https?:/.test(url)) {
+    return new Promise((res, rej) => {
+      try {
+        let fb = ""; try { fb = Android.fileBase(); } catch (e) {}
+        const txt = fb && url.startsWith(fb) ? Android.readFile(url.slice(fb.length)) : Android.readAsset(url);
+        if (txt) res(JSON.parse(txt)); else rej(new Error("empty"));
+      } catch (e) { rej(e); }
+    });
+  }
+  return fetch(url).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
+}
+const VERSION = "0.10.1";
 const SITE_BASE = "https://kmazraee.github.io/tadabbor-hefz/";
 const REPO_API = "https://api.github.com/repos/kmazraee/tadabbor-hefz/releases?per_page=10";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
@@ -555,7 +568,10 @@ const ICON_HELP = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const fontState = {};
 let fontWarned = false;
 const qcfLocal = () => { try { return IS_APP && Android.qcfReady(); } catch (e) { return false; } };
-const fontFile = name => (qcfLocal() ? Android.qcfBase() : QCF_BASE) + (name === "QCF4_QBSML" ? "QCF4_QBSML.woff2" : name + "_W.woff2");
+const fontFile = name => {
+  const f = name === "QCF4_QBSML" ? "QCF4_QBSML.woff2" : name + "_W.woff2";
+  return IS_APP && fileExists("qcf/" + f) ? Android.fileBase() + "qcf/" + f : QCF_BASE + f;   // a font already on the phone is never fetched again
+};
 // Download progress reported by the Android app
 const qcf = {state: "idle", done: 0, total: 48};
 window.__qcfProgress = (done, total, state) => {
@@ -603,7 +619,7 @@ const PAGE_CACHE = {}, PAGE_LOADING = {};
 function getPage(p) {
   if (PAGE_CACHE[p]) return PAGE_CACHE[p];
   if (!PAGE_LOADING[p]) {
-    PAGE_LOADING[p] = fetch(PAGE_BASE + String(p).padStart(3, "0") + ".json").then(r => { if (!r.ok) throw 0; return r.json(); })
+    PAGE_LOADING[p] = jsonOf(PAGE_BASE + String(p).padStart(3, "0") + ".json")
       .then(j => { PAGE_CACHE[p] = j; refresh(); })
       .catch(() => { setTimeout(() => { PAGE_LOADING[p] = null; }, 3000); });
   }
@@ -691,7 +707,7 @@ const TR = {}, TR_LOADING = {};
 function trans(sn, ay) {
   const id = cfg.trans; if (!id || id === "none") return null;
   if (TR[id]) return TR[id][sn - 1][ay - 1];
-  if (!TR_LOADING[id]) TR_LOADING[id] = fetch(transUrl(id)).then(r => r.json()).then(j => { TR[id] = j; refresh(); }).catch(() => { setTimeout(() => { TR_LOADING[id] = null; }, 5000); });
+  if (!TR_LOADING[id]) TR_LOADING[id] = jsonOf(transUrl(id)).then(j => { TR[id] = j; refresh(); }).catch(() => { setTimeout(() => { TR_LOADING[id] = null; }, 5000); });
   return "";
 }
 const transBundled = id => !!(TRANSLATIONS.find(x => x[0] === id) || [])[3];
@@ -994,7 +1010,7 @@ let auConfirm = false, auFrom = "";
 // ---------- audio ----------
 let audio, queue = [], playingVk = null;
 // Plays the copy on the phone when it has been downloaded, otherwise streams it
-const audioUrl = (sn, i) => audioHave(cfg.reciter, sn) && fileExists(localAudio(cfg.reciter, sn, i)) ? Android.fileBase() + localAudio(cfg.reciter, sn, i) : remoteAudio(cfg.reciter, sn, i);
+const audioUrl = (sn, i) => fileExists(localAudio(cfg.reciter, sn, i)) ? Android.fileBase() + localAudio(cfg.reciter, sn, i) : remoteAudio(cfg.reciter, sn, i);
 function setPlaying(vk) {
   playingVk = vk;
   document.querySelectorAll(".playing").forEach(e => e.classList.remove("playing"));
@@ -1270,7 +1286,7 @@ function mpPlay() {
   if (tab === "mushaf" && pageOf(sn, ay) !== mushafPage && !document.getElementById("sheet").innerHTML) { mushafPage = pageOf(sn, ay); closeWordbar(); render(); }
   setPlaying(key(sn, ay)); mpRefresh();
   const r = mp.phase === "tr" && cfg.mpTrans ? cfg.mpTrans : cfg.reciter;
-  const a = audio = new Audio(audioHave(r, sn) && fileExists(localAudio(r, sn, ay)) ? Android.fileBase() + localAudio(r, sn, ay) : remoteAudio(r, sn, ay));
+  const a = audio = new Audio(fileExists(localAudio(r, sn, ay)) ? Android.fileBase() + localAudio(r, sn, ay) : remoteAudio(r, sn, ay));
   a.onended = () => { if (audio === a && mp.playing) mpNext(); };
   a.play().catch(() => { if (audio !== a) return; mp.playing = false; setPlaying(null); mpRefresh(); toast("پخش صوت ممکن نشد؛ اینترنت را بررسی کنید"); });
 }
@@ -2344,7 +2360,7 @@ const resetMarks = () => { ses.mark = null; ses.errs = ses.errs || {}; ses.ew = 
 let QTEXT = null, QNORM = null, QTEXT_LOADING = null;
 function loadText() {
   if (QTEXT) return Promise.resolve(QTEXT);
-  return QTEXT_LOADING = QTEXT_LOADING || fetch(DATA_BASE + "quran.json").then(r => { if (!r.ok) throw 0; return r.json(); }).then(j => (QTEXT = j)).catch(e => { QTEXT_LOADING = null; throw e; });
+  return QTEXT_LOADING = QTEXT_LOADING || jsonOf(DATA_BASE + "quran.json").then(j => (QTEXT = j)).catch(e => { QTEXT_LOADING = null; throw e; });
 }
 const vplain = (sn, ay) => QTEXT ? QTEXT[sn - 1][ay - 1] : vtext(sn, ay);
 // Arabic folded for search: no diacritics, one form per letter, «صلوة/صلاة» and «إلاه/إله» alike
@@ -2687,7 +2703,7 @@ function wireTafsirBox(root) {
 
 // ---------- word roots ----------
 let ROOTS = null, ROOTS_LOADING = null;
-const loadRoots = () => ROOTS ? Promise.resolve(ROOTS) : ROOTS_LOADING = ROOTS_LOADING || fetch(DATA_BASE + "roots.json").then(r => r.json()).then(j => (ROOTS = j)).catch(e => { ROOTS_LOADING = null; throw e; });
+const loadRoots = () => ROOTS ? Promise.resolve(ROOTS) : ROOTS_LOADING = ROOTS_LOADING || jsonOf(DATA_BASE + "roots.json").then(j => (ROOTS = j)).catch(e => { ROOTS_LOADING = null; throw e; });
 const rootId = (sn, ay, i) => { if (!ROOTS) return -1; const v = ROOTS.words[sn - 1][ay - 1]; return v && v[i - 1] !== undefined ? v[i - 1] : -1; };
 const rootName = id => id >= 0 && ROOTS ? ROOTS.roots[id] : "";
 const rootButton = (sn, ay, i) => { const id = rootId(sn, ay, i); return id >= 0 ? `<button class="small" data-root="${id}">ریشه «${esc(rootName(id))}» · ${FA(ROOTS.index[id].length)} آیه</button>` : ""; };
@@ -2706,7 +2722,7 @@ function openRoot(id, more) {
 
 // ---------- similar verses (mutashabihat) ----------
 let SIMILAR = null, SIMILAR_LOADING = null;
-const loadSimilar = () => SIMILAR ? Promise.resolve(SIMILAR) : SIMILAR_LOADING = SIMILAR_LOADING || fetch(DATA_BASE + "similar.json").then(r => r.json()).then(j => (SIMILAR = j)).catch(e => { SIMILAR_LOADING = null; throw e; });
+const loadSimilar = () => SIMILAR ? Promise.resolve(SIMILAR) : SIMILAR_LOADING = SIMILAR_LOADING || jsonOf(DATA_BASE + "similar.json").then(j => (SIMILAR = j)).catch(e => { SIMILAR_LOADING = null; throw e; });
 const similarOf = vk => (SIMILAR && SIMILAR[vk]) || [];
 // Words of b that are not in a are marked: the place a memorizer slips
 function diffHtml(a, b) {

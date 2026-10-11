@@ -259,6 +259,28 @@ public class MainActivity extends Activity {
             return n;
         }
 
+        /** Read a bundled asset (e.g. "data/pages/001.json") as UTF-8 text. WebView cannot fetch() file:// URLs, so the page asks here. */
+        @JavascriptInterface
+        public String readAsset(String rel) {
+            try (java.io.InputStream in = getAssets().open(rel.replaceFirst("^\\./", ""))) {
+                java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                byte[] buf = new byte[65536]; int n;
+                while ((n = in.read(buf)) > 0) bo.write(buf, 0, n);
+                return bo.toString("UTF-8");
+            } catch (Exception e) { return ""; }
+        }
+
+        /** Read a file from the app's private storage (e.g. a downloaded translation) as UTF-8 text. */
+        @JavascriptInterface
+        public String readFile(String rel) {
+            try (java.io.FileInputStream in = new java.io.FileInputStream(safe(rel))) {
+                java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                byte[] buf = new byte[65536]; int n;
+                while ((n = in.read(buf)) > 0) bo.write(buf, 0, n);
+                return bo.toString("UTF-8");
+            } catch (Exception e) { return ""; }
+        }
+
         @JavascriptInterface
         public boolean exists(String rel) { File f = safe(rel); return f.exists() && f.length() > 0; }
 
