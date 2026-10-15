@@ -4,3 +4,4 @@ package/
 __pycache__/
 .qcftest/
 prototype/qcftest.html
+dist/
