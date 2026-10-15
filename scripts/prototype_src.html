@@ -507,7 +507,8 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 <script>
 let DATA = /*DATA*/;
 // Content downloaded by "بررسی به‌روزرسانی" replaces the bundled copy while it is newer.
-try { const m = JSON.parse(localStorage.getItem("tadabbor-meta")); if (m && m.surahs && m.v !== DATA.v && m.built >= DATA.built) DATA = m; } catch (e) {}
+// A copy without the slide decks came from an older update file that dropped them; the bundled one is right then.
+try { const m = JSON.parse(localStorage.getItem("tadabbor-meta")); if (m && m.surahs && m.surahs.some(s => s.deck) && m.v !== DATA.v && m.built >= DATA.built) DATA = m; } catch (e) {}
 const DATA_BASE = "/*DATABASE*/";
 const PAGE_BASE = DATA_BASE + "pages/";
 // In the app WebView.fetch() cannot read file:// URLs, so bundled and downloaded files come through the Android bridge instead

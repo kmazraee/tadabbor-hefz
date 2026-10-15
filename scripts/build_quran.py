@@ -7,7 +7,7 @@ Inputs (npm packages, see README):
                         placeholder sections where no siyaq data exists yet
 
 Outputs:
-  data/meta.json          surahs, siyaq ranges, verse->page index
+  data/meta.base.json     surahs, siyaq ranges, verse->page index (build_web.py adds the slide decks -> data/meta.json)
   data/pages/NNN.json     one compact file per mushaf page (loaded on demand)
 
   @ghoran/translation 0.0.9 -> Persian translations from Tanzil.net (json/fa/)
@@ -31,7 +31,7 @@ TRANSLATIONS = {k: f"tanzil-{k}.json" for k in ["ansarian", "makarem", "fooladva
                                                 "khorramdel", "khorramshahi", "moezzi", "mojtabavi", "sadeqi", "safavi"]}
 FA_NORM = str.maketrans({"ي": "ی", "ك": "ک", "ى": "ی"})
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT_META = ROOT / "data/meta.json"
+OUT_META = ROOT / "data/meta.base.json"
 OUT_PAGES = ROOT / "data/pages"
 
 NAMES = ["فاتحه", "بقره", "آل عمران", "نساء", "مائده", "انعام", "اعراف", "انفال", "توبه", "یونس",

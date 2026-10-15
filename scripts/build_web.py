@@ -13,7 +13,7 @@ import hashlib, json, os, pathlib, re, shutil
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE_BASE = os.environ.get("SITE_BASE", "https://kmazraee.github.io/tadabbor-hefz/").rstrip("/") + "/"
 tpl = (ROOT / "scripts/prototype_src.html").read_text(encoding="utf-8")
-meta = (ROOT / "data/meta.json").read_text(encoding="utf-8")
+meta = (ROOT / "data/meta.base.json").read_text(encoding="utf-8")
 
 
 _DIG = str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789")
@@ -69,7 +69,11 @@ for f in sorted((ROOT / "data/decks").glob("*.json")):
                 q["title"] = d["dir"]
                 q["sum"] = [d["dirText"]] if d.get("dirText") else []
     print(f"  deck: surah {s['n']} {s['name']}")
+# Content version covers the decks too, so a slide or siyaq change reaches installed apps through «بررسی به‌روزرسانی»
+_m["v"] = hashlib.sha1(json.dumps(_m["surahs"], ensure_ascii=False, sort_keys=True).encode()).hexdigest()[:10]
 meta = json.dumps(_m, ensure_ascii=False, separators=(",", ":"))
+# The update check downloads data/meta.json, so it must be the same full copy the page carries
+(ROOT / "data/meta.json").write_text(meta, encoding="utf-8")
 for ph in ("/*DATA*/", "/*DATABASE*/", "/*SITEBASE*/"):
     assert ph in tpl, ph
 
