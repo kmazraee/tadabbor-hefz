@@ -11,6 +11,28 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 tpl = (ROOT / "scripts/prototype_src.html").read_text(encoding="utf-8")
 meta = (ROOT / "data/meta.json").read_text(encoding="utf-8")
 
+
+_DIG = str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789")
+def deck_units(d, total):
+    """Top-level units of an institute slide (سیاق / بخش / طلیعه ...) as (start, end, title).
+    Only returned when they tile the whole surah without gaps; otherwise the mushaf-ruku split stays."""
+    tops = [x for x in d.get("flow", []) if "_" not in x["id"] and x["id"].startswith("r") and "s" not in x]
+    units = []
+    for x in tops:
+        t = x["t"].translate(_DIG)
+        ms = list(re.finditer(r"(سیاق[^()—:]*|بخش[^()—:]*|طلیعه|خاتمه|مقدمه)\s*\((?:آیات|آیه)\s*(\d+)(?:\s*تا\s*(\d+))?\)?", t))
+        if not ms:
+            return None
+        m = ms[-1]; a = int(m.group(2)); b = int(m.group(3) or a)
+        rest = t[m.end():].lstrip(")").lstrip(" :/—-").strip()
+        generic = m.group(1).strip().startswith("بخش")
+        units.append((a, b, rest if rest and not generic else "", m.group(1).strip().startswith("سیاق") or m.group(1).strip() in ("طلیعه", "خاتمه", "مقدمه")))
+    if not units or units[0][0] != 1 or units[-1][1] != total or any(u[1] + 1 != v[0] for u, v in zip(units, units[1:])):
+        return None
+    if len(units) < 2 and not units[0][3]:
+        return None      # one generic «بخش» over the whole surah says nothing about siyaq boundaries
+    return units
+
 # Institute slide decks per surah (data/decks/NNN.json): surah card, guidance flow and direction.
 # Where the flow boxes exactly tile a siyaq, they become that siyaq's reference steps.
 _m = json.loads(meta)
@@ -20,6 +42,11 @@ for f in sorted((ROOT / "data/decks").glob("*.json")):
     s["deck"] = d
     if s["src"] == "book":
         continue
+    if s["n"] != 2:
+        u = deck_units(d, s["total"])
+        if u:      # siyaq boundaries from the slide's top level (no fasl outside Baqarah)
+            s["siyaqs"] = [{"n": i + 1, "s": a, "e": b, "title": t or None, "steps": []} for i, (a, b, t, _) in enumerate(u)]
+            s["sy"] = "deck"
     s["dir"] = d.get("dir") or s.get("dir")
     s["source"] = d.get("source")
     nodes = sorted([x for x in d.get("flow", []) if "s" in x], key=lambda x: x["s"])

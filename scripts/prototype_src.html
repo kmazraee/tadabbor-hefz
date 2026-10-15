@@ -642,7 +642,7 @@ const qName = q => "سیاق " + FA(q.n);
 const dirBlock = s => s.dir ? `<div class="help"><b>${s.src === "book" ? "راهبرد سوره" : s.deck ? "جهت هدایتی سوره" : "جهت هدایتی سوره (آزمایشی)"}:</b> ${esc(s.dir)}${s.points ? `<ol class="small" style="margin:6px 0 0;padding-inline-start:20px">${s.points.map(x => `<li>${esc(x)}</li>`).join("")}</ol>` : ""}</div>` : "";
 const faslOf = (s, q) => q.f && s.fasls ? s.fasls.find(f => f.n === q.f) : null;
 const sesTitle = (s, q) => { const f = faslOf(s, q); return f ? `فصل ${FA(f.n)} · ${qName(q)}` : (s.src === "book" ? qName(q) : esc(title(s, q))); };
-const sourceNote = s => s.deck && s.src !== "book" ? `<div class="help small">جهت هدایتی و سیر هدایتی این سوره از ${esc(s.deck.source)} است. مرز سیاق‌ها هنوز بر اساس رکوع‌های مصحف است.</div>` : s.src === "book" ? `<div class="help small">سیاق‌ها و فصل‌های این سوره بر اساس سیاق‌بندی و فصل‌بندی درس «تدبر در سوره مبارک بقره» (مرحله چهارم) استاد علی صبوحی طسوجی است.</div>` : testNote;
+const sourceNote = s => s.deck && s.src !== "book" ? `<div class="help small">جهت هدایتی و سیر هدایتی این سوره از ${esc(s.deck.source)} است. ${s.sy === "deck" ? "مرز سیاق‌ها هم از همان اسلاید گرفته شده است." : "مرز سیاق‌ها هنوز بر اساس رکوع‌های مصحف است."}</div>` : s.src === "book" ? `<div class="help small">سیاق‌ها و فصل‌های این سوره بر اساس سیاق‌بندی و فصل‌بندی درس «تدبر در سوره مبارک بقره» (مرحله چهارم) استاد علی صبوحی طسوجی است.</div>` : testNote;
 function faslHead(s, q, prev) {
   const f = faslOf(s, q); if (!f || (prev && prev.f === q.f)) return "";
   const back = prev && prev.f && s.fasls.find(x => x.n === prev.f).parent === f.n;
@@ -925,7 +925,7 @@ function openDownloads() {
           <span class="small muted">${j.total ? FA(j.done || 0) + " از " + FA(j.total) + " فایل ذخیره شد · " : ""}${agoText(j.at)}</span>${j.why ? `<span class="small dl-why">${esc(j.why)}</span>` : ""}</div>`).join("")}</div>` : ""}
       ${ok.length ? `<div class="card"><div class="row between"><h3>اخیر</h3><button class="small btn-ghost" id="dl-clear">پاک کردن فهرست</button></div>${ok.slice(0, 20).map(j => `<div class="dl-row"><div class="row between"><span class="small">${j.state === "done" ? `<span class="ok">✓</span>` : `<span class="muted">⏹</span>`} ${esc(j.label || j.id)}</span><span class="small muted">${j.state === "cancel" ? "لغو شد · " : ""}${agoText(j.at)}</span></div></div>`).join("")}</div>` : ""}
       <div class="card" id="dl-store"><h3>محل ذخیره فایل‌ها</h3>${storeHtml()}</div>
-      <div class="card"><h3>مدیریت فایل‌های روی گوشی</h3><div class="row"><button class="small" id="dl-au">🎧 ترتیل‌ها</button><button class="small" id="dl-set">📖 تفسیر و ترجمه (تنظیمات)</button><button class="small" data-gotab="path">🎬 درس‌ها</button></div></div>
+      <div class="card"><h3>مدیریت فایل‌های روی گوشی</h3><div class="row"><button class="small" id="dl-au">🎧 ترتیل‌ها</button><button class="small" id="dl-set">📖 تفسیر و ترجمه (تنظیمات)</button><button class="small" data-lib>📚 درس‌های ذخیره‌شده</button><button class="small" data-gotab="path">🎬 درس‌ها</button></div></div>
     </div></div>`);
   const on = (sel, f) => box.querySelectorAll(sel).forEach(b => b.addEventListener("click", () => f(b)));
   on("#dl-stop", () => { stopAllDownloads(); Object.values(TFJOBS || {}).forEach(t => t.stop = true); });
@@ -1287,6 +1287,10 @@ function home() {
     ${tile("data-guide=\"\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8v.01"/></svg>`, "راهنما")}
     ${tile("data-settings", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>`, "تنظیمات")}
     ${tile("data-dls", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>`, "دانلودها")}
+    ${tile("data-lib", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10 9l5 2.5-5 2.5zM8 20h8"/></svg>`, "درس‌های آفلاین")}
+    ${tile("data-reciters", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v5H4zM17 14h3v5h-3z"/></svg>`, "ترتیل‌ها")}
+    ${tile("data-search", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>`, "جستجو")}
+    ${tile("data-goto=\"path\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20h4v-5h4v-5h4V5h4"/></svg>`, "مسیر یادگیری")}
   </div></section>
   ${fresh ? "" : `<button class="weekcard" data-goto="progress" aria-label="دیدن پیشرفت روزانه، ماهانه و سالانه"><span class="row between"><b>این هفته</b><span class="small muted">${FA(streakNow())} روز پیوسته · پیشرفت کامل ‹</span></span>
     <span class="wbars" aria-hidden="true">${wvals.map((v, i) => `<span class="${i === 6 ? "now" : ""}"><i style="height:${Math.max(6, v / wmax * 44)}px"></i><small>${WD[(wdays[i] + 5) % 7]}</small></span>`).join("")}</span>
@@ -1306,7 +1310,7 @@ function home() {
 const siyaqButton = (x, mode) => `<button class="siyaq-item" data-start="${x.k}" data-mode="${mode}" style="--c:${COLORS[status(x.k)]}"><span class="stripe"></span><span><b>${x.s.name}</b> · ${esc(title(x.s, x.q))}<br><span class="small muted">آیات ${FA(x.q.s)} تا ${FA(x.q.e)}</span></span><span class="small muted">${FA(ayahCount(x.q))} آیه</span></button>`;
 
 function map() {
-  return `${topBar(`<h1>نقشه سیاق‌ها</h1>`)}${tipCard("map")}${legend()}${testNote.replace("مرز سیاق‌ها بر اساس", "مرز سیاق‌های بیشتر سوره‌ها بر اساس")}
+  return `${topBar(`<h1>نقشه سیاق‌ها</h1>`)}${tipCard("map")}${legend()}${testNote.replace("مرز سیاق‌ها بر اساس", "مرز سیاق‌های سوره‌هایی که اسلاید مؤسسه ندارند بر اساس")}
   <section class="card" style="gap:0;padding-block:4px">
   ${DATA.surahs.map(s => `<button class="surah-row" data-open="${s.n}"><span class="idx num">${FA(s.n)}</span><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span class="nm"><span>${s.name}${surahOpen(s.n) ? "" : ` <span class="muted" aria-label="قفل">${ICON_LOCK}</span>`}</span><span class="small muted num">${s.fasls ? FA(s.fasls.length) + " فصل · " : ""}${FA(s.siyaqs.length)} سیاق · ${FA(s.total)} آیه</span></span>${strip(s)}</span></button>`).join("")}
   </section>`;
@@ -1868,6 +1872,7 @@ function openLevel(id, state) {
       : `<p class="small muted">در حال دریافت درس‌ها از سایت…</p>`)
     : items.length ? courses.map((c, ci) => { const list = items.filter(x => x.course === c), w = list.filter(x => st.watched[x.id]).length;
         return `<details ${levelOpen[id + c] ?? ci === 0 ? "open" : ""} data-course="${esc(c)}"><summary>${esc(c)} <span class="small muted num">(${FA(w)} از ${FA(list.length)})</span></summary><div>
+        ${courseBulk(list, id + "|" + ci)}
         ${list.map(x => `<div class="lesson"><label class="switch"><b style="font-size:14px">${esc(x.title)}</b><input type="checkbox" data-watch="${x.id}" ${st.watched[x.id] ? "checked" : ""} aria-label="دیده شد"></label>
           ${x.vid ? (openVid === x.id ? `<div class="vframe"><iframe src="https://www.aparat.com/video/video/embed/videohash/${x.vid}/vt/frame" allowfullscreen allow="autoplay; fullscreen" title="${esc(x.title)}"></iframe></div>` : `<button data-vid="${x.id}">🎬 دیدن فیلم</button>`) : ""}
           ${lessonMedia(x)}
@@ -1973,11 +1978,11 @@ function openLessons(n, items, state) {
       ? `<div class="card"><p>اتصال به سایت ممکن نشد. اینترنت را بررسی کنید یا صفحه سوره را در سایت باز کنید.</p><div class="row"><button id="retry" class="btn-main">تلاش دوباره</button><a href="${surahPageUrl(n)}" target="_blank" rel="noopener">صفحه سوره در سایت</a></div></div>`
       : `<p class="muted">در حال دریافت درس‌ها از سایت…</p>`)
     : items.length ? `<p class="small muted">${FA(items.length)} جلسه در ${FA(courses.length)} دوره</p>` + courses.map((c, ci) => { const list = items.filter(x => x.course === c), w = list.filter(x => (st.watched || {})[x.id]).length;
-        return `<details ${lessonOpen[n + c] ?? ci === 0 ? "open" : ""} data-course="${esc(c)}"><summary>${esc(c)} <span class="small muted num">(${FA(w)} از ${FA(list.length)})</span></summary><div>${list.map(lessonCard).join("")}</div></details>`; }).join("")
+        return `<details ${lessonOpen[n + c] ?? ci === 0 ? "open" : ""} data-course="${esc(c)}"><summary>${esc(c)} <span class="small muted num">(${FA(w)} از ${FA(list.length)})</span></summary><div>${courseBulk(list, n + "|" + ci)}${list.map(lessonCard).join("")}</div></details>`; }).join("")
       : `<div class="card"><p>درسی برای این سوره در سایت پیدا نشد.</p><a href="${surahPageUrl(n)}" target="_blank" rel="noopener">صفحه سوره در سایت</a></div>`;
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="درس‌های سوره ${s.name}">
     <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>درس‌های تدبر سوره ${s.name}</h2><button class="icon-btn btn-ghost" id="reload" aria-label="دریافت دوباره از سایت">⟳</button></header>
-    <div class="body"><p class="small muted">از سایت استاد علی صبوحی طسوجی · <a href="${surahPageUrl(n)}" target="_blank" rel="noopener">صفحه سوره</a></p>${body}</div></div>`);
+    <div class="body"><p class="small muted">از سایت استاد علی صبوحی طسوجی · <a href="${surahPageUrl(n)}" target="_blank" rel="noopener">صفحه سوره</a></p><div class="row"><button class="small" data-lib>📚 درس‌های ذخیره‌شده (آفلاین)</button></div>${body}</div></div>`);
   box.querySelectorAll("[data-vid]").forEach(b => b.addEventListener("click", () => { openVid = +b.dataset.vid; const y = box.querySelector(".body").scrollTop; openLessons(n, items); document.querySelector(".sheet .body").scrollTop = y; }));
   box.querySelectorAll("[data-watch]").forEach(c => c.addEventListener("change", () => { st.watched = st.watched || {}; st.watched[c.dataset.watch] = c.checked; save(); }));
   box.querySelectorAll("details[data-course]").forEach(d => d.addEventListener("toggle", () => { lessonOpen[n + d.dataset.course] = d.open; }));
@@ -3306,6 +3311,51 @@ const lessonMedia = x => {
 // every lesson item seen in lists, so download buttons can find it by id
 const LESSON_INDEX = {};
 const indexLessons = items => { (items || []).forEach(x => { LESSON_INDEX[x.id] = x; }); return items; };
+// «save all audio / all video of this course» buttons
+const BULK = {};
+function courseBulk(list, k) {
+  BULK[k] = list;
+  if (!IS_APP) return `<p class="small muted">ذخیره روی گوشی برای استفاده آفلاین فقط در برنامه اندروید ممکن است.</p>`;
+  const part = (kind, has, label) => {
+    const all = list.filter(x => kind === "a" ? x.mp3 : x.vid); if (!all.length) return "";
+    const todo = all.filter(x => !lessonHave(x, kind) && !jobActive(`les-${kind}-${x.id}`)), busy = all.filter(x => jobActive(`les-${kind}-${x.id}`)).length;
+    return todo.length ? `<button class="small" data-lbulk="${kind}:${k}">⬇ ذخیره همه ${label} (${FA(todo.length)})</button>` : busy ? `<span class="small muted">در حال ذخیره ${label}…</span>` : `<span class="small ok">✓ همه ${label} روی گوشی است</span>`;
+  };
+  return `<div class="row bulk">${part("a", 0, "صوت‌ها")}${part("v", 0, "فیلم‌ها")}</div>`;
+}
+function bulkDownload(kind, k) {
+  const list = (BULK[k] || []).filter(x => (kind === "a" ? x.mp3 : x.vid) && !lessonHave(x, kind) && !jobActive(`les-${kind}-${x.id}`));
+  if (!list.length) return;
+  toast(`ذخیره ${FA(list.length)} ${kind === "a" ? "صوت" : "فیلم"} شروع شد`);
+  list.forEach((x, i) => setTimeout(() => downloadLesson(x, kind), i * 150));
+  setTimeout(() => lastDraw && lastDraw(), list.length * 150 + 300);
+}
+// Everything saved on the phone, for use offline: built from the lesson lists already seen
+function savedLessons() {
+  const out = new Map();
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); let label = null;
+    if (k.startsWith("tadabbor-lessons2-")) { const n = +k.slice(18); label = S[n] ? "سوره " + S[n].name : null; }
+    else if (k.startsWith("tadabbor-level-")) { const id = k.slice(15).replace(/-2$/, ""); const L = lvl(id); label = L ? L.t : null; }
+    if (!label) continue;
+    let c; try { c = JSON.parse(localStorage.getItem(k)); } catch (e) { continue; }
+    ((c && c.items) || []).forEach(x => { if (!out.has(x.id) && ((x.mp3 && lessonHave(x, "a")) || (x.vid && lessonHave(x, "v")))) { x.group = label; out.set(x.id, x); } }); } } catch (e) {}
+  return [...out.values()];
+}
+function openLessonLibrary() {
+  lastDraw = openLessonLibrary;
+  const items = indexLessons(savedLessons()), groups = [...new Set(items.map(x => x.group))];
+  const mb = (STORE && STORE.sizes && STORE.sizes.lessons) ? fmtMB(STORE.sizes.lessons) : null;
+  sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="درس‌های ذخیره‌شده">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>درس‌های ذخیره‌شده روی گوشی</h2></header>
+    <div class="body">
+      ${IS_APP ? `<p class="small muted">${items.length ? FA(items.length) + " جلسه" + (mb ? " · " + mb + " مگابایت" : "") + " بدون اینترنت قابل پخش است." : "هنوز درسی ذخیره نکرده‌اید."}</p>
+        <div class="help small">برای ذخیره: صفحه هر سوره ← «فیلم و صوت درس‌ها»، یا «درس‌ها» در مسیر یادگیری را باز کنید. زیر هر جلسه «ذخیره صوت» و «ذخیره فیلم» هست و بالای هر دوره هم «ذخیره همه». بعد از ذخیره، همین‌جا بدون اینترنت پخش می‌شوند.</div>`
+        : `<div class="help small">ذخیره درس‌ها روی گوشی فقط در برنامه اندروید ممکن است.</div>`}
+      ${groups.map(g => `<h3>${esc(g)}</h3>` + items.filter(x => x.group === g).map(x => `<div class="lesson card"><b style="font-size:14px">${esc(x.title)}</b>${lessonMedia(x)}</div>`).join("")).join("")}
+      <div class="row"><button class="small" data-dls>وضعیت دانلودها</button></div>
+    </div></div>`);
+  if (IS_APP && !STORE) { try { STORE = JSON.parse(Android.storageInfo()); openLessonLibrary(); } catch (e) {} }
+}
 
 // ---------- tips on first visit ----------
 const TIPS = {
@@ -3360,6 +3410,8 @@ const ACT = {
   "data-listen": v => { const [sn, qn] = v.split(":").map(Number), q = S[sn].siyaqs[qn - 1]; tab = "mushaf"; mushafPage = pageOf(sn, q.s); cfg.mpEnd = "siyaq"; if (!cfg.mpTrans) cfg.mpTrans = "translations/Makarem_Kabiri_16Kbps"; saveCfg(); render(); mpStart(sn, q.s); },
   "data-rec": v => recStart(v), "data-recstop": () => recStop(), "data-recplay": v => recPlay(v),
   "data-recref": v => { const [sn, qn] = v.split(":").map(Number), q = S[sn].siyaqs[qn - 1]; playQueue(range(q.s, q.e).map(i => [sn, i])); },
+  "data-lbulk": v => { const i = v.indexOf(":"); bulkDownload(v.slice(0, i), v.slice(i + 1)); },
+  "data-lib": () => openLessonLibrary(),
   "data-ldl": v => { const [kind, id] = v.split(":"), x = LESSON_INDEX[id]; if (x) { downloadLesson(x, kind); setTimeout(() => lastDraw && lastDraw(), 200); } },
   "data-ldel": v => { const [kind, id] = v.split(":"), x = LESSON_INDEX[id]; if (x) { try { Android.deletePath(lessonPath(x, kind)); } catch (e) {} lastDraw && lastDraw(); } }
 };
