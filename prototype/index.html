@@ -534,9 +534,10 @@ function jsonOf(url) {
   return fetch(url).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
 }
 const VERSION = "0.10.1";
-const SITE_BASE = "https://kmazraee.github.io/tadabbor-hefz/";
-const REPO_API = "https://api.github.com/repos/kmazraee/tadabbor-hefz/releases?per_page=10";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
+// The app downloads content from the configured site; a web copy reads it from the server it is served from
+const SITE_BASE = !IS_APP && /^https?:/.test(location.protocol) ? new URL(DATA_BASE + "../", location.href).href : "https://kmazraee.github.io/tadabbor-hefz/";
+const REPO_API = "https://api.github.com/repos/kmazraee/tadabbor-hefz/releases?per_page=10";
 const BAZAAR_ID = "ir.tadabbor.hefz";
 const RATE_URL = IS_APP ? "bazaar://details?id=" + BAZAAR_ID : "https://cafebazaar.ir/app/" + BAZAAR_ID;
 // [id, translator, MB, bundled in the app]
@@ -726,7 +727,14 @@ function ensureFonts(names) {
   });
   return ready;
 }
-const pageFonts = pg => [...new Set(pg.lines.flat().map(w => w[2]))];
+const pageFonts = pg => pg.fonts || (pg.fonts = [...new Set(pg.lines.flat().map(w => w[2]))]);
+// Verse text and surahs of a page, built once when the page arrives
+function indexPage(pg) {
+  const vt = {}, here = new Set();
+  pg.lines.flat().forEach(w => { if (w[0] === "w") { (vt[w[3]] = vt[w[3]] || []).push(w[4]); here.add(parseInt(w[3])); } });
+  pg.vt = Object.fromEntries(Object.entries(vt).map(([k, ws]) => [k, ws.join(" ")]));
+  pg.here = [...here];
+}
 
 // Mushaf pages are loaded on demand (604 small files) and kept in memory
 const PAGE_CACHE = {}, PAGE_LOADING = {};
@@ -734,7 +742,7 @@ function getPage(p) {
   if (PAGE_CACHE[p]) return PAGE_CACHE[p];
   if (!PAGE_LOADING[p]) {
     PAGE_LOADING[p] = jsonOf(PAGE_BASE + String(p).padStart(3, "0") + ".json")
-      .then(j => { PAGE_CACHE[p] = j; refresh(); })
+      .then(j => { indexPage(j); PAGE_CACHE[p] = j; refresh(); })
       .catch(() => { setTimeout(() => { PAGE_LOADING[p] = null; }, 3000); });
   }
   return null;
@@ -744,7 +752,7 @@ const pageOfSurah = sn => S[sn].vp[0];
 function vtext(sn, ay) {
   const p = S[sn].vp[ay - 1], pg = getPage(p);
   if (!pg) return "";
-  return pg.lines.flat().filter(w => w[0] === "w" && w[3] === key(sn, ay)).map(w => w[4]).join(" ");
+  return pg.vt[key(sn, ay)] || "";
 }
 
 /* Render mushaf pages.
@@ -800,20 +808,20 @@ function firstWordLine(pg, vk) { return pg.lines.findIndex(l => l.some(w => w[3]
 
 // Fit every page line to the page width (the mushaf is a fixed 15-line layout)
 function fitPages(root) {
-  (root || document).querySelectorAll(".mpage").forEach(p => {
-    const lines = [...p.querySelectorAll(".mline:not(.center)")];
-    if (!lines.length) return;
-    const base = 20; p.style.fontSize = base + "px";
-    const avail = lines[0].clientWidth;
-    let maxW = 0;
-    lines.forEach(l => {
-      const kids = [...l.children]; if (!kids.length) return;
+  const base = 20, pages = [...(root || document).querySelectorAll(".mpage")].map(p => ({p, lines: [...p.querySelectorAll(".mline:not(.center)")]})).filter(x => x.lines.length);
+  pages.forEach(x => { x.p.style.fontSize = base + "px"; });
+  pages.forEach(x => {
+    x.avail = x.lines[0].clientWidth;
+    x.maxW = 0;
+    x.lines.forEach(l => {
+      const kids = l.children; if (!kids.length) return;
       const gap = parseFloat(getComputedStyle(l).columnGap) || 0;
-      const w = kids.reduce((a, c) => a + c.getBoundingClientRect().width, 0) + gap * (kids.length - 1);
-      maxW = Math.max(maxW, w);
+      let w = gap * (kids.length - 1);
+      for (const c of kids) w += c.getBoundingClientRect().width;
+      if (w > x.maxW) x.maxW = w;
     });
-    if (maxW > 0 && avail > 0) p.style.fontSize = Math.min(base * avail / maxW * 0.97, 44) + "px";
   });
+  pages.forEach(x => { if (x.maxW > 0 && x.avail > 0) x.p.style.fontSize = Math.min(base * x.avail / x.maxW * 0.97, 44) + "px"; });
 }
 
 // ---------- Persian translation (bundled with the app, loaded on demand) ----------
@@ -1162,7 +1170,7 @@ function refresh() {
     try { lastDraw(); } finally { QUIET = false; }
   }, 250);
 }
-window.addEventListener("resize", () => fitPages());
+window.addEventListener("resize", () => { cancelAnimationFrame(fitPages.raf); fitPages.raf = requestAnimationFrame(() => fitPages()); });
 try { document.fonts.addEventListener("loadingdone", () => fitPages()); } catch (e) {}
 
 // ---------- tabs ----------
@@ -1440,7 +1448,7 @@ function mushaf() {
   noteLast({page: mushafPage});
   const pg = getPage(mushafPage);
   [mushafPage - 1, mushafPage + 1].forEach(p => { if (p >= 1 && p <= 604) getPage(p); });
-  const here = pg ? [...new Set(pg.lines.flat().filter(w => w[0] === "w").map(w => parseVk(w[3])[0]))] : [];
+  const here = pg ? pg.here : [];
   const cur = here[0] || DATA.surahs.filter(s => s.vp[0] <= mushafPage).pop().n;
   const juz = Math.min(30, Math.floor((mushafPage - 2) / 20) + 1);
   return `${topBar(`<h1>مصحف</h1>`)}${tipCard("mushaf")}
@@ -3470,7 +3478,7 @@ function changedSurahs(oldM, newM) {
 async function checkUpdates(silent) {
   upd.state = "checking"; upd.err = false; if (!silent) refreshUpd();
   const jobs = [];
-  jobs.push(fetch(SITE_BASE + "data/meta.json?t=" + Date.now()).then(r => r.ok ? r.json() : null).then(m => {
+  jobs.push(fetch(SITE_BASE + "data/meta.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : null).then(m => {
     upd.meta = m && m.v !== DATA.v && m.built >= DATA.built ? m : null;
     upd.changed = upd.meta ? changedSurahs(DATA, upd.meta) : [];
   }).catch(() => { upd.err = true; }));
@@ -3848,6 +3856,8 @@ if (!myName() || !PHONE_OK(cfg.phone)) showWelcome(); else if (!cfg.seenIntro) s
 if (IS_APP && !qcfLocal() && !cfg.qcfAsked && cfg.qfont === "qcf") qcfStart();
 if (IS_APP && !cfg.transAsked) { cfg.transAsked = true; saveCfg(); setTimeout(downloadAllTrans, 1500); }
 if (navigator.onLine !== false && (!cfg.lastUpdateCheck || Date.now() - cfg.lastUpdateCheck > 864e5)) setTimeout(() => checkUpdates(true), 4000);
+// Web copy: keep mushaf pages, translations, search data and fonts on the device after the first read (sw.js)
+if (!IS_APP && "serviceWorker" in navigator && /^https?:/.test(location.protocol)) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 </script>
 
 </body>
