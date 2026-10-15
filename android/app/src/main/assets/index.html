@@ -124,8 +124,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .surah-row{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;padding:10px 0;border:none;border-bottom:1px solid var(--line);background:none;border-radius:0;text-align:right;width:100%}
 .surah-row .idx{font-size:12px;color:var(--muted);text-align:center}
 .surah-row .nm{display:flex;justify-content:space-between;gap:8px;font-weight:600}
-.tabs{position:fixed;bottom:0;inset-inline:0;max-width:480px;margin-inline:auto;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
-.tabs button{border:none;border-radius:0;background:none;padding:9px 2px;font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabs{position:fixed;bottom:0;inset-inline:0;max-width:480px;margin-inline:auto;display:grid;grid-template-columns:repeat(6,1fr);background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+.tabs button{border:none;border-radius:0;background:none;padding:9px 1px;min-height:48px;font-size:10.5px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
 .tabs button[aria-current="page"]{color:var(--lapis);font-weight:700}
 .tabs svg{width:22px;height:22px}
 .topbar{display:flex;flex-direction:column;gap:8px}
@@ -391,6 +391,44 @@ footer.note{font-size:12px;color:var(--muted);text-align:center}
 .vframe{position:relative;width:100%;max-width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000}
 .vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}}
+
+.searchbar{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:10px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);color:var(--muted);font-size:14px;text-align:start;justify-content:flex-start}
+.searchbar svg{width:20px;height:20px;flex:none}
+h2.sec{font-size:15px;margin:6px 2px 0;color:var(--muted);font-weight:700}
+.tchips{display:flex;flex-wrap:wrap;gap:6px}
+.tchip{font-size:12.5px;padding:3px 10px;border-radius:99px;background:var(--bg,#f3f3f3);border:1px solid var(--line);color:var(--muted)}
+.tchip.on{background:var(--lapis-soft);color:var(--ink);border-color:var(--lapis)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:74px;padding:8px 4px;font-size:12.5px;text-align:center;border-radius:14px}
+.tile .ti{font-size:22px;line-height:1}
+.tile .tb{position:absolute;top:4px;inset-inline-start:6px;font-size:11px;background:var(--lapis);color:var(--on-lapis);border-radius:99px;padding:0 6px;min-width:18px}
+.miniprog{display:flex;flex-direction:column;gap:6px;width:100%;padding:12px 14px;border-radius:14px;text-align:start;align-items:stretch}
+details.more{border:none;padding:0;background:none}
+details.more summary{padding:8px 0;font-size:13px;font-weight:600;color:var(--lapis)}
+details.more > div{padding-bottom:4px}
+details > summary{min-height:44px;display:flex;align-items:center;gap:8px}
+details > summary::after{margin-inline-start:auto}
+.pseg{display:flex;gap:6px}.pseg button{flex:1;min-height:44px}
+.pseg button[aria-pressed="true"]{background:var(--lapis);color:var(--on-lapis);border-color:var(--lapis)}
+.bars{display:flex;align-items:flex-end;gap:4px;height:96px}
+.bars > div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:3px;min-width:0}
+.bars i{display:block;width:100%;background:var(--lapis);border-radius:4px 4px 0 0;min-height:2px}
+.bars small{font-size:10px;color:var(--muted)}
+.bars .today i{background:var(--gold)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .wd{font-size:11px;text-align:center;color:var(--muted)}
+.cal button,.cal span.c{aspect-ratio:1;min-height:36px;padding:0;border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--surface)}
+.cal .h1{background:var(--lapis-soft)}
+.cal .h2{background:color-mix(in srgb,var(--lapis) 40%,var(--surface))}
+.cal .h3{background:color-mix(in srgb,var(--lapis) 70%,var(--surface));color:var(--on-lapis)}
+.cal .h4{background:var(--lapis);color:var(--on-lapis)}
+.cal .tdy{outline:2px solid var(--gold)}
+.cal .sel2{box-shadow:0 0 0 2px var(--ink)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv .stat b{font-size:18px}
+.sres-group{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+.sres-group h3{font-size:13px;color:var(--muted);margin:4px 0 0}
+.sres-group button{justify-content:flex-start;text-align:start;min-height:44px;width:100%}
 </style>
 </head>
 <body>
@@ -399,11 +437,12 @@ footer.note{font-size:12px;color:var(--muted);text-align:center}
 <div class="app">
   <main id="view"></main>
   <nav class="tabs" aria-label="بخش‌ها">
-    <button data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>داشبورد</button>
+    <button data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>امروز</button>
     <button data-tab="mushaf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/><path d="M12 6v14.5"/></svg>مصحف</button>
-    <button data-tab="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/></svg>نقشه سیاق</button>
+    <button data-tab="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/></svg>نقشه</button>
     <button data-tab="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>مرور</button>
-    <button data-tab="path"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4v-5h4v-5h4V5h4"/><circle cx="20" cy="5" r="1.5" fill="currentColor"/></svg>مسیر یادگیری</button>
+    <button data-tab="path"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4v-5h4v-5h4V5h4"/><circle cx="20" cy="5" r="1.5" fill="currentColor"/></svg>مسیر</button>
+    <button data-tab="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>پیشرفت</button>
   </nav>
 </div>
 <div id="wordbar"></div>
@@ -1077,7 +1116,7 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
 function render() {
   lastDraw = render;
   document.querySelectorAll(".tabs button").forEach(b => b.dataset.tab === tab ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
-  const v = document.getElementById("view"), html = ({home, map, review, mushaf, path})[tab](), same = render.tab === tab, y = window.scrollY;
+  const v = document.getElementById("view"), html = ({home, map, review, mushaf, path, progress})[tab](), same = render.tab === tab, y = window.scrollY;
   if (QUIET && same && render.html === html) return;
   render.tab = tab; render.html = html;
   v.innerHTML = html;
@@ -1096,6 +1135,10 @@ function render() {
   v.querySelectorAll("[data-drill]").forEach(el => el.addEventListener("click", () => openDrill(weakOpen().slice(0, 10).map(x => x.vk), 0)));
   if (tab === "mushaf") wireMushaf(v);
   v.querySelectorAll("[data-goto]").forEach(el => el.addEventListener("click", () => { tab = el.dataset.goto; render(); window.scrollTo(0, 0); }));
+  v.querySelectorAll("details[data-fold]").forEach(d => d.addEventListener("toggle", () => { homeOpen[d.dataset.fold] = d.open; }));
+  v.querySelectorAll("[data-pseg]").forEach(el => el.addEventListener("click", () => { prog.seg = el.dataset.pseg; prog.pick = null; render(); }));
+  v.querySelectorAll("[data-poff]").forEach(el => el.addEventListener("click", () => { prog.off = Math.min(0, prog.off + (+el.dataset.poff)); prog.pick = null; render(); }));
+  v.querySelectorAll("[data-pday]").forEach(el => el.addEventListener("click", () => { prog.pick = +el.dataset.pday; render(); }));
   wireQcf(v);
   fitPages(v);
   clearTimeout(render.t); render.t = setTimeout(() => { checkBadges(); updateNative(); }, 1500);
@@ -1136,49 +1179,75 @@ function journeyHero() {
     <div class="row" style="justify-content:flex-end"><button class="btn-main" data-level="${L.id}">درس‌های ${L.t}</button></div></section>`;
   return `<section class="card hero"><h2>همه سیاق‌ها حفظ شده‌اند</h2><p class="small">مرورها را ادامه دهید.</p></section>`;
 }
+const homeOpen = {};
+const fold = (id, title, sub, body) => `<details data-fold="${id}" ${homeOpen[id] ? "open" : ""}><summary>${title}${sub ? ` <span class="small muted">${sub}</span>` : ""}</summary><div>${body}</div></details>`;
+const tile = (attr, ic, label, badge) => `<button class="tile" ${attr}><span class="ti" aria-hidden="true">${ic}</span><span>${label}</span>${badge ? `<b class="tb num">${FA(badge)}</b>` : ""}</button>`;
+function todayCard(all, due, tdDue, weak, fresh) {
+  const total = due.length + tdDue.length;
+  const chips = `<div class="tchips"><span class="tchip${due.length ? " on" : ""}"><b class="num">${FA(due.length)}</b> مرور حفظ</span><span class="tchip${tdDue.length ? " on" : ""}"><b class="num">${FA(tdDue.length)}</b> مرور تدبر</span><span class="tchip${weak.length ? " on" : ""}"><b class="num">${FA(weak.length)}</b> اشتباه باز</span><span class="tchip"><b class="num">${FA(streakNow())}</b> روز پیوسته</span></div>`;
+  if (fresh) return "";
+  const usePlan = (passed("intro") || cfg.freePath) && cfg.dailyMin;
+  let list = "";
+  if (usePlan) {
+    const p = dailyPlan();
+    list = p.items.length ? p.items.slice(0, 3).join("") + (p.items.length > 3 ? `<details class="more"><summary>${FA(p.items.length - 3)} کار دیگر امروز</summary><div>${p.items.slice(3).join("")}</div></details>` : "") : `<p class="small ok">✓ کارهای امروز انجام شد. اگر وقت دارید، سیاق تازه‌ای شروع کنید یا در مصحف بخوانید.</p>`;
+  } else {
+    list = due.slice(0, 3).map(x => siyaqButton(x, "review")).join("") + tdDue.slice(0, Math.max(0, 3 - due.length)).map(tadReviewButton).join("");
+    if (total > 3) list += `<button class="small btn-ghost" data-goto="review">${FA(total - Math.min(3, total))} مرور دیگر · همه در تب مرور</button>`;
+    if (!total) list = `<p class="small ok">✓ مرور امروز تمام است.</p>`;
+  }
+  return `<section class="card" aria-label="کارهای امروز"><div class="row between"><h2>امروز</h2>${usePlan ? `<button class="small btn-ghost" data-planmin="0" aria-label="تغییر زمان روزانه">${FA(cfg.dailyMin)} دقیقه ✎</button>` : due.length ? `<button class="btn-ghost small" data-start="${due[0].k}" data-mode="review">شروع مرور</button>` : ""}</div>${chips}${list}
+    ${!usePlan && (passed("intro") || cfg.freePath) ? `<details class="more"><summary>برنامه روزانه بر اساس وقت من</summary><div>${planCard()}</div></details>` : ""}</section>`;
+}
 function home() {
   const all = siyaqs();
   const due = all.filter(x => status(x.k) === "due");
+  const tdDue = all.filter(x => tadDue(x.k));
+  const weak = weakOpen();
   const solidAyat = all.filter(x => (st.items[x.k] || {}).stage >= 5).reduce((a, x) => a + ayahCount(x.q), 0);
   const totalAyat = DATA.surahs.reduce((a, s) => a + s.total, 0);
   const fresh = !Object.keys(st.items).length && !Object.keys(st.notes).length;
   const anyPre = Object.values(st.items).some(x => x.pre);
-  const inLearn = all.filter(x => status(x.k) === "learn").length;
   const backupOld = !cfg.lastBackup || (Date.now() - cfg.lastBackup) > 7 * 864e5;
+  const started = all.filter(x => status(x.k) !== "new" || isTad(x.k)).map(x => x.k);
+  const trActive = IS_APP && TRANSLATIONS.some(x => jobActive("tr-" + x[0]));
+  const nVocab = Object.keys(st.vocab || {}).length, nNotes = notebookEntries().length;
+  const t0 = today(), wk = weekSum(t0 - 6, t0);
   return `
   ${topBar(myName() ? `<h1>سلام ${esc(myName())}</h1><span class="small muted">حفظ تدبری</span>` : `<h1>حفظ تدبری</h1>`)}
+  <button class="searchbar" data-search aria-label="جستجو در همه‌جا"><span aria-hidden="true">${ICON_SEARCH}</span><span>جستجو: آیه، سوره، سیاق، دفتر تدبر…</span></button>
   ${upd.app ? `<section class="card">${appUpdHtml()}</section>` : ""}
   ${upd.meta ? `<section class="card"><div class="row between"><span class="small"><b>به‌روزرسانی آماده است:</b> محتوای تازه سیاق‌ها</span><button class="small btn-main" data-settings>مشاهده</button></div></section>` : ""}
   ${qcfCard()}
-  ${IS_APP && TRANSLATIONS.some(x => jobActive("tr-" + x[0])) ? `<section class="card"><h3>ذخیره ترجمه‌ها روی گوشی</h3><p class="small muted">${FA(TRANSLATIONS.filter(x => x[0] !== "none" && (x[3] || transLocal(x[0]))).length)} از ۱۳ ترجمه روی گوشی است.</p></section>` : ""}
-  <section class="card"><div class="row between"><h2>${myName() ? "مسیر " + esc(myName()) : "مسیر شما"}</h2><button class="small btn-ghost" data-goto="path">همه قدم‌ها</button></div>${stepper()}
-    ${passed("intro") ? "" : `<p class="small muted">قدم‌ها به ترتیب باز می‌شوند. از «مبانی تدبر» شروع کنید.</p>`}</section>
+  ${trActive ? `<section class="card"><h3>ذخیره ترجمه‌ها روی گوشی</h3><p class="small muted">${FA(TRANSLATIONS.filter(x => x[0] !== "none" && (x[3] || transLocal(x[0]))).length)} از ۱۳ ترجمه روی گوشی است.</p></section>` : ""}
   ${tipCard("home")}
   ${journeyHero()}
   ${resumeCard()}
-  ${passed("intro") || cfg.freePath ? planCard() : ""}
-  ${goalCard()}
-  ${fresh ? "" : `<div class="stats">
-    <div class="stat"><b class="num">${FA(due.length)}</b><span class="small muted">مرور امروز</span></div>
-    <div class="stat"><b class="num">${FA(streakNow())}</b><span class="small muted">روز پیوسته</span></div>
-    <div class="stat"><b class="num">${FA(inLearn)}</b><span class="small muted">سیاق در حال حفظ</span></div>
-  </div>`}
-  ${due.length || Object.keys(st.items).length ? `<section class="card">
-    <div class="row between"><h2>صف مرور امروز</h2>${due.length ? `<button class="btn-ghost small" data-start="${due[0].k}" data-mode="review">شروع مرور</button>` : ""}</div>
-    ${due.length ? due.map(x => siyaqButton(x, "review")).join("") : `<p class="muted small">مرور امروز تمام است.</p>`}
-  </section>` : ""}
-  ${(() => { const td = all.filter(x => tadDue(x.k)); return td.length ? `<section class="card"><div class="row between"><h2>مرور تدبر امروز</h2><span class="pill">${FA(td.length)} سیاق</span></div>${td.slice(0, 3).map(tadReviewButton).join("")}${td.length > 3 ? `<button class="small btn-ghost" data-goto="review">همه مرورها</button>` : ""}</section>` : ""; })()}
-  ${fresh ? "" : (() => { const started = all.filter(x => status(x.k) !== "new" || isTad(x.k)).map(x => x.k); return started.length ? `<section class="card"><h2>چهار مرحله یادگیری</h2><p class="small muted">از ${FA(started.length)} سیاقی که شروع کرده‌اید:</p>${trackBars(trackCounts(started))}</section>` : ""; })()}
-  ${weakCard()}
-  ${anyPre ? "" : `<section class="card"><h3>سوره‌هایی را از قبل حفظ هستید؟</h3><p class="small">آن‌ها را از «نقشه سیاق» ثبت کنید تا از همین حالا مرورشان شروع شود. این کار به قدم‌های مسیر ربطی ندارد و همیشه آزاد است.</p><div class="row"><button class="small" data-goto="map">ثبت سوره‌های حفظ‌شده</button></div></section>`}
-  ${fresh ? "" : `<section class="card">
-    <div class="row between"><h2>پیشرفت حفظ قرآن</h2><span class="small muted num">${FA(solidAyat)} از ${FA(totalAyat)} آیه</span></div>
-    <div class="bar"><i style="width:${(solidAyat / totalAyat * 100).toFixed(1)}%"></i></div>
+  ${todayCard(all, due, tdDue, weak, fresh)}
+  ${weak.length ? `<section class="card"><div class="row between"><span class="small"><b class="num">${FA(weak.length)}</b> آیه نیازمند تثبیت در دفتر اشتباهات</span><span class="row" style="gap:6px"><button class="small" data-weak>دفتر اشتباهات</button><button class="small btn-main" data-drill>تمرین</button></span></div></section>` : ""}
+  <section aria-label="دسترسی سریع"><h2 class="sec">دسترسی سریع</h2><div class="tiles">
+    ${tile("data-goto=\"mushaf\"", "📖", "مصحف")}
+    ${tile("data-goto=\"map\"", "🗺", "نقشه سیاق")}
+    ${tile("data-goto=\"progress\"", "📈", "پیشرفت")}
+    ${tile("data-notebook", "📝", "دفتر تدبر", nNotes)}
+    ${tile("data-weak", "🛠", "دفتر اشتباهات", weak.length)}
+    ${tile("data-vocab", "🔤", "لغت‌نامه", nVocab)}
+    ${tile("data-quiz=\"next\"", "❓", "آزمون")}
+    ${tile("data-weekly", "🗓", "کارنامه هفته")}
+    ${tile("data-goal", "🎯", st.goal ? "هدف من" : "هدف بگذار")}
+  </div></section>
+  ${fresh ? "" : `<button class="miniprog" data-goto="progress" aria-label="دیدن پیشرفت روزانه، ماهانه و سالانه"><span class="row between"><b>این هفته</b><span class="small muted">پیشرفت کامل ‹</span></span>
+    <span class="small num">${FA(wk.a)} آیه · ${FA(wk.t)} سیاق تدبر · ${FA(wk.r + wk.tr)} مرور · ${FA(wk.days)} روز فعال از ۷</span>
+    <span class="bar"><i style="width:${(solidAyat / totalAyat * 100).toFixed(1)}%"></i></span><span class="small muted num">${FA(solidAyat)} از ${FA(totalAyat)} آیه قرآن تثبیت شده</span></button>`}
+  <h2 class="sec">بیشتر</h2>
+  ${fold("path", "مسیر شما", "مراحل یادگیری", `<div class="row between"><span class="small muted">${passed("intro") ? "" : "قدم‌ها به ترتیب باز می‌شوند."}</span><button class="small btn-ghost" data-goto="path">همه قدم‌ها</button></div>${stepper()}`)}
+  ${st.goal ? fold("goal", "هدف: " + goalName(st.goal), "", goalCard()) : ""}
+  ${fresh || !started.length ? "" : fold("four", "چهار مرحله یادگیری", `از ${FA(started.length)} سیاق`, trackBars(trackCounts(started)))}
+  ${anyPre ? "" : fold("pre", "سوره‌هایی را از قبل حفظ هستید؟", "", `<p class="small">آن‌ها را از «نقشه سیاق» ثبت کنید تا از همین حالا مرورشان شروع شود. این کار به قدم‌های مسیر ربطی ندارد و همیشه آزاد است.</p><div class="row"><button class="small" data-goto="map">ثبت سوره‌های حفظ‌شده</button></div>`)}
+  ${fresh ? "" : fold("grid", "نقشه پیشرفت ۱۱۴ سوره", `${FA(solidAyat)} از ${FA(totalAyat)} آیه`, `<div class="bar"><i style="width:${(solidAyat / totalAyat * 100).toFixed(1)}%"></i></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px">
       ${DATA.surahs.map(s => `<button data-open="${s.n}" style="padding:6px;display:flex;flex-direction:column;gap:4px;align-items:stretch;font-size:12px">${s.name}${strip(s)}</button>`).join("")}
-    </div>
-    ${legend()}
-  </section>`}
+    </div>${legend()}`)}
   ${backupOld && !fresh ? `<section class="card"><div class="row between"><span class="small">${cfg.lastBackup ? "بیش از یک هفته از آخرین پشتیبان گذشته." : "هنوز از پیشرفت و تدبرهایتان پشتیبان نگرفته‌اید."}</span><button class="small" data-settings>پشتیبان‌گیری</button></div></section>` : ""}
   `;
 }
@@ -1208,6 +1277,95 @@ function review() {
   ${due.length ? due.map(x => siyaqButton(x, "review")).join("") : `<p class="muted small">چیزی برای مرور نمانده.</p>`}</section>
   <section class="card"><h2>مرورهای آینده</h2>
   ${soon.map(x => `<div class="row between small"><span>${x.s.name} · ${esc(title(x.s, x.q))}</span><span class="muted num">${st.items[x.k].due - today() === 1 ? "فردا" : FA(st.items[x.k].due - today()) + " روز دیگر"}</span></div>`).join("")}</section>`;
+}
+
+// ---------- progress tab: daily, monthly, yearly + plan tracking ----------
+const prog = {seg: "day", off: 0, pick: null};
+const JM = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+const WD = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
+const _jc = {}, _jf = (() => { try { return new Intl.DateTimeFormat("en-u-ca-persian-nu-latn", {timeZone: "UTC", year: "numeric", month: "numeric", day: "numeric"}); } catch (e) { return null; } })();
+function jd(d) {                       // Jalali y/m/d of a local day number
+  if (_jc[d]) return _jc[d];
+  let r;
+  if (_jf) { const o = {}; _jf.formatToParts(new Date(d * 864e5)).forEach(x => { o[x.type] = +x.value; }); r = {y: o.year, m: o.month, d: o.day}; }
+  else { const g = new Date(d * 864e5); r = {y: g.getUTCFullYear(), m: g.getUTCMonth() + 1, d: g.getUTCDate()}; }
+  return (_jc[d] = r);
+}
+function monthStart(off) {             // first day number of the Jalali month `off` months from this one (off <= 0 or > 0)
+  let st0 = today() - (jd(today()).d - 1);
+  for (let i = 0; i < -off; i++) { const pr = st0 - 1; st0 = pr - (jd(pr).d - 1); }
+  for (let i = 0; i < off; i++) { let x = st0 + 27; while (jd(x).d !== 1) x++; st0 = x; }
+  return st0;
+}
+const monthLen = st0 => { let x = st0 + 27; while (jd(x).d !== 1) x++; return x - st0; };
+const dayAct = d => { const x = (st.log || {})[d]; return x ? (x.a || 0) + (x.t || 0) + (x.r || 0) + (x.tr || 0) + (x.w || 0) : 0; };
+const sumRange = (a, b) => weekSum(a, b);
+function barsHtml(vals, labels, hi) {
+  const mx = Math.max(1, ...vals);
+  return `<div class="bars" role="img" aria-label="نمودار">${vals.map((v, i) => `<div class="${i === hi ? "today" : ""}" title="${labels[i]}: ${FA(v)}"><small class="num">${v ? FA(v) : ""}</small><i style="height:${Math.max(2, v / mx * 70)}px"></i><small>${labels[i]}</small></div>`).join("")}</div>`;
+}
+const cnt = (o, k) => FA(o[k] || 0);
+const statBox = (n, l) => `<div class="stat"><b class="num">${n}</b><span class="small muted">${l}</span></div>`;
+function progDay() {
+  const t = today(), td = (st.log || {})[t] || {}, days = range(t - 13, t), w = weekSum(t - 29, t);
+  return `<section class="card"><h2>امروز</h2><div class="stats">${statBox(cnt(td, "a"), "آیه حفظ")}${statBox(cnt(td, "t"), "سیاق تدبر")}${statBox(FA((td.r || 0) + (td.tr || 0)), "مرور")}</div>
+    ${td.w ? `<p class="small">${FA(td.w)} آیه از دفتر اشتباهات تثبیت شد.</p>` : ""}</section>
+  <section class="card"><h2>۱۴ روز گذشته</h2><p class="small muted">مجموع فعالیت هر روز: آیه، تدبر، مرور و تثبیت</p>${barsHtml(days.map(dayAct), days.map(d => FA(jd(d).d)), 13)}
+    <div class="kv">${statBox(FA(streakNow()), "روز پیوسته")}${statBox(FA(w.days), "روز فعال در ۳۰ روز")}</div></section>`;
+}
+function progMonth() {
+  const st0 = monthStart(prog.off), len = monthLen(st0), j = jd(st0), t = today();
+  const prevS = monthStart(prog.off - 1), cur = sumRange(st0, Math.min(t, st0 + len - 1)), prev = sumRange(prevS, st0 - 1);
+  const first = (st0 + 5) % 7, cells = [];
+  for (let i = 0; i < first; i++) cells.push(`<span class="c" style="border:none;background:none"></span>`);
+  const mx = Math.max(1, ...range(0, len - 1).map(i => dayAct(st0 + i)));
+  for (let i = 0; i < len; i++) { const d = st0 + i, n = dayAct(d), h = !n ? 0 : Math.min(4, 1 + Math.floor(n / mx * 3.99));
+    cells.push(`<button class="h${h}${d === t ? " tdy" : ""}${prog.pick === d ? " sel2" : ""}" data-pday="${d}" aria-label="${FA(i + 1)} ${JM[j.m - 1]}: ${FA(n)} فعالیت"><span class="num">${FA(i + 1)}</span></button>`); }
+  const pk = prog.pick && prog.pick >= st0 && prog.pick < st0 + len ? (st.log || {})[prog.pick] || {} : null;
+  const diff = (a, b) => a === b ? "" : `<span class="small ${a > b ? "ok" : "muted"}">${a > b ? "▲" : "▼"} ${FA(Math.abs(a - b))}</span>`;
+  return `<section class="card"><div class="row between"><button class="small" data-poff="-1" aria-label="ماه قبل">› ماه قبل</button><h2>${JM[j.m - 1]} ${FA(j.y)}</h2><button class="small" data-poff="1" ${prog.off >= 0 ? "disabled" : ""} aria-label="ماه بعد">ماه بعد ‹</button></div>
+    <div class="cal">${WD.map(x => `<span class="wd">${x}</span>`).join("")}${cells.join("")}</div>
+    ${pk ? `<p class="small"><b>${FA(jd(prog.pick).d)} ${JM[j.m - 1]}:</b> ${FA(pk.a || 0)} آیه حفظ · ${FA(pk.t || 0)} سیاق تدبر · ${FA((pk.r || 0) + (pk.tr || 0))} مرور${pk.w ? " · " + FA(pk.w) + " آیه تثبیت" : ""}</p>` : `<p class="small muted">روی هر روز بزنید تا جزئیاتش را ببینید. رنگ تیره‌تر یعنی فعالیت بیشتر.</p>`}</section>
+  <section class="card"><h2>مجموع این ماه</h2><div class="kv">
+    <div class="stat"><b class="num">${FA(cur.a)}</b><span class="small muted">آیه حفظ ${diff(cur.a, prev.a)}</span></div>
+    <div class="stat"><b class="num">${FA(cur.t)}</b><span class="small muted">سیاق تدبر ${diff(cur.t, prev.t)}</span></div>
+    <div class="stat"><b class="num">${FA(cur.r + cur.tr)}</b><span class="small muted">مرور ${diff(cur.r + cur.tr, prev.r + prev.tr)}</span></div>
+    <div class="stat"><b class="num">${FA(cur.days)}</b><span class="small muted">روز فعال ${diff(cur.days, prev.days)}</span></div></div>
+    <p class="small muted">مقایسه با ماه قبل.</p></section>`;
+}
+function progYear() {
+  const cj = jd(today()), ms = [];
+  for (let m = 1; m <= 12; m++) { if (m > cj.m) { ms.push({m, a: 0, days: 0, o: {}}); continue; } const s0 = monthStart(m - cj.m), o = weekSum(s0, Math.min(today(), s0 + monthLen(s0) - 1)); ms.push({m, a: o.a, days: o.days, o}); }
+  const tot = ms.reduce((a, x) => { for (const k of ["a", "t", "r", "tr", "w", "days"]) a[k] += x.o[k] || 0; return a; }, {a: 0, t: 0, r: 0, tr: 0, w: 0, days: 0});
+  const all = siyaqs(), totalAyat = DATA.surahs.reduce((a, s) => a + s.total, 0), solid = all.filter(x => (st.items[x.k] || {}).stage >= 5).reduce((a, x) => a + ayahCount(x.q), 0);
+  const c = surahCounts();
+  return `<section class="card"><h2>سال ${FA(cj.y)}</h2><p class="small muted">آیه‌های حفظ‌شده در هر ماه</p>${barsHtml(ms.map(x => x.a), JM.map(n => n.slice(0, 3)), cj.m - 1)}
+    <p class="small muted">روز فعال در هر ماه</p>${barsHtml(ms.map(x => x.days), JM.map(n => n.slice(0, 3)), cj.m - 1)}</section>
+  <section class="card"><h2>مجموع امسال</h2><div class="kv">${statBox(FA(tot.a), "آیه حفظ")}${statBox(FA(tot.t), "سیاق تدبر")}${statBox(FA(tot.r + tot.tr), "مرور")}${statBox(FA(tot.days), "روز فعال")}</div></section>
+  <section class="card"><h2>کل مسیر</h2><div class="row between small"><span>${FA(solid)} از ${FA(totalAyat)} آیه قرآن تثبیت شده</span><span class="muted num">${FA(c.m)} سوره حفظ · ${FA(c.t)} سوره تدبر</span></div>${miniBar(solid / totalAyat, "var(--lapis)")}</section>`;
+}
+function planTrack() {
+  const t = today(), w7 = weekSum(t - 6, t), avg = w7.a / 7, g = st.goal, all = siyaqs();
+  let goal;
+  if (g) { const gs = goalStatus(g), ok = gs.done >= gs.total;
+    goal = `<div class="row between"><h2>هدف: ${goalName(g)}</h2><button class="small btn-ghost" data-goal>تغییر</button></div>${miniBar(gs.pct, "var(--gold)")}
+      <div class="row between small"><span class="num">${FA(gs.done)} از ${FA(gs.total)} آیه · تا ${dayDate(g.end)}</span><b style="${gs.ahead < 0 && !ok ? "color:var(--st-due)" : ""}">${ok ? "✓ رسیدید" : gs.ahead >= 0 ? "جلوتر از برنامه" : "عقب‌تر از برنامه"}</b></div>
+      ${ok ? "" : `<div class="kv">${statBox(FA(gs.perDay), "آیه در روز لازم است")}${statBox(FA(Math.round(avg * 10) / 10), "میانگین ۷ روز شما")}</div>
+      <p class="small muted">${FA(gs.left)} روز مانده. ${avg >= gs.perDay ? "با همین سرعت به هدف می‌رسید." : "برای رسیدن به هدف باید کمی سرعت را بیشتر کنید."}</p>`}`;
+  } else goal = `<div class="row between"><h2>هدف</h2><button class="small btn-main" data-goal>هدف بگذار</button></div><p class="small muted">مثلاً «حفظ جزء ۳۰ تا سه ماه دیگر». برنامه حساب می‌کند روزی چند آیه لازم است و جلو یا عقب بودنتان را نشان می‌دهد.</p>`;
+  const p = cfg.dailyMin ? dailyPlan() : null, left = all.filter(x => status(x.k) === "due").length + all.filter(x => tadDue(x.k)).length;
+  const plan = `<div class="row between"><h2>برنامه روزانه</h2><button class="small btn-ghost" data-planmin="0">${cfg.dailyMin ? FA(cfg.dailyMin) + " دقیقه ✎" : "تنظیم وقت"}</button></div>
+    ${cfg.dailyMin ? `<p class="small">${p && p.items.length ? `${FA(p.items.length)} کار برای امروز مانده (حدود ${FA(Math.round(p.used))} دقیقه).` : "✓ کارهای امروز انجام شده."}</p>` : `<p class="small muted">روزی چقدر وقت دارید؟ برنامه هر روز کارها را برایتان می‌چیند.</p>`}
+    <p class="small muted num">مرورهای عقب‌مانده: ${FA(left)}</p>`;
+  return `<section class="card">${goal}</section><section class="card">${plan}</section>
+    <section class="card"><div class="row between"><h2>کارنامه هفته</h2><button class="small" data-weekly>ببین و اشتراک</button></div><p class="small muted num">${FA(w7.a)} آیه · ${FA(w7.t)} سیاق تدبر · ${FA(w7.r + w7.tr)} مرور در ۷ روز گذشته</p></section>`;
+}
+function progress() {
+  const segs = [["day", "روزانه"], ["month", "ماهانه"], ["year", "سالانه"], ["plan", "برنامه"]];
+  return `${topBar(`<h1>پیشرفت</h1>`)}
+  <div class="pseg" role="group" aria-label="بازه زمانی">${segs.map(([v, l]) => `<button data-pseg="${v}" aria-pressed="${prog.seg === v}">${l}</button>`).join("")}</div>
+  ${({day: progDay, month: progMonth, year: progYear, plan: planTrack})[prog.seg]()}
+  <p class="small muted">آمار از روزی که این بخش به برنامه اضافه شد جمع می‌شود؛ روزهای قبل از آن خالی دیده می‌شوند.</p>`;
 }
 
 // ---------- mushaf tab ----------
@@ -2420,7 +2578,7 @@ function openSearch() {
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="جستجو در قرآن">
     <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>جستجو در قرآن</h2></header>
     <div class="body">
-      <input type="search" id="sq" value="${esc(searchState.q)}" placeholder="کلمه یا عبارت، یا آیه مثل «بقره ۲۵۵»" aria-label="عبارت جستجو" autocomplete="off">
+      <input type="search" id="sq" value="${esc(searchState.q)}" placeholder="آیه، سوره، سیاق، دفتر تدبر یا لغت‌نامه؛ مثل «بقره ۲۵۵»" aria-label="عبارت جستجو" autocomplete="off">
       <div class="seg" role="group" aria-label="جستجو در">${[["all", "متن و ترجمه"], ["ar", "متن عربی"], ["tr", "ترجمه"]].map(([v, l]) => `<button data-scope="${v}" aria-pressed="${searchState.scope === v}">${l}</button>`).join("")}</div>
       <div id="sres"></div>
     </div></div>`);
@@ -2432,18 +2590,39 @@ function openSearch() {
   if (cfg.trans !== "none") trans(1, 1);      // starts loading the chosen translation
   run(); setTimeout(() => input.focus(), 50);
 }
+function searchGroups(raw) {
+  const q = normFa(faNum(raw)).trim(); if (q.length < 1) return "";
+  const out = [], sOk = s => normFa(s.name).includes(q.replace(/^سوره\s+/, "")) || String(s.n) === q;
+  const surahs = DATA.surahs.filter(s => q.length >= 2 || /^\d+$/.test(q) ? sOk(s) : false).slice(0, 5);
+  if (surahs.length) out.push(`<div class="sres-group"><h3>سوره‌ها</h3>${surahs.map(s => `<button data-sopen="${s.n}">${FA(s.n)}. سوره ${s.name} <span class="small muted">· ${FA(s.total)} آیه</span></button>`).join("")}</div>`);
+  if (q.length >= 2) {
+    const sq = siyaqs().filter(x => normFa(title(x.s, x.q)).includes(q)).slice(0, 8);
+    if (sq.length) out.push(`<div class="sres-group"><h3>سیاق‌ها</h3>${sq.map(x => `<button data-ssiyaq="${x.k}">${x.s.name} · ${esc(title(x.s, x.q))} <span class="small muted">· ${LABELS[status(x.k)]}</span></button>`).join("")}</div>`);
+    const nb = notebookEntries().filter(e => normFa(e.text).includes(q)).slice(0, 5);
+    if (nb.length) out.push(`<div class="sres-group"><h3>دفتر تدبر من</h3>${nb.map(e => `<button data-snote="${esc(raw.trim())}">${e.s.name} · سیاق ${FA(e.qn)}: <span class="small muted">${esc((e.n.title || e.text).slice(0, 60))}</span></button>`).join("")}</div>`);
+    const vc = Object.entries(st.vocab || {}).filter(([, v]) => normFa(v.fa || "").includes(q) || arNorm(v.ar || "").includes(arNorm(raw.trim()))).slice(0, 5);
+    if (vc.length) out.push(`<div class="sres-group"><h3>لغت‌نامه من</h3>${vc.map(([, v]) => `<button data-svocab><span class="ar">${esc(v.ar)}</span> <span class="small">${esc(v.fa)}</span></button>`).join("")}</div>`);
+  }
+  return out.join("");
+}
+function wireGroups(out, q) {
+  out.querySelectorAll("[data-sopen]").forEach(b => b.addEventListener("click", () => { document.getElementById("sheet").innerHTML = ""; openSurah(+b.dataset.sopen); }));
+  out.querySelectorAll("[data-snote]").forEach(b => b.addEventListener("click", () => { nbQuery = q; openNotebook(); }));
+  out.querySelectorAll("[data-svocab]").forEach(b => b.addEventListener("click", () => openVocab()));
+}
 function drawResults(box) {
   const out = box.querySelector("#sres"); if (!out) return;
   const q = searchState.q.trim();
   if (!q) { out.innerHTML = `<p class="small muted">در متن عربی آیات (بدون نیاز به اعراب) و در ترجمه «${transName()}» جستجو می‌شود. برای رفتن به یک آیه، نام یا شماره سوره و شماره آیه را بنویسید، مثل «بقره ۲۵۵» یا «۲:۲۵۵».</p>`; return; }
-  if (!QTEXT) { out.innerHTML = `<p class="small muted">در حال بارگیری متن قرآن…</p>`; return; }
+  const grp = searchGroups(q);
+  if (!QTEXT) { out.innerHTML = grp + `<p class="small muted">در حال بارگیری متن قرآن…</p>`; wireGroups(out, q); return; }
   const r = searchQuran(q), sc = searchState.scope;
   const seen = new Set(), list = [];
   const add = (arr, kind) => arr.forEach(([sn, ay]) => { const k = key(sn, ay); if (!seen.has(k)) { seen.add(k); list.push({sn, ay, kind}); } });
   add(r.ref, "ref"); if (sc !== "tr") add(r.ar, "ar"); if (sc !== "ar") add(r.tr, "tr");
   const nAr = sc !== "tr" ? r.ar.length : 0, nTr = sc !== "ar" ? r.tr.length : 0, lim = 40 + searchState.more;
   const trWait = sc !== "ar" && cfg.trans !== "none" && !TR[cfg.trans];
-  out.innerHTML = `<p class="small muted">${[sc !== "tr" ? `${FA(nAr)} آیه در متن عربی` : "", sc !== "ar" ? (cfg.trans === "none" ? "ترجمه خاموش است" : trWait ? "ترجمه در حال بارگیری…" : `${FA(nTr)} آیه در ترجمه ${transName()}`) : ""].filter(Boolean).join(" · ")}</p>
+  out.innerHTML = grp + `<p class="small muted">${[sc !== "tr" ? `${FA(nAr)} آیه در متن عربی` : "", sc !== "ar" ? (cfg.trans === "none" ? "ترجمه خاموش است" : trWait ? "ترجمه در حال بارگیری…" : `${FA(nTr)} آیه در ترجمه ${transName()}`) : ""].filter(Boolean).join(" · ")}</p>
     ${list.length ? list.slice(0, lim).map(x => { const k = key(x.sn, x.ay), sq = siyaqOf(x.sn, x.ay), tx = trans(x.sn, x.ay);
       return `<div class="sres"><div class="row between"><b>${x.kind === "ref" ? "↵ " : ""}سوره ${S[x.sn].name} · آیه ${FA(x.ay)}</b><span class="small muted">${sq ? "سیاق " + FA(sq.n) : ""}${errOf(k) ? ` · <span style="color:var(--st-due)">${FA(errOf(k).n)} اشتباه</span>` : ""}</span></div>
         <div class="ar">${arHtml(x.sn, x.ay, {q: x.kind === "ar" ? q : ""})}</div>
@@ -2454,6 +2633,7 @@ function drawResults(box) {
   out.querySelectorAll("[data-sgo]").forEach(b => b.addEventListener("click", () => { const [sn, ay] = parseVk(b.dataset.sgo); goVerse(sn, ay); }));
   out.querySelectorAll("[data-splay]").forEach(b => b.addEventListener("click", () => { const [sn, ay] = parseVk(b.dataset.splay); play(sn, ay); }));
   out.querySelectorAll("[data-ssiyaq]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.ssiyaq; startSession(k, ["solid", "due"].includes(status(k)) ? "review" : "learn"); }));
+  wireGroups(out, q);
   const mo = out.querySelector("#smore"); if (mo) mo.addEventListener("click", () => { searchState.more += 40; drawResults(box); });
 }
 // Open the mushaf on a verse and select it
