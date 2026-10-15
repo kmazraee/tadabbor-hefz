@@ -7,7 +7,7 @@
 /* Layout: one phone-width column, bottom tab bar, full-screen sheets; Quran always shown as Madinah mushaf pages */
 :root{
   --acc-l:#1F4E79; --acc-d:#7FB0E3; --accs-l:#E3ECF5; --accs-d:#1B2C3D;
-  --paper:#F3F5F4; --surface:#FFFFFF; --ink:#16231F; --muted:#5E6E68; --line:#DCE3E0;
+  --paper:#EEF3EC; --surface:#FFFFFF; --ink:#17261E; --muted:#4C6055; --line:#D5E0D8;
   --page:#FFFDF7; --page-edge:#E6DDC6;
   --lapis:var(--acc-l); --lapis-soft:var(--accs-l); --on-lapis:#FFFFFF;
   --gold:#A8711A; --gold-soft:#F6EBD6;
@@ -33,7 +33,7 @@
   --paper:#EFE5CD; --surface:#FBF5E7; --ink:#3A2E1F; --muted:#76664F; --line:#E0D3B6;
   --page:#FBF3DF; --page-edge:#D9C9A3;
   --gold:#9A6516; --gold-soft:#EEDDB8; --st-new:#D6CBB2}
-:root[data-accent="green"]{--acc-l:#2F6B4F; --acc-d:#7CC4A0; --accs-l:#E2EFE8; --accs-d:#18302A}
+:root[data-accent="green"]{--acc-l:#1B5E43; --acc-d:#7FD0A8; --accs-l:#CDE6D8; --accs-d:#1D3A2E}
 :root[data-accent="teal"]{--acc-l:#0F6E73; --acc-d:#6CC9CC; --accs-l:#DDF0F0; --accs-d:#14302F}
 :root[data-accent="maroon"]{--acc-l:#7A2E3B; --acc-d:#E39AA6; --accs-l:#F4E3E6; --accs-d:#33191E}
 
@@ -413,6 +413,69 @@ details > summary::after{margin-inline-start:auto}
 .sres-group{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
 .sres-group h3{font-size:13px;color:var(--muted);margin:4px 0 0}
 .sres-group button{justify-content:flex-start;text-align:start;min-height:44px;width:100%}
+
+/* ===== Tonal design layer (rounded, tonal containers, pill controls) ===== */
+:root{--tonal:color-mix(in srgb,var(--lapis) 11%,var(--paper));--tonal2:color-mix(in srgb,var(--lapis) 24%,var(--paper));--rose:color-mix(in srgb,var(--st-due) 22%,var(--surface));--sun:color-mix(in srgb,var(--gold) 22%,var(--surface));--r:24px}
+body{font-weight:400}
+h1{font-size:23px;font-weight:800}
+.card{border:none;border-radius:24px;padding:18px}
+button{border:none;border-radius:16px;background:var(--tonal);padding:10px 16px;min-height:44px}
+button.small,.small.btn-main,.small.btn-ghost{border-radius:999px;min-height:44px;padding:8px 16px}
+.btn-main{background:var(--lapis);color:var(--on-lapis);border:none;border-radius:999px;font-weight:800;min-height:48px;padding-inline:22px}
+.btn-ghost{background:transparent;color:var(--lapis)}
+.hero{border-radius:32px;padding:22px;gap:12px}
+.hero h2{font-size:26px;font-weight:800;line-height:1.45}
+.hero .btn-main{background:#F2CF74;color:#3A2D00;border:none;min-height:52px;font-size:17px;padding-inline:28px}
+.hero .small[data-listen],.hero button.small{background:color-mix(in srgb,var(--on-lapis) 18%,transparent);color:var(--on-lapis)}
+.stg{display:flex;gap:6px}.stg i{flex:1;height:6px;border-radius:3px;background:color-mix(in srgb,var(--on-lapis) 28%,transparent)}.stg i.on{background:#F2CF74}
+.icon-btn{width:48px;height:48px;background:var(--tonal);color:var(--lapis)}
+.icon-btn.btn-ghost{background:var(--tonal)}
+.chip{border:none;background:var(--tonal)}
+.stat{border:none;border-radius:22px;background:var(--surface)}
+.siyaq-item,.fl-box,.uv,.contact,.contact-row,.book,.deck-btn{border:none;border-radius:20px}
+.siyaq-item{background:var(--surface)}
+.deck-btn{background:var(--tonal2)}
+details{border:none;border-radius:22px}
+select,input[type=text],input[type=search],input[type=tel],textarea{border:none;border-radius:18px;background:var(--tonal);padding:12px 16px;min-height:48px}
+.seg button{border-radius:999px;min-height:44px}
+.seg button[aria-pressed="true"],.chips button[aria-pressed="true"]{background:var(--lapis);color:var(--on-lapis)}
+.pill{background:var(--tonal2)}
+.bar{background:var(--tonal2);height:10px}
+.sheet{background:var(--paper)}
+.sheet header{background:var(--tonal);border-bottom:none;padding:10px 14px}
+.sheet footer{background:var(--tonal);border-top:none}
+.sheet footer button{border-radius:999px;min-height:50px}
+.sheet footer .btn-main{font-size:16px}
+.rate button{border-radius:20px;background:var(--surface)}
+.tabs{background:var(--tonal);border-top:none;min-height:76px;align-items:center;padding-inline:4px}
+.tabs button{background:none;min-height:60px;font-size:10.5px;gap:4px;color:var(--muted);border-radius:0}
+.tabs button svg{width:56px;height:30px;padding:4px 17px;border-radius:15px;box-sizing:border-box}
+.tabs button[aria-current="page"]{color:var(--ink);font-weight:800}
+.tabs button[aria-current="page"] svg{background:var(--tonal2);color:var(--lapis)}
+.player{border:none;border-radius:24px}
+.searchbar{border:none;background:var(--tonal);border-radius:28px;min-height:56px;padding-inline:20px;font-size:15px}
+.hello{display:flex;align-items:center;gap:12px}
+.av{width:48px;height:48px;border-radius:50%;background:var(--tonal2);color:var(--lapis);display:grid;place-items:center;font-weight:800;font-size:20px;flex:none}
+.tcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tcard{border-radius:24px;min-height:88px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;color:var(--ink);font-size:13px}
+.tcard b{font-size:28px;line-height:1.3}
+.tcard.a{background:var(--tonal2)}.tcard.b{background:var(--sun)}.tcard.c{background:var(--rose)}
+.tcard.z{opacity:.7}
+.tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.tile{background:none;min-height:84px;gap:6px;font-size:12px;border-radius:18px;padding:4px 2px}
+.tile .ti{width:52px;height:52px;border-radius:18px;background:var(--tonal);color:var(--lapis);display:grid;place-items:center}
+.tile .ti svg{width:24px;height:24px}
+.tile .tb{inset-inline-start:auto;inset-inline-end:2px;top:0}
+.weekcard{display:flex;flex-direction:column;gap:12px;width:100%;text-align:start;background:var(--surface);border-radius:28px;padding:16px 18px;min-height:0}
+.wbars{display:flex;align-items:flex-end;gap:8px;height:64px}
+.wbars>div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.wbars i{display:block;width:100%;border-radius:10px;background:var(--tonal2);min-height:6px}
+.wbars .now i{background:var(--lapis)}
+.wbars small{font-size:11px;color:var(--muted)}
+.cal button,.cal span.c{border:none;background:var(--surface)}
+.pseg button{border-radius:999px}
+.tchips{display:none}
+.miniprog{display:none}
 </style>
 
 <div class="app">
@@ -506,11 +569,13 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "sepia", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {}};
+const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {}};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 // One-time move of earlier installs to the new defaults: Parhizgar recitation and Safavi translation
 if ((cfg.defaultsV || 0) < 2) { cfg.reciter = DEFAULTS.reciter; cfg.trans = DEFAULTS.trans; cfg.defaultsV = 2; try { localStorage.setItem("tadabbor-settings", JSON.stringify(cfg)); } catch (e) {} }
+// One-time move to the tonal design: light theme, green accent
+if ((cfg.defaultsV || 0) < 3) { if (cfg.theme === "sepia" || cfg.theme === "system") cfg.theme = "light"; cfg.accent = "green"; cfg.defaultsV = 3; try { localStorage.setItem("tadabbor-settings", JSON.stringify(cfg)); } catch (e) {} }
 if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";
 const saveCfg = () => store("tadabbor-settings", cfg);
 
@@ -1153,6 +1218,7 @@ function journeyHero() {
     <div class="muted small">${done ? "" : `قدم ${stepNo(L)}: ${L.t} · `}${stg === 0 ? "تدبر امروز" : "ادامه حفظ"} · سوره ${nx.s.name} · آیات ${FA(nx.q.s)} تا ${FA(nx.q.e)}</div>
     <h2>${esc(title(nx.s, nx.q))}</h2>
     ${vtext(nx.s.n, nx.q.s) ? `<div class="q">${vtext(nx.s.n, nx.q.s)} …</div>` : ""}
+    <div class="stg" aria-hidden="true">${[0, 1, 2, 3, 4].map(i => `<i class="${i <= stg ? "on" : ""}"></i>`).join("")}</div>
     <div class="row between"><span class="small muted">مرحله ${FA(stg + 1)} از ۵: ${STAGES[stg]}</span><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="small" data-listen="${nx.k}" title="گوش دادن با ترجمه گویا">🎧</button><button class="btn-main" data-start="${nx.k}">${stg === 0 ? "شروع تدبر" : "ادامه"}</button></span></div>
   </section>`; }
   if (!done) return `<section class="card hero"><span class="small muted">قدم ${stepNo(L)} از ${FA(JOURNEY.length)}</span><h2>${L.t}: درس‌های باقی‌مانده</h2>
@@ -1165,7 +1231,7 @@ const fold = (id, title, sub, body) => `<details data-fold="${id}" ${homeOpen[id
 const tile = (attr, ic, label, badge) => `<button class="tile" ${attr}><span class="ti" aria-hidden="true">${ic}</span><span>${label}</span>${badge ? `<b class="tb num">${FA(badge)}</b>` : ""}</button>`;
 function todayCard(all, due, tdDue, weak, fresh) {
   const total = due.length + tdDue.length;
-  const chips = `<div class="tchips"><span class="tchip${due.length ? " on" : ""}"><b class="num">${FA(due.length)}</b> مرور حفظ</span><span class="tchip${tdDue.length ? " on" : ""}"><b class="num">${FA(tdDue.length)}</b> مرور تدبر</span><span class="tchip${weak.length ? " on" : ""}"><b class="num">${FA(weak.length)}</b> اشتباه باز</span><span class="tchip"><b class="num">${FA(streakNow())}</b> روز پیوسته</span></div>`;
+  const chips = `<div class="tcards"><button class="tcard a${due.length ? "" : " z"}" ${due.length ? `data-start="${due[0].k}" data-mode="review"` : `data-goto="review"`}><b class="num">${FA(due.length)}</b><span>مرور حفظ</span></button><button class="tcard b${tdDue.length ? "" : " z"}" data-goto="review"><b class="num">${FA(tdDue.length)}</b><span>مرور تدبر</span></button><button class="tcard c${weak.length ? "" : " z"}" data-weak><b class="num">${FA(weak.length)}</b><span>اشتباه باز</span></button></div>`; const _old = `<div class="tchips"><span class="tchip${due.length ? " on" : ""}"><b class="num">${FA(due.length)}</b> مرور حفظ</span><span class="tchip${tdDue.length ? " on" : ""}"><b class="num">${FA(tdDue.length)}</b> مرور تدبر</span><span class="tchip${weak.length ? " on" : ""}"><b class="num">${FA(weak.length)}</b> اشتباه باز</span><span class="tchip"><b class="num">${FA(streakNow())}</b> روز پیوسته</span></div>`;
   if (fresh) return "";
   const usePlan = (passed("intro") || cfg.freePath) && cfg.dailyMin;
   let list = "";
@@ -1194,8 +1260,10 @@ function home() {
   const trActive = IS_APP && TRANSLATIONS.some(x => jobActive("tr-" + x[0]));
   const nVocab = Object.keys(st.vocab || {}).length, nNotes = notebookEntries().length;
   const t0 = today(), wk = weekSum(t0 - 6, t0);
+  const tj = jd(t0), wdn = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"][(t0 + 4) % 7];
+  const wdays = range(t0 - 6, t0), wvals = wdays.map(dayAct), wmax = Math.max(1, ...wvals);
   return `
-  ${topBar(myName() ? `<h1>سلام ${esc(myName())}</h1><span class="small muted">حفظ تدبری</span>` : `<h1>حفظ تدبری</h1>`)}
+  ${topBar(`<div class="hello"><span class="av" aria-hidden="true">${esc((myName() || "ح").trim().charAt(0))}</span><div><h1>${myName() ? "سلام " + esc(myName()) : "حفظ تدبری"}</h1><span class="small muted">${wdn} ${FA(tj.d)} ${JM[tj.m - 1]}</span></div></div>`)}
   <button class="searchbar" data-search aria-label="جستجو در همه‌جا"><span aria-hidden="true">${ICON_SEARCH}</span><span>جستجو: آیه، سوره، سیاق، دفتر تدبر…</span></button>
   ${upd.app ? `<section class="card">${appUpdHtml()}</section>` : ""}
   ${upd.meta ? `<section class="card"><div class="row between"><span class="small"><b>به‌روزرسانی آماده است:</b> محتوای تازه سیاق‌ها</span><button class="small btn-main" data-settings>مشاهده</button></div></section>` : ""}
@@ -1207,19 +1275,22 @@ function home() {
   ${todayCard(all, due, tdDue, weak, fresh)}
   ${weak.length ? `<section class="card"><div class="row between"><span class="small"><b class="num">${FA(weak.length)}</b> آیه نیازمند تثبیت در دفتر اشتباهات</span><span class="row" style="gap:6px"><button class="small" data-weak>دفتر اشتباهات</button><button class="small btn-main" data-drill>تمرین</button></span></div></section>` : ""}
   <section aria-label="دسترسی سریع"><h2 class="sec">دسترسی سریع</h2><div class="tiles">
-    ${tile("data-goto=\"mushaf\"", "📖", "مصحف")}
-    ${tile("data-goto=\"map\"", "🗺", "نقشه سیاق")}
-    ${tile("data-goto=\"progress\"", "📈", "پیشرفت")}
-    ${tile("data-notebook", "📝", "دفتر تدبر", nNotes)}
-    ${tile("data-weak", "🛠", "دفتر اشتباهات", weak.length)}
-    ${tile("data-vocab", "🔤", "لغت‌نامه", nVocab)}
-    ${tile("data-quiz=\"next\"", "❓", "آزمون")}
-    ${tile("data-weekly", "🗓", "کارنامه هفته")}
-    ${tile("data-goal", "🎯", st.goal ? "هدف من" : "هدف بگذار")}
+    ${tile("data-goto=\"mushaf\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/></svg>`, "مصحف")}
+    ${tile("data-goto=\"map\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/></svg>`, "نقشه سیاق")}
+    ${tile("data-goto=\"progress\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>`, "پیشرفت")}
+    ${tile("data-notebook", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 4h14v16H5zM9 9h6M9 13h6"/></svg>`, "دفتر تدبر", nNotes)}
+    ${tile("data-weak", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2-.5-.5-2z"/></svg>`, "دفتر اشتباهات", weak.length)}
+    ${tile("data-vocab", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h6"/></svg>`, "لغت‌نامه", nVocab)}
+    ${tile("data-quiz=\"next\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.01"/></svg>`, "آزمون")}
+    ${tile("data-weekly", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>`, "کارنامه هفته")}
+    ${tile("data-goal", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>`, st.goal ? "هدف من" : "هدف بگذار")}
+    ${tile("data-guide=\"\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8v.01"/></svg>`, "راهنما")}
+    ${tile("data-settings", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>`, "تنظیمات")}
+    ${tile("data-dls", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>`, "دانلودها")}
   </div></section>
-  ${fresh ? "" : `<button class="miniprog" data-goto="progress" aria-label="دیدن پیشرفت روزانه، ماهانه و سالانه"><span class="row between"><b>این هفته</b><span class="small muted">پیشرفت کامل ‹</span></span>
-    <span class="small num">${FA(wk.a)} آیه · ${FA(wk.t)} سیاق تدبر · ${FA(wk.r + wk.tr)} مرور · ${FA(wk.days)} روز فعال از ۷</span>
-    <span class="bar"><i style="width:${(solidAyat / totalAyat * 100).toFixed(1)}%"></i></span><span class="small muted num">${FA(solidAyat)} از ${FA(totalAyat)} آیه قرآن تثبیت شده</span></button>`}
+  ${fresh ? "" : `<button class="weekcard" data-goto="progress" aria-label="دیدن پیشرفت روزانه، ماهانه و سالانه"><span class="row between"><b>این هفته</b><span class="small muted">${FA(streakNow())} روز پیوسته · پیشرفت کامل ‹</span></span>
+    <span class="wbars" aria-hidden="true">${wvals.map((v, i) => `<span class="${i === 6 ? "now" : ""}"><i style="height:${Math.max(6, v / wmax * 44)}px"></i><small>${WD[(wdays[i] + 5) % 7]}</small></span>`).join("")}</span>
+    <span class="small muted num">${FA(wk.a)} آیه · ${FA(wk.t)} سیاق تدبر · ${FA(wk.r + wk.tr)} مرور · ${FA(solidAyat)} از ${FA(totalAyat)} آیه قرآن تثبیت شده</span></button>`}
   <h2 class="sec">بیشتر</h2>
   ${fold("path", "مسیر شما", "مراحل یادگیری", `<div class="row between"><span class="small muted">${passed("intro") ? "" : "قدم‌ها به ترتیب باز می‌شوند."}</span><button class="small btn-ghost" data-goto="path">همه قدم‌ها</button></div>${stepper()}`)}
   ${st.goal ? fold("goal", "هدف: " + goalName(st.goal), "", goalCard()) : ""}
@@ -2962,11 +3033,11 @@ const BADGES = [
   ["streak7", "🔥", "۷ روز پیوسته", () => streakNow() >= 7],
   ["streak30", "💎", "۳۰ روز پیوسته", () => streakNow() >= 30],
   ["streak100", "🕌", "۱۰۰ روز پیوسته", () => streakNow() >= 100],
-  ["ayat100", "📖", "۱۰۰ آیه حفظ", () => siyaqs().filter(x => isMem(x.k)).reduce((a, x) => a + ayahCount(x.q), 0) >= 100],
+  ["ayat100", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/></svg>`, "۱۰۰ آیه حفظ", () => siyaqs().filter(x => isMem(x.k)).reduce((a, x) => a + ayahCount(x.q), 0) >= 100],
   ["ayat1000", "📚", "۱۰۰۰ آیه حفظ", () => siyaqs().filter(x => isMem(x.k)).reduce((a, x) => a + ayahCount(x.q), 0) >= 1000],
   ["tadfix10", "🧠", "۱۰ سیاق با تدبر تثبیت‌شده", () => siyaqs().filter(x => isTadFix(x.k)).length >= 10],
-  ["fix10", "🛠", "۱۰ آیه تثبیت‌شده از دفتر اشتباهات", () => errList().filter(x => !x.open).length >= 10],
-  ["vocab50", "🔤", "۵۰ کلمه در لغت‌نامه", () => Object.keys(st.vocab || {}).length >= 50],
+  ["fix10", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2-.5-.5-2z"/></svg>`, "۱۰ آیه تثبیت‌شده از دفتر اشتباهات", () => errList().filter(x => !x.open).length >= 10],
+  ["vocab50", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h6"/></svg>`, "۵۰ کلمه در لغت‌نامه", () => Object.keys(st.vocab || {}).length >= 50],
   ["juz30", "🌙", "حفظ کامل جزء ۳۰", () => range(78, 114).every(sn => surahAll(S[sn], isMem))]
 ];
 function checkBadges() {
@@ -3507,7 +3578,7 @@ function openSettings() {
       <p class="small">اول فهم، بعد حفظ: هر سیاق اول فهمیده و تدبر می‌شود و بعد با تکیه بر همان معنا حفظ می‌شود. یادگیری هر سیاق چهار مرحله دارد: <b>تدبر، تثبیت تدبر، حفظ و تثبیت حفظ</b>. مسیر، سطح‌ها و تقسیم‌بندی‌ها بر پایه روش «تدبر در قرآن کریم» استاد <b>علی صبوحی طسوجی</b> است.</p>
       <div class="about-feats">${["مسیر قدم‌به‌قدم از مبانی تا سطح ۶", "فهم آیات کلمه‌به‌کلمه", "تفسیر و ریشه کلمات", "مرور فاصله‌دار حفظ و تدبر", "دفتر اشتباهات و آیات مشابه", "آزمون، هدف و کارنامه", "پخش با تکرار و ترجمه گویا", "کار بدون اینترنت"].map(t => `<span>${t}</span>`).join("")}</div>
       <div class="about-list">
-        ${[["📖", "مصحف", "عثمان طه · QCF4، مجمع ملک فهد"],
+        ${[[`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/></svg>`, "مصحف", "عثمان طه · QCF4، مجمع ملک فهد"],
           ["🌐", "ترجمه‌ها", FA(13) + " ترجمه فارسی · Tanzil.net"],
           ["🔍", "معنای کلمات", "فارسی کلمه‌به‌کلمه و تلفظ · Quran.com"],
           ["🌿", "ریشه کلمات", FA(1944) + " ریشه · Quranic Arabic Corpus"],
@@ -3516,7 +3587,7 @@ function openSettings() {
           ["🎧", "ترتیل", FA(RECITERS.filter(r => r[3] !== "fa").length) + " قاری و " + FA(RECITERS.filter(r => r[3] === "fa").length) + " ترجمه گویا · everyayah.com"],
           ["🎬", "درس‌ها", "استاد صبوحی · alisaboohi.com و آپارات"],
           ["📚", "کتاب‌ها", "انتشارات تدبر · tadabborpub.ir"],
-          ["🔤", "قلم‌ها", "وزیرمتن، امیری قرآن، شهرزاد"]]
+          [`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h6"/></svg>`, "قلم‌ها", "وزیرمتن، امیری قرآن، شهرزاد"]]
           .map(([i, k, v]) => `<div class="about-row"><span class="about-ic" aria-hidden="true">${i}</span><span class="small muted">${k}</span><span class="small">${v}</span></div>`).join("")}
       </div>
       <div class="about-actions">
@@ -3561,7 +3632,7 @@ function openSettings() {
   on("#reset-progress", () => { confirmReset = "progress"; openSettingsKeep(); });
   on("#no", () => { confirmReset = ""; openSettingsKeep(); });
   on("#yes-progress", () => { st = EMPTY(); save(); confirmReset = ""; openSettingsKeep(); toast("پیشرفت پاک شد"); });
-  on("#reset-settings", () => { const keep = {seenIntro: cfg.seenIntro, lastBackup: cfg.lastBackup, name: cfg.name, phone: cfg.phone, defaultsV: 2}; cfg = Object.assign({}, DEFAULTS, keep); saveCfg(); applySettings(); openSettingsKeep(); toast("تنظیمات به حالت پیش‌فرض برگشت"); });
+  on("#reset-settings", () => { const keep = {seenIntro: cfg.seenIntro, lastBackup: cfg.lastBackup, name: cfg.name, phone: cfg.phone, defaultsV: 3}; cfg = Object.assign({}, DEFAULTS, keep); saveCfg(); applySettings(); openSettingsKeep(); toast("تنظیمات به حالت پیش‌فرض برگشت"); });
   on("[data-guide-open]", () => openGuide(""));
   fitPages(box);
 }
