@@ -349,6 +349,7 @@ video{width:100%;border-radius:10px;background:#000}
 .wform label{font-weight:700;font-size:14px}
 .wform input{background:var(--surface);color:var(--ink);border:none;border-radius:12px;padding:12px 14px;font-size:16px}
 .wform button{margin-top:8px}
+.wform .ghost-btn{background:transparent;color:inherit;border:1px solid currentColor}
 .werr{background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
 .intro{position:fixed;inset:0;z-index:40;background:var(--lapis);color:var(--on-lapis);display:flex;flex-direction:column;justify-content:center;padding:32px 24px;gap:20px;max-width:480px;margin-inline:auto}
 .intro h1{font-size:26px}
@@ -3566,7 +3567,7 @@ async function syncNow(manual) {
       const a = await pb("collections/users/auth-refresh", {method: "POST"});
       acctSet({token: a.token, id: a.record.id, email: a.record.email}); sync.expired = false;
     } catch (e) {
-      if (e.status === 401 || e.status === 400 || e.status === 403) { sync.expired = true; sync.msg = "نشست شما تمام شده؛ دوباره وارد شوید."; return; }
+      if (e.status === 401 || e.status === 400 || e.status === 403) { sync.expired = true; sync.msg = "نشست شما تمام شده؛ دوباره وارد شوید."; if (!document.querySelector("[data-gate]")) showLogin(sync.msg); return; }
       throw e;
     }
     const list = await pb("collections/hefz_sync/records?perPage=1");
@@ -3587,12 +3588,39 @@ async function syncNow(manual) {
     if (manual && !sync.conflict) toast("همگام‌سازی انجام شد");
   } catch (e) { sync.msg = acctErr(e); } finally { sync.busy = false; refreshAcct(); }
 }
+// Merge two copies of the progress without losing anything either side has: every entry from both is kept;
+// where both have the same entry, the further-along one (higher stage, a finished note, the longer text) wins.
+function mergeProgress(a, b) {
+  const out = Object.assign(EMPTY(), b, a);
+  out.streak = Math.max(a.streak || 0, b.streak || 0);
+  out.lastActive = Math.max(a.lastActive || 0, b.lastActive || 0) || null;
+  const bigger = (x, y) => JSON.stringify(x).length >= JSON.stringify(y).length ? x : y;
+  for (const k of Object.keys(EMPTY())) {
+    if (typeof EMPTY()[k] !== "object" || EMPTY()[k] === null) continue;
+    const x = a[k] || {}, y = b[k] || {}, m = {};
+    for (const id of new Set([...Object.keys(x), ...Object.keys(y)])) {
+      if (!(id in x)) m[id] = y[id]; else if (!(id in y)) m[id] = x[id];
+      else if (k === "items") m[id] = (x[id].stage || 0) !== (y[id].stage || 0) ? ((x[id].stage || 0) > (y[id].stage || 0) ? x[id] : y[id]) : ((x[id].due || 0) >= (y[id].due || 0) ? x[id] : y[id]);
+      else if (k === "notes") m[id] = !!x[id].done !== !!y[id].done ? (x[id].done ? x[id] : y[id]) : bigger(x[id], y[id]);
+      else m[id] = bigger(x[id], y[id]);
+    }
+    out[k] = m;
+  }
+  return out;
+}
 async function syncResolve(how) {
   const rec = sync.conflict; if (!rec || sync.busy) return;
   sync.busy = true; refreshAcct(); const startedAt = Date.now();
   try {
     if (how === "pull") { applyRemote(rec); markSynced(rec, startedAt); render(); }
-    else await pushRemote(rec.id, startedAt);
+    else {
+      if (how === "merge") {
+        st = mergeProgress(st, Object.assign(EMPTY(), rec.progress || {})); syncApplying = true; save(); syncApplying = false;
+        cfg = Object.assign({}, DEFAULTS, rec.settings || {}, syncSettings(), Object.fromEntries(DEVICE_KEYS.filter(k => k in cfg).map(k => [k, cfg[k]])));
+        syncApplying = true; saveCfg(); syncApplying = false; applySettings(); render();
+      }
+      await pushRemote(rec.id, startedAt);
+    }
     sync.conflict = null; sync.msg = "";
   } catch (e) { sync.msg = acctErr(e); } finally { sync.busy = false; refreshAcct(); }
 }
@@ -3610,8 +3638,8 @@ function acctHtml() {
   return `<section class="card" id="acct-box"><h3>حساب کاربری و همگام‌سازی</h3>
     <p class="small">وارد شده با <bdi dir="ltr"><b>${esc(acct.email)}</b></bdi></p>
     <p class="small muted">${sync.busy ? "در حال همگام‌سازی…" : sync.conflict ? "" : sync.expired ? "" : when ? "آخرین همگام‌سازی امروز ساعت " + when : "پیشرفت و تنظیمات شما روی سرور هم ذخیره می‌شود."}</p>
-    ${sync.conflict ? `<div class="help small"><b>داده‌های این دستگاه با داده‌های حساب شما فرق دارد.</b> کدام نگه داشته شود؟ (دیگری روی همین دستگاه یا حساب جایگزین می‌شود.)</div>
-      <div class="row"><button class="btn-main" id="ac-pull">داده‌های حساب</button><button id="ac-push">داده‌های این دستگاه</button></div>` : ""}
+    ${sync.conflict ? `<div class="help small"><b>داده‌های این دستگاه با داده‌های حساب شما فرق دارد.</b> با «ادغام هر دو» چیزی از دست نمی‌رود.</div>
+      <div class="row"><button class="btn-main" id="ac-merge">ادغام هر دو</button><button id="ac-pull">فقط داده‌های حساب</button><button id="ac-push">فقط این دستگاه</button></div>` : ""}
     ${sync.msg ? `<p class="small" role="alert">${esc(sync.msg)}</p>` : ""}
     ${sync.expired ? `<div class="field"><label for="ac-pass" class="small">رمز عبور</label><input type="password" id="ac-pass" dir="ltr" autocomplete="current-password"></div><div class="row"><button class="btn-main" id="ac-relogin">ورود دوباره</button></div>` : ""}
     <div class="row"><button id="ac-sync" ${sync.busy ? "disabled" : ""}>همگام‌سازی حالا</button><button id="ac-out">خروج</button></div>
@@ -3641,8 +3669,16 @@ function wireAcct(box) {
     const pass = box.querySelector("#ac-pass").value;
     try { await acctSignIn(acct.email, pass, false); sync.expired = false; await syncNow(); } catch (e) { sync.msg = acctErr(e); refreshAcct(); }
   });
-  on("#ac-sync", () => syncNow(true)); on("#ac-pull", () => syncResolve("pull")); on("#ac-push", () => syncResolve("push"));
-  on("#ac-out", () => { acctSignOut(); refreshAcct(); toast("از حساب خارج شدید"); });
+  on("#ac-sync", () => syncNow(true)); on("#ac-pull", () => syncResolve("pull")); on("#ac-merge", () => syncResolve("merge")); on("#ac-push", () => syncResolve("push"));
+  on("#ac-out", async () => {
+    await syncNow();
+    if ((sync.msg || sync.conflict) && !confirm("همه تغییرات به حساب فرستاده نشد؛ با خروج از این دستگاه پاک می‌شود. خارج شوم؟")) return;
+    if (!sync.msg && !sync.conflict && !confirm("از حساب خارج می‌شوید. داده‌های این دستگاه پاک می‌شود (در حساب شما می‌ماند). ادامه؟")) return;
+    acctSignOut(); st = EMPTY(); syncApplying = true; save(); syncApplying = false;
+    const keep = Object.fromEntries(["ui", "theme", "accent", "qfont", "qlh"].map(k => [k, cfg[k]]));
+    cfg = Object.assign({}, DEFAULTS, keep, {defaultsV: 3}); syncApplying = true; saveCfg(); syncApplying = false; applySettings();
+    document.getElementById("sheet").innerHTML = ""; render(); showLogin();
+  });
   on("#ac-del", async () => {
     if (!confirm("حساب و همه داده‌های شما روی سرور برای همیشه پاک شود؟")) return;
     try { await pb("collections/users/records/" + acct.id, {method: "DELETE"}); acctSignOut(); refreshAcct(); toast("حساب حذف شد"); }
@@ -3983,6 +4019,35 @@ function openGuide(section) {
 // ---------- first-run welcome: name and mobile number, kept on the phone ----------
 const normPhone = v => faNum(String(v || "")).replace(/[\s\-()]/g, "").replace(/^\+98|^0098/, "0").replace(/^9(\d{9})$/, "09$1");
 const PHONE_OK = v => /^09\d{9}$/.test(v);
+// When accounts are available (own-server builds) signing in is required: nothing is shown before it.
+// An account that has signed in once keeps working offline with the saved sign-in.
+function showLogin(err, email) {
+  const box = document.getElementById("intro");
+  box.innerHTML = `<div class="intro" role="dialog" aria-modal="true" aria-label="ورود" data-gate>
+    <h1>ورود به حفظ تدبری</h1>
+    <p>برای استفاده از برنامه وارد حساب خود شوید یا حساب تازه بسازید. پیشرفت شما با همین حساب روی سرور نگه داشته می‌شود و در گوشی و سایت یکی است.</p>
+    <form id="lg" class="wform" novalidate>
+      <label for="lg-email">ایمیل</label><input id="lg-email" type="email" dir="ltr" autocomplete="username" inputmode="email" value="${esc(email || (acct && acct.email) || sync.draft || "")}" required>
+      <label for="lg-pass">رمز عبور (دست‌کم ۸ نویسه)</label><input id="lg-pass" type="password" dir="ltr" autocomplete="current-password" required>
+      ${err ? `<p class="werr" role="alert">${esc(err)}</p>` : ""}
+      <button type="submit" id="lg-in">ورود</button>
+      <button type="button" id="lg-up" class="ghost-btn">ساخت حساب تازه</button>
+      <p class="small" style="opacity:.85">رمز عبور روی سرور به‌صورت رمزگذاری‌شده ذخیره می‌شود. شماره همراه شما فقط روی همین دستگاه می‌ماند.</p>
+    </form></div>`;
+  const go = async create => {
+    const em = box.querySelector("#lg-email").value.trim(), pw = box.querySelector("#lg-pass").value;
+    if (!em || !pw) return showLogin("ایمیل و رمز عبور را بنویسید.", em);
+    sync.draft = em; box.querySelectorAll("button").forEach(b => { b.disabled = true; });
+    try { await acctSignIn(em, pw, create); } catch (e) { return showLogin(acctErr(e), em); }
+    sync.expired = false; sync.msg = "";
+    await syncNow();
+    if (sync.conflict) await syncResolve("merge");       // this device has data and so does the account: keep both
+    box.innerHTML = ""; render(); startFlow();
+  };
+  box.querySelector("#lg").addEventListener("submit", e => { e.preventDefault(); go(false); });
+  box.querySelector("#lg-up").addEventListener("click", () => go(true));
+  setTimeout(() => { const i = box.querySelector(email || acct ? "#lg-pass" : "#lg-email"); if (i) i.focus(); }, 50);
+}
 function showWelcome(err) {
   const box = document.getElementById("intro");
   box.innerHTML = `<div class="intro" role="dialog" aria-modal="true" aria-label="خوش آمدید" data-welcome>
@@ -4028,7 +4093,7 @@ function showIntro(i = 0) {
 // Android back button: close intro, word bar or an open sheet, else go to the dashboard
 window.__back = () => {
   const intro = document.getElementById("intro");
-  if (intro.querySelector("[data-welcome]")) return true;     // the welcome form has to be filled in
+  if (intro.querySelector("[data-welcome], [data-gate]")) return true;     // the welcome form has to be filled in
   if (intro.innerHTML) { cfg.seenIntro = true; saveCfg(); intro.innerHTML = ""; return true; }
   if (document.getElementById("wordbar").innerHTML) { closeWordbar(); return true; }
   const box = document.getElementById("sheet");
@@ -4042,7 +4107,8 @@ if (window.__oldWebView) throw new Error("old webview");
 applySettings();
 render();
 setTimeout(autoBackupDaily, 3000);
-if (!myName() || !PHONE_OK(cfg.phone)) showWelcome(); else if (!cfg.seenIntro) showIntro();
+const startFlow = () => { if (!myName() || !PHONE_OK(cfg.phone)) showWelcome(); else if (!cfg.seenIntro) showIntro(); };
+if (ACCT_ON && !acct) showLogin(); else startFlow();
 if (IS_APP && !qcfLocal() && !cfg.qcfAsked && cfg.qfont === "qcf") qcfStart();
 if (IS_APP && !cfg.transAsked) { cfg.transAsked = true; saveCfg(); setTimeout(downloadAllTrans, 1500); }
 if (navigator.onLine !== false && (!cfg.lastUpdateCheck || Date.now() - cfg.lastUpdateCheck > 864e5)) setTimeout(() => checkUpdates(true), 4000);
