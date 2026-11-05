@@ -12,7 +12,7 @@
 | قیمت | رایگان، بدون تبلیغ (ترجمه‌های Tanzil فقط برای استفاده غیرتجاری آزادند) |
 | دسترسی‌ها | فقط اینترنت |
 | حداقل اندروید | ۶ (API 23) · هدف: API 34 |
-| حریم خصوصی | https://kmazraee.github.io/tadabbor-hefz/privacy.html |
+| حریم خصوصی | https://ganjineh-tadabbor.ir/privacy.html |
 | آیکون ۵۱۲×۵۱۲ | `store/icon-512.png` |
 | تصاویر (۱۰۸۰×۱۹۲۰) | `store/screenshots/` — شش تصویر با پیشرفت نمونه |
 
