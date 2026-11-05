@@ -14,7 +14,7 @@ import hashlib, json, os, pathlib, re, shutil
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ACCOUNT_API = os.environ.get("ACCOUNT_API") == "1"
-SITE_BASE = os.environ.get("SITE_BASE", "https://kmazraee.github.io/tadabbor-hefz/").rstrip("/") + "/"
+SITE_BASE = os.environ.get("SITE_BASE", "https://ganjineh-tadabbor.ir/").rstrip("/") + "/"
 tpl = (ROOT / "scripts/prototype_src.html").read_text(encoding="utf-8")
 meta = (ROOT / "data/meta.base.json").read_text(encoding="utf-8")
 

@@ -2,9 +2,9 @@
 
 اپلیکیشن اندروید و وب برای **حفظ قرآن با تدبر**، بر پایه روش «تدبر در قرآن کریم» استاد علی صبوحی طسوجی. واحد یادگیری **سیاق** است: مجموعه‌ای از آیات با معنای پیوسته که اول فهمیده و تدبر می‌شود و بعد، با تکیه بر همان معنا، حفظ و با مرور فاصله‌دار تثبیت می‌شود.
 
-- **نسخه وب:** https://kmazraee.github.io/tadabbor-hefz/
+- **نسخه وب:** https://ganjineh-tadabbor.ir/
 - **دانلود برنامه اندروید:** [آخرین نسخه در Releases](https://github.com/kmazraee/tadabbor-hefz/releases/latest)
-- **حریم خصوصی:** https://kmazraee.github.io/tadabbor-hefz/privacy.html
+- **حریم خصوصی:** https://ganjineh-tadabbor.ir/privacy.html
 
 ## روش
 
