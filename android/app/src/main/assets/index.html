@@ -492,6 +492,25 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 .pseg button{border-radius:999px}
 .tchips{display:none}
 .miniprog{display:none}
+/* Site layout: the web copy on a wide screen (tablet landscape and desktop) gets a side menu and a wider reading column.
+   The Android app and phone-width browsers keep the phone layout above. */
+@media (min-width:900px){
+  html.site .app{max-width:1180px;display:grid;grid-template-columns:240px minmax(0,1fr);align-items:start;gap:0 8px}
+  html.site .tabs{position:sticky;top:0;grid-column:1;grid-row:1;max-width:none;margin:0;height:100vh;display:flex;flex-direction:column;justify-content:flex-start;gap:4px;padding:84px 14px 14px;border-top:0;border-inline-end:1px solid var(--line);background:var(--surface)}
+  html.site .tabs::before{content:"حفظ تدبری";position:absolute;top:26px;inset-inline:14px;font-size:20px;font-weight:800;color:var(--lapis)}
+  html.site .tabs button{flex-direction:row;justify-content:flex-start;gap:12px;min-height:46px;padding:8px 14px;border-radius:12px;font-size:15px}
+  html.site .tabs button:hover{background:var(--lapis-soft)}
+  html.site .tabs button[aria-current="page"] svg{background:none;color:var(--lapis)}
+  html.site .tabs button[aria-current="page"]{background:var(--lapis-soft)}
+  html.site main{grid-column:2;grid-row:1;padding-block:28px 48px;padding-inline:32px;max-width:860px;width:100%;margin-inline:auto}
+  html.site .sheet{max-width:860px;inset-block:0;box-shadow:0 0 0 100vmax rgba(0,0,0,.28)}
+  html.site .intro{max-width:560px}
+  html.site #wordbar .wordbar,html.site .wordbar{bottom:0;max-width:860px}
+  html.site .dl-pill{bottom:20px}
+  html.site .toast{bottom:28px}
+  html.site .card{padding:20px}
+  html.site .hero{padding:26px 28px}
+}
 </style>
 </head>
 <body>
@@ -545,6 +564,7 @@ function jsonOf(url) {
 }
 const VERSION = "0.10.2";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
+if (!IS_APP) document.documentElement.classList.add("site");
 // The app downloads content from the configured site; a web copy reads it from the server it is served from
 const SITE_BASE = !IS_APP && /^https?:/.test(location.protocol) ? new URL(DATA_BASE + "../", location.href).href : "https://kmazraee.github.io/tadabbor-hefz/";
 const REPO_API = "https://api.github.com/repos/kmazraee/tadabbor-hefz/releases?per_page=10";
@@ -598,12 +618,25 @@ if ((cfg.defaultsV || 0) < 2) { cfg.reciter = DEFAULTS.reciter; cfg.trans = DEFA
 // One-time move to the tonal design: light theme, green accent
 if ((cfg.defaultsV || 0) < 3) { if (cfg.theme === "sepia" || cfg.theme === "system") cfg.theme = "light"; cfg.accent = "green"; cfg.defaultsV = 3; try { localStorage.setItem("tadabbor-settings", JSON.stringify(cfg)); } catch (e) {} }
 if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";
-const saveCfg = () => store("tadabbor-settings", cfg);
+const saveCfg = () => { store("tadabbor-settings", cfg); touchCfg(); };
 
 // Progress lives only on this device and in the user's own backups.
 const EMPTY = () => ({streak: 0, lastActive: null, notes: {}, items: {}, watched: {}, passed: {}, found: {}, err: {}});
 let st = Object.assign(EMPTY(), load("tadabbor-progress", {}));
-const save = () => store("tadabbor-progress", st);
+const save = () => { store("tadabbor-progress", st); touch(); };
+// ---------- optional account (own server, PocketBase): state used by save()/saveCfg() ----------
+const ACCT_FLAG = "";
+const ACCT_ON = ACCT_FLAG === "1";
+let acct = load("tadabbor-account", null);                       // {token, id, email} when signed in
+const syncMeta = Object.assign({localAt: 0, syncAt: 0, recId: null, remoteVer: "", cfgSig: "", sig: ""}, load("tadabbor-sync", {}));
+const syncSave = () => store("tadabbor-sync", syncMeta);
+// Settings that belong to one device (or are private) are not sent to the server
+const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "ui", "phone", "seenIntro",
+  "lastUpdateCheck", "qcfAsked", "transAsked"];
+const syncSettings = () => Object.fromEntries(Object.entries(cfg).filter(([k]) => !DEVICE_KEYS.includes(k)));
+let syncApplying = false, syncTimer = 0;
+function touch() { if (syncApplying) return; syncMeta.localAt = Date.now(); syncSave(); if (acct) { clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow(), 4000); } }
+function touchCfg() { if (syncApplying) return; const g = JSON.stringify(syncSettings()); if (g !== syncMeta.cfgSig) { syncMeta.cfgSig = g; touch(); } }
 // Calendar day number in the phone's local time; reviews are scheduled on these.
 const today = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 864e5);
 function markActive() {
@@ -3477,6 +3510,151 @@ function restoreFrom(file) {
   r.readAsText(file);
 }
 
+// ---------- account and sync (optional) ----------
+// Sign-up and login are handled by PocketBase on the app's own server (/api/); passwords never touch this code
+// beyond being sent over HTTPS to it. The app works fully without an account; with one, progress and settings
+// are kept in one record per user (rules on the server let a user read and write only their own).
+const sync = {busy: false, msg: "", conflict: null, expired: false, at: 0};
+const ACCT_API = ACCT_ON ? SITE_BASE + "api/" : "";
+async function pb(path, opts = {}) {
+  const r = await fetch(ACCT_API + path, {method: opts.method || "GET", cache: "no-store",
+    headers: Object.assign({"Content-Type": "application/json"}, acct && !opts.anon ? {Authorization: acct.token} : {}),
+    body: opts.body ? JSON.stringify(opts.body) : undefined});
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) { const e = new Error((j && j.message) || "HTTP " + r.status); e.status = r.status; e.data = (j && j.data) || {}; throw e; }
+  return j;
+}
+const acctErr = e => {
+  if (!e.status) return "اتصال به سرور ممکن نشد. اینترنت را بررسی کنید.";
+  const d = e.data || {}, code = k => d[k] && d[k].code;
+  if (code("email") === "validation_not_unique") return "این ایمیل قبلاً ثبت شده است؛ وارد شوید.";
+  if (d.email) return "ایمیل درست نیست.";
+  if (d.password) return "رمز عبور دست‌کم ۸ نویسه باشد.";
+  if (e.status === 400) return "ایمیل یا رمز عبور اشتباه است.";
+  if (e.status === 429) return "تلاش‌ها زیاد بود؛ کمی بعد دوباره امتحان کنید.";
+  return "خطای سرور (" + FA(e.status) + ")";
+};
+// A saved copy "differs" only when its content differs, so merely opening the app never causes a false conflict
+const sigNow = () => { const t = JSON.stringify([st, syncSettings()]); let h = 5381; for (let i = 0; i < t.length; i++) h = (h * 33 ^ t.charCodeAt(i)) >>> 0; return h + ":" + t.length; };
+const hasData = p => !!p && (p.streak > 0 || ["notes", "items", "watched", "passed", "found", "err"].some(k => p[k] && Object.keys(p[k]).length));
+function acctSet(a) { acct = a; if (a) store("tadabbor-account", a); else { try { localStorage.removeItem("tadabbor-account"); } catch (e) {} } }
+function applyRemote(rec) {
+  syncApplying = true;
+  try {
+    st = Object.assign(EMPTY(), rec.progress || {}); delete st.day; store("tadabbor-progress", st);
+    const keep = Object.fromEntries(DEVICE_KEYS.filter(k => k in cfg).map(k => [k, cfg[k]]));
+    cfg = Object.assign({}, DEFAULTS, rec.settings || {}, keep);
+    if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
+    if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";
+    store("tadabbor-settings", cfg); applySettings();
+  } finally { syncApplying = false; }
+  syncMeta.cfgSig = JSON.stringify(syncSettings());
+}
+async function pushRemote(recId, startedAt) {
+  const body = {progress: st, settings: syncSettings()}, sig = sigNow();
+  const rec = recId ? await pb("collections/hefz_sync/records/" + recId, {method: "PATCH", body})
+                    : await pb("collections/hefz_sync/records", {method: "POST", body: Object.assign({user: acct.id}, body)});
+  Object.assign(syncMeta, {recId: rec.id, remoteVer: rec.updated, syncAt: startedAt, sig}); syncSave();
+}
+function markSynced(rec, startedAt) { Object.assign(syncMeta, {recId: rec.id, remoteVer: rec.updated, syncAt: startedAt, sig: sigNow()}); syncSave(); }
+async function syncNow(manual) {
+  if (!ACCT_ON || !acct || sync.busy) return;
+  sync.busy = true; sync.msg = ""; refreshAcct();
+  const startedAt = Date.now();
+  try {
+    try {
+      const a = await pb("collections/users/auth-refresh", {method: "POST"});
+      acctSet({token: a.token, id: a.record.id, email: a.record.email}); sync.expired = false;
+    } catch (e) {
+      if (e.status === 401 || e.status === 400 || e.status === 403) { sync.expired = true; sync.msg = "نشست شما تمام شده؛ دوباره وارد شوید."; return; }
+      throw e;
+    }
+    const list = await pb("collections/hefz_sync/records?perPage=1");
+    const rec = list.items[0];
+    const dirty = sigNow() !== syncMeta.sig;
+    if (!rec) { await pushRemote(null, startedAt); sync.conflict = null; }
+    else if (syncMeta.recId !== rec.id) {              // first time this device meets this account
+      if (hasData(rec.progress) && hasData(st)) sync.conflict = rec;
+      else if (hasData(rec.progress)) { applyRemote(rec); markSynced(rec, startedAt); render(); }
+      else await pushRemote(rec.id, startedAt);
+    } else {
+      const remoteNew = rec.updated !== syncMeta.remoteVer;
+      if (remoteNew && dirty) sync.conflict = rec;
+      else if (remoteNew) { applyRemote(rec); markSynced(rec, startedAt); sync.conflict = null; render(); }
+      else if (dirty) { await pushRemote(rec.id, startedAt); sync.conflict = null; }
+    }
+    sync.at = Date.now();
+    if (manual && !sync.conflict) toast("همگام‌سازی انجام شد");
+  } catch (e) { sync.msg = acctErr(e); } finally { sync.busy = false; refreshAcct(); }
+}
+async function syncResolve(how) {
+  const rec = sync.conflict; if (!rec || sync.busy) return;
+  sync.busy = true; refreshAcct(); const startedAt = Date.now();
+  try {
+    if (how === "pull") { applyRemote(rec); markSynced(rec, startedAt); render(); }
+    else await pushRemote(rec.id, startedAt);
+    sync.conflict = null; sync.msg = "";
+  } catch (e) { sync.msg = acctErr(e); } finally { sync.busy = false; refreshAcct(); }
+}
+async function acctSignIn(email, pass, create) {
+  if (create) await pb("collections/users/records", {method: "POST", anon: true, body: {email, password: pass, passwordConfirm: pass, emailVisibility: false}});
+  const a = await pb("collections/users/auth-with-password", {method: "POST", anon: true, body: {identity: email, password: pass}});
+  acctSet({token: a.token, id: a.record.id, email: a.record.email});
+}
+function acctSignOut() { acctSet(null); Object.assign(syncMeta, {recId: null, remoteVer: "", syncAt: 0}); syncSave(); sync.conflict = null; sync.msg = ""; sync.expired = false; }
+const refreshAcct = () => { if (document.getElementById("acct-box")) openSettingsKeep(); };
+function acctHtml() {
+  if (!ACCT_ON) return "";
+  if (!acct) return acctFormHtml();
+  const when = sync.at ? FA(new Date(sync.at).toLocaleTimeString("fa-IR", {hour: "2-digit", minute: "2-digit"})) : "";
+  return `<section class="card" id="acct-box"><h3>حساب کاربری و همگام‌سازی</h3>
+    <p class="small">وارد شده با <bdi dir="ltr"><b>${esc(acct.email)}</b></bdi></p>
+    <p class="small muted">${sync.busy ? "در حال همگام‌سازی…" : sync.conflict ? "" : sync.expired ? "" : when ? "آخرین همگام‌سازی امروز ساعت " + when : "پیشرفت و تنظیمات شما روی سرور هم ذخیره می‌شود."}</p>
+    ${sync.conflict ? `<div class="help small"><b>داده‌های این دستگاه با داده‌های حساب شما فرق دارد.</b> کدام نگه داشته شود؟ (دیگری روی همین دستگاه یا حساب جایگزین می‌شود.)</div>
+      <div class="row"><button class="btn-main" id="ac-pull">داده‌های حساب</button><button id="ac-push">داده‌های این دستگاه</button></div>` : ""}
+    ${sync.msg ? `<p class="small" role="alert">${esc(sync.msg)}</p>` : ""}
+    ${sync.expired ? `<div class="field"><label for="ac-pass" class="small">رمز عبور</label><input type="password" id="ac-pass" dir="ltr" autocomplete="current-password"></div><div class="row"><button class="btn-main" id="ac-relogin">ورود دوباره</button></div>` : ""}
+    <div class="row"><button id="ac-sync" ${sync.busy ? "disabled" : ""}>همگام‌سازی حالا</button><button id="ac-out">خروج</button></div>
+    <details><summary class="small">حذف حساب</summary><p class="small muted">حساب و همه داده‌های شما روی سرور برای همیشه پاک می‌شود. داده‌های همین دستگاه می‌ماند.</p><button id="ac-del">حذف حساب و داده‌های سرور</button></details>
+  </section>`;
+}
+const acctFormHtml = () => `<section class="card" id="acct-box"><h3>حساب کاربری و همگام‌سازی</h3>
+    <p class="small">اختیاری است. با داشتن حساب، پیشرفت، تدبرها و تنظیمات شما روی سرور این برنامه نگه داشته می‌شود و بین گوشی و سایت یکی می‌ماند. بدون حساب همه‌چیز مثل قبل فقط روی همین دستگاه کار می‌کند.</p>
+    <div class="field"><label for="ac-email" class="small">ایمیل</label><input type="email" id="ac-email" dir="ltr" autocomplete="username" inputmode="email" value="${esc(sync.draft || "")}"></div>
+    <div class="field"><label for="ac-pass" class="small">رمز عبور (دست‌کم ۸ نویسه)</label><input type="password" id="ac-pass" dir="ltr" autocomplete="current-password"></div>
+    <div class="row"><button class="btn-main" id="ac-login" ${sync.busy ? "disabled" : ""}>ورود</button><button id="ac-register" ${sync.busy ? "disabled" : ""}>ساخت حساب</button></div>
+    ${sync.msg ? `<p class="small" role="alert">${esc(sync.msg)}</p>` : ""}
+    <p class="small muted">رمز عبور در برنامه نگه داشته نمی‌شود و روی سرور به‌صورت رمزگذاری‌شده ذخیره می‌شود.</p>
+  </section>`;
+function wireAcct(box) {
+  if (!ACCT_ON) return;
+  const on = (id, fn) => { const el = box.querySelector(id); if (el) el.addEventListener("click", fn); };
+  const enter = create => async () => {
+    const email = box.querySelector("#ac-email").value.trim(); sync.draft = email; const pass = box.querySelector("#ac-pass").value;
+    if (!email || !pass) { sync.msg = "ایمیل و رمز عبور را بنویسید."; return refreshAcct(); }
+    sync.busy = true; sync.msg = ""; refreshAcct();
+    try { await acctSignIn(email, pass, create); sync.busy = false; await syncNow(); }
+    catch (e) { sync.busy = false; sync.msg = acctErr(e); refreshAcct(); }
+  };
+  on("#ac-login", enter(false)); on("#ac-register", enter(true));
+  on("#ac-relogin", async () => {
+    const pass = box.querySelector("#ac-pass").value;
+    try { await acctSignIn(acct.email, pass, false); sync.expired = false; await syncNow(); } catch (e) { sync.msg = acctErr(e); refreshAcct(); }
+  });
+  on("#ac-sync", () => syncNow(true)); on("#ac-pull", () => syncResolve("pull")); on("#ac-push", () => syncResolve("push"));
+  on("#ac-out", () => { acctSignOut(); refreshAcct(); toast("از حساب خارج شدید"); });
+  on("#ac-del", async () => {
+    if (!confirm("حساب و همه داده‌های شما روی سرور برای همیشه پاک شود؟")) return;
+    try { await pb("collections/users/records/" + acct.id, {method: "DELETE"}); acctSignOut(); refreshAcct(); toast("حساب حذف شد"); }
+    catch (e) { sync.msg = acctErr(e); refreshAcct(); }
+  });
+}
+if (ACCT_ON) {
+  setTimeout(() => syncNow(), 2500);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNow(); });
+  addEventListener("online", () => syncNow());
+}
+
 // ---------- updates: new app version (GitHub Releases) and new siyaq content (GitHub Pages) ----------
 const upd = {state: "idle", app: null, meta: null, changed: [], err: false};
 const vnum = v => String(v || "").replace(/^v/, "").split(".").map(x => parseInt(x) || 0);
@@ -3641,6 +3819,7 @@ function openSettings() {
       <label class="switch small"><span>مسیر آزاد<br><span class="muted">برای کسی که دوره‌های تدبر را قبلاً گذرانده: همه قدم‌ها و سوره‌ها بدون قفل باز می‌شوند.</span></span><input type="checkbox" id="freepath" ${cfg.freePath ? "checked" : ""}></label>
     </section>
     ${IS_APP ? `<section class="card"><h3>پشتیبان خودکار</h3><label class="switch small"><span>هر روز یک پشتیبان روی گوشی<br><span class="muted">${cfg.lastAutoPath ? "آخرین: " + (cfg.lastAutoDay === today() ? "امروز" : dayDate(cfg.lastAutoDay)) + " در " + esc(cfg.lastAutoPath) : "در پوشه Download/HefzTadabbori"}</span></span><input type="checkbox" id="ab-on" ${cfg.autoBackup ? "checked" : ""}></label><p class="small muted">این پشتیبان روی خود گوشی است؛ برای حفظ در برابر گم شدن گوشی، گاهی در گوگل‌درایو هم پشتیبان بگیرید.</p></section>` : ""}
+    ${acctHtml()}
     <section class="card"><h3>پشتیبان‌گیری در گوگل‌درایو</h3>
       <p class="small">از پیشرفت، تدبرها و تنظیمات یک فایل پشتیبان ساخته می‌شود. در پنجره اشتراک‌گذاری، <b>Drive</b> را انتخاب کنید. برای بازیابی، همان فایل را از گوگل‌درایو انتخاب کنید.</p>
       <p class="small muted">${cfg.lastBackup ? "آخرین پشتیبان: " + FA(new Date(cfg.lastBackup).toLocaleDateString("fa-IR")) : "هنوز پشتیبانی گرفته نشده."}</p>
@@ -3678,7 +3857,7 @@ function openSettings() {
       <div class="contact-row"><span class="contact-title">گزارش مشکل یا پیشنهاد برای توسعه</span><div class="contact-ch">
         ${CONTACTS("گزارش مشکل یا پیشنهاد", "مشکل یا پیشنهادتان را بنویسید (اگر مشکل است: در کدام صفحه، چه کاری کردید، چه اتفاقی افتاد):").map(c => `<a class="ch" href="${c.url}" target="_blank" rel="noopener" aria-label="گزارش مشکل یا پیشنهاد از راه ${c.name}"><span class="contact-ic" style="background:${c.color}">${c.icon}</span><span class="small">${c.name}</span></a>`).join("")}
       </div></div>
-      <p class="small muted about-foot">رایگان و بدون تبلیغ · همه اطلاعات شما فقط روی گوشی خودتان می‌ماند</p>
+      <p class="small muted about-foot">رایگان و بدون تبلیغ · ${ACCT_ON ? "اطلاعات شما فقط روی دستگاه خودتان می‌ماند، مگر حساب بسازید" : "همه اطلاعات شما فقط روی گوشی خودتان می‌ماند"}</p>
     </section>
   </div></div>`);
   const set = (k, v) => { cfg[k] = v; saveCfg(); applySettings(); };
@@ -3689,6 +3868,7 @@ function openSettings() {
   const ql = box.querySelector("#qlh"); ql.addEventListener("input", () => { set("qlh", +ql.value); box.querySelector("#qlh-v").textContent = FA((+ql.value).toFixed(2)); });
   box.querySelector("#reciter").addEventListener("change", e => set("reciter", e.target.value));
   box.querySelector("#trans").addEventListener("change", e => { set("trans", e.target.value); if (IS_APP && e.target.value !== "none" && !transBundled(e.target.value) && !transLocal(e.target.value)) { downloadTrans(e.target.value); toast("ترجمه روی گوشی ذخیره می‌شود"); } });
+  wireAcct(box);
   wireOffline(box);
   wireUpd(box);
   wireQcf(box);

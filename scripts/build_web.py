@@ -6,11 +6,14 @@
 Run from the repo root after scripts/build_quran.py:  python3 scripts/build_web.py
 The app downloads translations and content updates from SITE_BASE (set it to your own server's address
 to move the app off GitHub Pages):  SITE_BASE=https://example.com/ python3 scripts/build_web.py
+Accounts (optional sign-in and sync through PocketBase on that server): add ACCOUNT_API=1 for the Android app;
+scripts/build_server.py always includes them in the web copy it builds. See deploy/pocketbase/README.md.
 A web copy always reads from the server it is served from. For your own server see scripts/build_server.py.
 """
 import hashlib, json, os, pathlib, re, shutil
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+ACCOUNT_API = os.environ.get("ACCOUNT_API") == "1"
 SITE_BASE = os.environ.get("SITE_BASE", "https://kmazraee.github.io/tadabbor-hefz/").rstrip("/") + "/"
 tpl = (ROOT / "scripts/prototype_src.html").read_text(encoding="utf-8")
 meta = (ROOT / "data/meta.base.json").read_text(encoding="utf-8")
@@ -84,8 +87,10 @@ HEAD = ('<!doctype html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="utf
         + __import__("base64").b64encode((pathlib.Path(__file__).resolve().parent.parent / "store/logo.svg").read_bytes()).decode() + '">\n')
 
 
-def page(pagebase, local_fonts):
+def page(pagebase, local_fonts, account=False):
+    """account=True adds the optional sign-in and sync section (needs PocketBase behind /api/ on the same server)."""
     body = tpl.replace("/*DATA*/", meta).replace("/*DATABASE*/", pagebase).replace("/*SITEBASE*/", SITE_BASE)
+    body = body.replace("/*ACCOUNTAPI*/", "1" if account else "")
     head_part, rest = body.split("</style>", 1)
     head_part += "</style>\n"
     if local_fonts:
@@ -153,7 +158,7 @@ self.addEventListener("fetch", e => {
 (ROOT / "prototype/sw.js").write_text(service_worker(), encoding="utf-8")
 
 assets = ROOT / "android/app/src/main/assets"
-(assets / "index.html").write_text(page("data/", True), encoding="utf-8")
+(assets / "index.html").write_text(page("data/", True, ACCOUNT_API), encoding="utf-8")
 BUNDLED_TRANS = ("safavi", "ansarian", "makarem", "fooladvand")   # the rest are downloaded inside the app
 for sub in ("pages", "trans"):
     dst = assets / "data" / sub
