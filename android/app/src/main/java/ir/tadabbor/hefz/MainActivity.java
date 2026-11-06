@@ -147,6 +147,36 @@ public class MainActivity extends Activity {
 
     /** Methods the page can call through window.Android. */
     class Bridge {
+        /** POST JSON from native code (the assistant): used when the page's own fetch cannot reach the server. Answers through __nativePost(id, status, text). */
+        @JavascriptInterface
+        public void httpPost(final String id, final String url, final String device, final String body) {
+            new Thread(() -> {
+                int status = 0; String text = "";
+                try {
+                    HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                    c.setConnectTimeout(15000);
+                    c.setReadTimeout(40000);
+                    c.setRequestMethod("POST");
+                    c.setDoOutput(true);
+                    c.setRequestProperty("Content-Type", "application/json");
+                    c.setRequestProperty("X-Device", device);
+                    c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ") HefzTadabbori");
+                    try (OutputStream o = c.getOutputStream()) { o.write(body.getBytes(StandardCharsets.UTF_8)); }
+                    status = c.getResponseCode();
+                    InputStream in = status >= 400 ? c.getErrorStream() : c.getInputStream();
+                    if (in != null) {
+                        java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                        byte[] buf = new byte[8192]; int n;
+                        while ((n = in.read(buf)) > 0) bo.write(buf, 0, n);
+                        text = bo.toString("UTF-8");
+                    }
+                } catch (Exception e) {
+                    status = -1; text = e.getClass().getSimpleName() + ": " + String.valueOf(e.getMessage());
+                }
+                js("window.__nativePost && __nativePost(" + JSONObject.quote(id) + "," + status + "," + JSONObject.quote(text) + ")");
+            }).start();
+        }
+
         @JavascriptInterface
         public boolean qcfReady() { return qcfCount() == QCF_FILES.length; }
 
