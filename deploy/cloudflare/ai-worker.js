@@ -75,16 +75,18 @@ const handle = {
 
     // Several models of the main provider are tried in turn: a busy one (503) or one over its quota (429) is skipped
     const base1 = env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai/";
-    const providers = (env.AI_MODEL || "gemini-flash-latest,gemini-flash-lite-latest").split(",").map(m => m.trim()).filter(Boolean)
+    const providers = (env.AI_MODEL || "gemini-flash-lite-latest,gemini-flash-latest").split(",").map(m => m.trim()).filter(Boolean)
       .map(model => ({base: base1, key: env.AI_API_KEY, model}));
     if (env.AI_FALLBACK_API_KEY) providers.push({base: env.AI_FALLBACK_BASE_URL || "https://api.groq.com/openai/v1/", key: env.AI_FALLBACK_API_KEY, model: env.AI_FALLBACK_MODEL || "llama-3.3-70b-versatile"});
     let last = 0; const seen = [];
     for (const [i, p] of providers.entries()) {
-      const req = {model: p.model, messages, temperature: mode === "daily" ? 0.8 : 0.4, max_tokens: mode === "daily" ? 400 : 1200};
-      if (p.base.includes("generativelanguage.googleapis.com")) req.reasoning_effort = "low";   // Gemini: keep "thinking" short
+      const req = {model: p.model, messages, temperature: mode === "daily" ? 0.8 : 0.4, max_tokens: mode === "daily" ? 350 : 800};
+      if (p.base.includes("generativelanguage.googleapis.com") && !/lite/.test(p.model)) req.reasoning_effort = "low";   // Gemini: keep "thinking" short (lite does not think)
       try {
+        // A slow model is abandoned after 9 seconds so the next one can answer
         const r = await fetch(p.base.replace(/\/+$/, "") + "/chat/completions", {
-          method: "POST", headers: {"Content-Type": "application/json", "Authorization": "Bearer " + p.key}, body: JSON.stringify(req)});
+          method: "POST", headers: {"Content-Type": "application/json", "Authorization": "Bearer " + p.key}, body: JSON.stringify(req),
+          signal: AbortSignal.timeout(i < providers.length - 1 ? 9000 : 20000)});
         last = r.status; seen.push(p.model + ":" + r.status);
         if (r.ok) {
           const j = await r.json();
