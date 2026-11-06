@@ -352,7 +352,7 @@ video{width:100%;border-radius:10px;background:#000}
 .wform button{margin-top:8px}
 .wform .ghost-btn{background:transparent;color:inherit;border:1px solid currentColor}
 .werr{background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
-.intro{position:fixed;inset:0;z-index:40;background:var(--lapis);color:var(--on-lapis);display:flex;flex-direction:column;justify-content:center;padding:32px 24px;gap:20px;max-width:480px;margin-inline:auto}
+.intro{position:fixed;inset:0;z-index:40;background:var(--lapis);color:var(--on-lapis);display:flex;flex-direction:column;justify-content:center;padding:32px max(24px,calc(50% - 240px));gap:20px;}
 .intro h1{font-size:26px}
 .intro p{font-size:16px;opacity:.9}
 .intro .dots{display:flex;gap:6px}
@@ -492,7 +492,7 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 .prelist button{border:none;border-radius:99px;background:var(--tonal);padding:6px 12px;font-size:13px;min-height:34px}
 .prelist .pm{color:var(--lapis);font-weight:700}
 /* Sign-in: a full page of its own */
-.intro.gate{max-width:none;margin:0;padding:0;justify-content:stretch;overflow-y:auto;display:grid;grid-template-rows:auto 1fr}
+.intro.gate{padding:0;justify-content:stretch;overflow-y:auto;display:grid;grid-template-rows:auto 1fr}
 .gate .gbrand{padding:calc(40px + env(safe-area-inset-top,0px)) 24px 24px;display:flex;flex-direction:column;gap:12px}
 .gate .glogo{width:64px;height:64px;border-radius:20px;background:color-mix(in srgb,var(--on-lapis) 16%,transparent);display:grid;place-items:center}
 .gate .glogo svg{width:40px;height:40px}
@@ -558,8 +558,7 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
   html.site .navmore .mgroup h3{padding:10px 10px 2px}
   html.site main{grid-column:2;grid-row:1;padding-block:28px 48px;padding-inline:32px;max-width:860px;width:100%;margin-inline:auto}
   html.site .sheet{max-width:860px;inset-block:0;box-shadow:0 0 0 100vmax rgba(0,0,0,.28)}
-  html.site .intro{max-width:560px}
-  html.site .intro.gate{max-width:none}
+  html.site .intro.gate{padding:0}
   html.site #wordbar .wordbar,html.site .wordbar{bottom:0;max-width:860px}
   html.site .dl-pill{bottom:20px}
   html.site .toast{bottom:28px}
