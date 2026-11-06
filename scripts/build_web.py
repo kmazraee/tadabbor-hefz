@@ -14,6 +14,8 @@ import hashlib, json, os, pathlib, re, shutil
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ACCOUNT_API = os.environ.get("ACCOUNT_API") == "1"
+# Address of the AI assistant Worker (deploy/cloudflare/README.md). Empty: the app shows only its local daily summary.
+AI_API = os.environ.get("AI_API", (ROOT / "deploy/cloudflare/AI_API").read_text().strip() if (ROOT / "deploy/cloudflare/AI_API").exists() else "")
 SITE_BASE = os.environ.get("SITE_BASE", "https://kmazraee.github.io/tadabbor-hefz/").rstrip("/") + "/"
 tpl = (ROOT / "scripts/prototype_src.html").read_text(encoding="utf-8")
 meta = (ROOT / "data/meta.base.json").read_text(encoding="utf-8")
@@ -90,7 +92,7 @@ HEAD = ('<!doctype html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="utf
 def page(pagebase, local_fonts, account=False):
     """account=True adds the optional sign-in and sync section (needs PocketBase behind /api/ on the same server)."""
     body = tpl.replace("/*DATA*/", meta).replace("/*DATABASE*/", pagebase).replace("/*SITEBASE*/", SITE_BASE)
-    body = body.replace("/*ACCOUNTAPI*/", "1" if account else "")
+    body = body.replace("/*ACCOUNTAPI*/", "1" if account else "").replace("/*AIAPI*/", AI_API)
     head_part, rest = body.split("</style>", 1)
     head_part += "</style>\n"
     if local_fonts:

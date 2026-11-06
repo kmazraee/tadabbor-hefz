@@ -3583,9 +3583,11 @@ function paintNavMore() {
 document.querySelector(".tabs [data-menu]").addEventListener("click", openMenu);
 
 // ---------- AI assistant: daily message at the top of home + chat ----------
-// The model is called only through this app's own server (/api/hefz/ai, PocketBase hook in deploy/pocketbase/pb_hooks);
-// its API key never reaches the app. Without a server or sign-in, the daily box still works from a local summary.
-const AI_ON = () => ACCT_ON && !!acct;
+// The model is called only through a small Cloudflare Worker (deploy/cloudflare/ai-worker.js) whose address is set at
+// build time (AI_API); its API key never reaches the app. Without it, the daily box still works from a local summary.
+const AI_URL = "/*AIAPI*/".startsWith("http") ? "/*AIAPI*/" : "";
+const AI_ON = () => !!AI_URL;
+const aiDevice = () => { let d = load("tadabbor-device", ""); if (!d) { d = Math.random().toString(36).slice(2) + Date.now().toString(36); store("tadabbor-device", d); } return d; };
 const ai = {busy: false, err: "", off: false, chat: load("tadabbor-ai-chat", []), chatBusy: false, chatErr: ""};
 const dayPart = (h = new Date().getHours()) => h < 4 ? "midnight" : h < 11 ? "morning" : h < 15 ? "noon" : h < 19 ? "afternoon" : "night";
 const PART_FA = {midnight: "نیمه‌شب", morning: "صبح", noon: "ظهر", afternoon: "عصر", night: "شب"};
@@ -3656,14 +3658,14 @@ function aiFmt(t) {
 }
 function aiErrText(e) {
   if (!e.status) return "اتصال به سرور برقرار نشد.";
-  if (e.status === 401 || e.status === 403) return "برای دستیار، دوباره وارد حساب شوید.";
-  if (e.status === 429) return (e.data && e.data.code === "ai_limit") || /limit/.test(e.message) ? "سهم پرسش‌های امروز تمام شد؛ فردا دوباره در خدمتیم." : "دستیار سرش شلوغ است؛ کمی بعد دوباره بپرسید.";
-  if (e.status === 503) return "دستیار هوشمند روی سرور فعال نشده است.";
+  if (e.status === 403) return "این نسخه اجازه استفاده از دستیار را ندارد.";
+  if (e.status === 429) return (e.data && e.data.code === "ai_limit") || /limit/.test(e.message) ? "کمی آهسته‌تر! چند ثانیه بعد دوباره بپرسید." : "دستیار سرش شلوغ است؛ کمی بعد دوباره بپرسید.";
+  if (e.status === 503) return "دستیار هوشمند هنوز راه‌اندازی نشده است.";
   return "دستیار فعلاً جواب نداد؛ کمی بعد دوباره امتحان کنید.";
 }
 async function aiCall(body) {
-  const r = await fetch(ACCT_API + "hefz/ai", {method: "POST", cache: "no-store",
-    headers: {"Content-Type": "application/json", Authorization: acct.token}, body: JSON.stringify(body)});
+  const r = await fetch(AI_URL, {method: "POST", cache: "no-store",
+    headers: {"Content-Type": "application/json", "X-Device": aiDevice()}, body: JSON.stringify(body)});
   let j = null; try { j = await r.json(); } catch (e) {}
   if (!r.ok) { const e = new Error((j && (j.code || j.message)) || "HTTP " + r.status); e.status = r.status; e.data = j || {}; throw e; }
   return j;
@@ -3699,7 +3701,7 @@ function openAiChat(q) {
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="دستیار هوشمند">
     <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>دستیار هوشمند</h2>${ai.chat.length ? `<button class="small btn-ghost" id="ai-clear">گفتگوی تازه</button>` : ""}</header>
     <div class="body ai-chat">
-      ${on ? "" : `<p class="small">${ACCT_ON ? "برای گفتگو با دستیار، وارد حساب کاربری شوید." : "دستیار هوشمند در نسخه سایت و برنامه‌ای که به سرور «گنجینه تدبر» وصل است فعال است."}</p>`}
+      ${on ? "" : `<p class="small">دستیار هوشمند در این نسخه هنوز فعال نشده است.</p>`}
       ${ai.chat.length ? "" : `<p class="small muted">هر سؤالی درباره قرآن، سیاق‌ها، روش تدبر و حفظ، یا وضعیت یادگیری‌تان دارید بپرسید. دستیار پیشرفت شما را می‌بیند. حکم شرعی نمی‌دهد و برای احکام شما را به مرجع تقلیدتان ارجاع می‌دهد.</p>
         <div class="ai-sugg">${AI_SUGGEST.map((s, i) => `<button class="small" data-sugg="${i}"${on ? "" : " disabled"}>${s}</button>`).join("")}</div>`}
       <div class="ai-msgs" id="ai-msgs">${msgs}${ai.chatBusy ? `<div class="msg bot muted">در حال نوشتن…</div>` : ""}</div>
