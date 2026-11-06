@@ -624,7 +624,7 @@ function jsonOf(url) {
   }
   return fetch(url).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
 }
-const VERSION = "0.12.0";
+const VERSION = "0.12.1";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
 if (!IS_APP) document.documentElement.classList.add("site");
 // The app downloads content from the configured site; a web copy reads it from the server it is served from
@@ -3596,7 +3596,7 @@ document.querySelector(".tabs [data-menu]").addEventListener("click", openMenu);
 // ---------- AI assistant: daily message at the top of home + chat ----------
 // The model is called only through a small Cloudflare Worker (deploy/cloudflare/ai-worker.js) whose address is set at
 // build time (AI_API); its API key never reaches the app. Without it, the daily box still works from a local summary.
-const AI_URL = "https://tadabbor-ai.kmazraee.workers.dev/".startsWith("http") ? "https://tadabbor-ai.kmazraee.workers.dev/" : "";
+const AI_URL = "https://tadabbor.netlify.app/api/ai".startsWith("http") ? "https://tadabbor.netlify.app/api/ai" : "";
 const AI_ON = () => !!AI_URL;
 const aiDevice = () => { let d = load("tadabbor-device", ""); if (!d) { d = Math.random().toString(36).slice(2) + Date.now().toString(36); store("tadabbor-device", d); } return d; };
 const ai = {busy: false, err: "", off: false, chat: load("tadabbor-ai-chat", []), chatBusy: false, chatErr: ""};
