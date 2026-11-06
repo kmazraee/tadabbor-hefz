@@ -339,7 +339,9 @@ video{width:100%;border-radius:10px;background:#000}
 .startnote{border:2px dashed var(--gold)}
 .wform{display:flex;flex-direction:column;gap:8px}
 .wform label{font-weight:700;font-size:14px}
-.wform input{background:var(--surface);color:var(--ink);border:none;border-radius:12px;padding:12px 14px;font-size:16px}
+.wform input,.wform select{background:var(--surface);color:var(--ink);border:none;border-radius:12px;padding:12px 14px;font-size:16px;font-family:inherit;min-width:0}
+.wform .trio{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px}
+.wform .duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .wform button{margin-top:8px}
 .wform .ghost-btn{background:transparent;color:inherit;border:1px solid currentColor}
 .werr{background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
@@ -494,7 +496,7 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 .gate .gtabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--tonal);border-radius:99px;padding:4px}
 .gate .gtabs button{border:none;border-radius:99px;background:none;color:var(--muted);min-height:42px;font-weight:700;margin:0}
 .gate .gtabs button[aria-selected="true"]{background:var(--surface);color:var(--lapis);box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.gate .wform input{background:var(--surface);border:1px solid var(--line)}
+.gate .wform input,.gate .wform select{background:var(--surface);border:1px solid var(--line)}
 .gate .wform button[type=submit]{background:var(--lapis);color:var(--on-lapis);min-height:52px;font-size:16px}
 .gate .werr{background:var(--rose,#F6D9D6);color:var(--ink)}
 .gate .gnote{font-size:13px;color:var(--muted)}
@@ -4023,7 +4025,7 @@ function openSettings() {
   on("#reset-progress", () => { confirmReset = "progress"; openSettingsKeep(); });
   on("#no", () => { confirmReset = ""; openSettingsKeep(); });
   on("#yes-progress", () => { st = EMPTY(); save(); confirmReset = ""; openSettingsKeep(); toast("پیشرفت پاک شد"); });
-  on("#reset-settings", () => { const keep = {seenIntro: cfg.seenIntro, lastBackup: cfg.lastBackup, name: cfg.name, phone: cfg.phone, defaultsV: 3}; cfg = Object.assign({}, DEFAULTS, keep); saveCfg(); applySettings(); openSettingsKeep(); toast("تنظیمات به حالت پیش‌فرض برگشت"); });
+  on("#reset-settings", () => { const keep = {seenIntro: cfg.seenIntro, lastBackup: cfg.lastBackup, name: cfg.name, family: cfg.family, byear: cfg.byear, bmonth: cfg.bmonth, bday: cfg.bday, gender: cfg.gender, phone: cfg.phone, defaultsV: 3}; cfg = Object.assign({}, DEFAULTS, keep); saveCfg(); applySettings(); openSettingsKeep(); toast("تنظیمات به حالت پیش‌فرض برگشت"); });
   on("[data-guide-open]", () => openGuide(""));
   fitPages(box);
 }
@@ -4156,27 +4158,42 @@ function showLogin(err, email, mode) {
   box.querySelector("#lg-switch").addEventListener("click", e => { e.preventDefault(); showLogin("", val(), up ? "in" : "up"); });
   setTimeout(() => { const i = box.querySelector(val() ? "#lg-pass" : "#lg-email"); if (i) i.focus(); }, 50);
 }
-function showWelcome(err) {
-  const box = document.getElementById("intro");
+const profileDone = () => myName() && (cfg.family || "").trim() && cfg.byear && cfg.bmonth && cfg.bday && (cfg.gender === "m" || cfg.gender === "f") && PHONE_OK(cfg.phone);
+function showWelcome(err, keep) {
+  const box = document.getElementById("intro"), v = keep || cfg;
+  const y0 = jd(today()).y, opt = (val, label, sel) => `<option value="${val}"${String(sel) === String(val) ? " selected" : ""}>${label}</option>`;
+  const years = Array.from({length: y0 - 1299}, (_, i) => y0 - i - 3).filter(y => y >= 1300 && y <= y0 - 3);
   box.innerHTML = `<div class="intro" role="dialog" aria-modal="true" aria-label="خوش آمدید" data-welcome>
     <h1>به حفظ تدبری خوش آمدید</h1>
     <p>برای شروع، خودتان را معرفی کنید تا برنامه با نام خودتان همراهتان باشد.</p>
     <form id="wl" class="wform" novalidate>
-      <label for="wl-name">نام شما</label><input id="wl-name" type="text" autocomplete="given-name" value="${esc(cfg.name)}" placeholder="مثلاً کمیل" required>
-      <label for="wl-phone">شماره همراه</label><input id="wl-phone" type="tel" inputmode="numeric" dir="ltr" autocomplete="tel" value="${esc(cfg.phone)}" placeholder="09xxxxxxxxx" required>
+      <div class="duo"><div><label for="wl-name">نام</label><input id="wl-name" type="text" autocomplete="given-name" value="${esc(v.name)}" placeholder="مثلاً کمیل" required></div>
+      <div><label for="wl-family">نام خانوادگی</label><input id="wl-family" type="text" autocomplete="family-name" value="${esc(v.family)}" required></div></div>
+      <label id="wl-bl">تاریخ تولد (شمسی)</label>
+      <div class="trio" role="group" aria-labelledby="wl-bl">
+        <select id="wl-by" aria-label="سال تولد" autocomplete="bday-year"><option value="">سال</option>${years.map(y => opt(y, FA(y), v.byear)).join("")}</select>
+        <select id="wl-bm" aria-label="ماه تولد" autocomplete="bday-month"><option value="">ماه</option>${JM.map((n, i) => opt(i + 1, n, v.bmonth)).join("")}</select>
+        <select id="wl-bd" aria-label="روز تولد" autocomplete="bday-day"><option value="">روز</option>${Array.from({length: 31}, (_, i) => opt(i + 1, FA(i + 1), v.bday)).join("")}</select></div>
+      <label for="wl-gender">جنسیت</label>
+      <select id="wl-gender"><option value="">انتخاب کنید</option>${opt("m", "مرد", v.gender)}${opt("f", "زن", v.gender)}</select>
+      <label for="wl-phone">شماره همراه</label><input id="wl-phone" type="tel" inputmode="numeric" dir="ltr" autocomplete="tel" value="${esc(v.phone)}" placeholder="09xxxxxxxxx" required>
       ${err ? `<p class="werr" role="alert">${err}</p>` : ""}
       <button type="submit">ادامه</button>
-      <p class="small" style="opacity:.85">این اطلاعات فقط روی همین گوشی ذخیره می‌شود و برای کسی فرستاده نمی‌شود. بعداً از تنظیمات قابل تغییر است.</p>
+      <p class="small" style="opacity:.85">${ACCT_ON ? "این مشخصات با حساب شما نگه داشته می‌شود تا در همه دستگاه‌ها یکی باشد، جز شماره همراه که فقط روی همین دستگاه می‌ماند." : "این اطلاعات فقط روی همین گوشی ذخیره می‌شود و برای کسی فرستاده نمی‌شود."} بعداً از تنظیمات قابل تغییر است.</p>
     </form></div>`;
-  box.querySelector("#wl").addEventListener("submit", e => { e.preventDefault();
-    const name = box.querySelector("#wl-name").value.trim(), phone = normPhone(box.querySelector("#wl-phone").value);
-    cfg.name = name; cfg.phone = phone;
-    if (name.length < 2) return showWelcome("نام خود را بنویسید.");
-    if (!PHONE_OK(phone)) return showWelcome("شماره همراه را درست بنویسید؛ ۱۱ رقم که با ۰۹ شروع شود.");
-    saveCfg(); box.innerHTML = ""; render();
-    if (!cfg.seenIntro) showIntro(); else toast("خوش آمدید " + name);
+  const q = id => box.querySelector(id);
+  q("#wl").addEventListener("submit", e => { e.preventDefault();
+    const d = {name: q("#wl-name").value.trim(), family: q("#wl-family").value.trim(), byear: +q("#wl-by").value || "", bmonth: +q("#wl-bm").value || "", bday: +q("#wl-bd").value || "", gender: q("#wl-gender").value, phone: normPhone(q("#wl-phone").value)};
+    const bad = d.name.length < 2 ? ["نام خود را بنویسید.", "#wl-name"] : d.family.length < 2 ? ["نام خانوادگی خود را بنویسید.", "#wl-family"]
+      : !d.byear || !d.bmonth || !d.bday ? ["سال، ماه و روز تولد را انتخاب کنید.", "#wl-by"]
+      : d.bday > (d.bmonth <= 6 ? 31 : 30) ? ["این روز در ماهِ انتخاب‌شده وجود ندارد.", "#wl-bd"]
+      : !d.gender ? ["جنسیت را انتخاب کنید.", "#wl-gender"]
+      : !PHONE_OK(d.phone) ? ["شماره همراه را درست بنویسید؛ ۱۱ رقم که با ۰۹ شروع شود.", "#wl-phone"] : null;
+    if (bad) { showWelcome(bad[0], d); setTimeout(() => { const i = box.querySelector(bad[1]); if (i) i.focus(); }, 60); return; }
+    Object.assign(cfg, d); saveCfg(); box.innerHTML = ""; render();
+    if (!cfg.seenIntro) showIntro(); else toast("خوش آمدید " + d.name);
   });
-  setTimeout(() => { const i = box.querySelector(err && err.includes("شماره") ? "#wl-phone" : "#wl-name"); if (i) i.focus(); }, 50);
+  setTimeout(() => { if (!err) { const i = q("#wl-name"); if (i) i.focus(); } }, 50);
 }
 
 // ---------- first-run intro ----------
@@ -4215,7 +4232,7 @@ if (window.__oldWebView) throw new Error("old webview");
 applySettings();
 render();
 setTimeout(autoBackupDaily, 3000);
-const startFlow = () => { if (!myName() || !PHONE_OK(cfg.phone)) showWelcome(); else if (!cfg.seenIntro) showIntro(); };
+const startFlow = () => { if (!profileDone()) showWelcome(); else if (!cfg.seenIntro) showIntro(); };
 if (ACCT_ON && !acct) showLogin(); else startFlow();
 if (IS_APP && !qcfLocal() && !cfg.qcfAsked && cfg.qfont === "qcf") qcfStart();
 if (IS_APP && !cfg.transAsked) { cfg.transAsked = true; saveCfg(); setTimeout(downloadAllTrans, 1500); }
