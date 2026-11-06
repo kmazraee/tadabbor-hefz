@@ -1584,7 +1584,7 @@ function openWordbar(vk, wi) {
     ${trans(sn, ay) ? `<p class="tr" style="font-size:14px">${esc(trans(sn, ay))}</p>` : ""}
     ${errOf(vk) ? `<span class="small" style="color:var(--st-due)">${FA(errOf(vk).n)} بار اشتباه · ${errOpen(vk) ? "نیاز به تثبیت" : "تثبیت‌شده"}</span>` : ""}
     <div class="row"><button id="wb-from" class="small btn-main">▶ پخش از این آیه</button><button id="wb-play" class="small">فقط این آیه</button><button id="wb-fav" class="small" aria-pressed="${isFav(vk)}">${isFav(vk) ? "★ علاقه‌مندی" : "☆ علاقه‌مندی"}</button><button id="wb-share" class="small">اشتراک</button><button class="small" data-tafsir="${vk}">📖 تفسیر</button>${similarOf(vk).length ? `<button class="small" data-similar="${vk}">≈ ${FA(similarOf(vk).length)} آیه مشابه</button>` : ""}</div>
-    <div class="row">${errOpen(vk) ? `<button id="wb-drill" class="small">تمرین تثبیت</button>` : ""}<button id="wb-open" class="small">باز کردن سیاق</button><button id="wb-les" class="small">درس‌های سوره</button></div></div></div>`;
+    <div class="row">${errOpen(vk) ? `<button id="wb-drill" class="small">تمرین تثبیت</button>` : ""}<button id="wb-open" class="small">باز کردن سیاق</button>${hasMedia(sn) ? `<button id="wb-les" class="small">درس‌های سوره</button>` : ""}</div></div></div>`;
   box.querySelector("#wb-x").addEventListener("click", closeWordbar);
   box.querySelector("#wb-play").addEventListener("click", () => play(sn, ay));
   const wsay = box.querySelector("#wb-say"); if (wsay) wsay.addEventListener("click", () => playWord(wm[2]));
@@ -1594,7 +1594,7 @@ function openWordbar(vk, wi) {
   box.querySelector("#wb-share").addEventListener("click", () => shareVerse(sn, ay));
   const wd = box.querySelector("#wb-drill"); if (wd) wd.addEventListener("click", () => { closeWordbar(); openDrill([vk], 0); });
   box.querySelector("#wb-open").addEventListener("click", () => { closeWordbar(); startSession(k, status(k) === "solid" || status(k) === "due" ? "review" : "learn"); });
-  box.querySelector("#wb-les").addEventListener("click", () => { closeWordbar(); openLessons(sn); });
+  { const wl = box.querySelector("#wb-les"); if (wl) wl.addEventListener("click", () => { closeWordbar(); openLessons(sn); }); }
 }
 function closeWordbar() { selVk = null; document.getElementById("wordbar").innerHTML = ""; document.querySelectorAll(".sel").forEach(e => e.classList.remove("sel")); }
 
@@ -1850,7 +1850,7 @@ const PATH = [
   {id: "l5", t: "سطح ۵", short: "سطح ۵", d: "سوره‌های نجم تا حدید.", cat: "سطح پنج", surahs: span(53, 57)},
   {id: "l6", t: "سطح ۶", short: "سطح ۶", d: "سوره‌های محمد تا طور.", cat: "سطح شش", surahs: span(47, 52)},
   {id: "skill", t: "دوره‌های مهارتی", d: "تمرین مهارت‌های تدبر در سه ترم؛ هم‌زمان با سطح‌ها، پس از سطح ۱.", cat: "مهارتی", surahs: [], req: "l1"},
-  {id: "long", t: "دوره‌های سوره‌های بلند", d: "تدبر در بقره، آل عمران، احزاب و زمر؛ پس از سطح‌های شش‌گانه.", cat: "دوره تدبر در سوره", surahs: [2, 3, 33, 39], req: "l6"},
+  {id: "long", t: "دوره‌های سوره‌های بلند", d: "تدبر در بقره، آل عمران، احزاب و زمر؛ پس از سطح‌های شش‌گانه.", surahs: [2, 3, 33, 39], req: "l6"},
   {id: "topic", t: "دوره‌های موضوعی", d: "موضوع‌هایی مثل فرهنگ نماز، با تکیه بر آیات؛ پس از سطح‌ها.", cat: "موضوعی", surahs: [], req: "l6"}
 ];
 const JOURNEY = PATH.filter(L => !L.req);
@@ -1860,6 +1860,10 @@ const passed = id => !!(st.passed || {})[id];
 const blocker = L => { const i = JOURNEY.indexOf(L); return i > 0 ? JOURNEY[i - 1] : i === 0 ? null : lvl(L.req); };
 const unlocked = L => cfg.freePath || !blocker(L) || passed(blocker(L).id);
 const levelOfSurah = sn => PATH.find(L => L.surahs.includes(sn));
+// Lesson video and audio are offered only for the surahs of levels 1 to 6
+const hasMedia = sn => { const L = levelOfSurah(sn); return !!L && /^l[1-6]$/.test(L.id); };
+// Steps whose lessons come from the site
+const levelHasLessons = L => !!(L.cat || L.catIds);
 // New tadabbur may start only in surahs of opened levels; after level 6 the whole Quran opens
 const surahOpen = sn => { if (cfg.freePath || passed("l6")) return true; const L = levelOfSurah(sn); return !!L && unlocked(L); };
 function surahProgress(sn) {
@@ -1870,6 +1874,7 @@ function surahProgress(sn) {
 }
 // Lessons of a step: passing needs one whole course of it (levels were taught in several years, each a full course)
 function lessonState(L) {
+  if (!levelHasLessons(L)) return {known: true, total: 0, watched: 0, best: 1, course: null, done: true};
   const les = load(lvKey(L.id), null);
   if (!les) return {known: false, total: 0, watched: 0, best: 0, course: null, done: false};
   const w = st.watched || {}, by = {};
@@ -2003,7 +2008,7 @@ function openLevel(id, state) {
           <div class="row small">${x.vid ? `<a href="https://www.aparat.com/v/${x.vid}" target="_blank" rel="noopener">آپارات</a>` : ""}<a href="${esc(x.link)}" target="_blank" rel="noopener">صفحه درس</a></div></div>`).join("")}</div></details>`; }).join("")
       : `<div class="card"><p class="small">برای این بخش درسی در سایت پیدا نشد.</p><a href="${SITE}/تدریسها/دورههای-آموزشی/" target="_blank" rel="noopener">فهرست دوره‌ها در سایت</a></div>`;
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="${L.t}">
-    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>${L.req ? "" : `قدم ${stepNo(L)}: `}${L.t}</h2><button class="icon-btn btn-ghost" id="reload" aria-label="به‌روزرسانی درس‌ها">⟳</button></header>
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>${L.req ? "" : `قدم ${stepNo(L)}: `}${L.t}</h2>${levelHasLessons(L) ? `<button class="icon-btn btn-ghost" id="reload" aria-label="به‌روزرسانی درس‌ها">⟳</button>` : ""}</header>
     <div class="body">
       <p class="small">${L.d}</p>
       ${passCard(L, pr)}
@@ -2011,9 +2016,9 @@ function openLevel(id, state) {
       ${L.surahs.length ? `<div class="card"><div class="small">تدبر سوره‌ها ${pct(pr.tad)}</div>${miniBar(pr.tad, "var(--lapis)")}<div class="small">حفظ سیاق‌ها ${pct(pr.mem)}</div>${miniBar(pr.mem)}</div>
       <h3>سوره‌های این سطح</h3><section class="card" style="gap:0;padding-block:4px">${L.surahs.map(sn => { const sp = surahProgress(sn);
         return `<div class="surah-row" style="grid-template-columns:34px 1fr auto"><span class="idx num">${FA(sn)}</span><span style="display:flex;flex-direction:column;gap:4px;min-width:0"><span class="nm"><span>${S[sn].name}${sp.tad >= 1 ? ` <span class="ok small">✓ تدبر</span>` : ""}</span><span class="small muted">تدبر ${pct(sp.tad)} · حفظ ${pct(sp.mem)}</span></span>${strip(S[sn])}</span>
-          <span class="row" style="gap:4px;flex-wrap:nowrap"><button class="small" data-surah="${sn}">باز کن</button><button class="small" data-sles="${sn}" aria-label="درس‌های سوره ${S[sn].name}">🎬</button></span></div>`; }).join("")}</section>` : ""}
-      <h3>${L.id === "intro" ? "جلسه‌های مبانی تدبر" : "درس‌های سایت"}</h3><p class="small muted">از سایت alisaboohi.com. بعد از دیدن یا شنیدن هر جلسه، تیک «دیده شد» را بزنید تا پیشرفت شما ثبت شود.</p>
-      ${lessonsHtml}
+          <span class="row" style="gap:4px;flex-wrap:nowrap"><button class="small" data-surah="${sn}">باز کن</button>${hasMedia(sn) ? `<button class="small" data-sles="${sn}" aria-label="درس‌های سوره ${S[sn].name}">🎬</button>` : ""}</span></div>`; }).join("")}</section>` : ""}
+      ${levelHasLessons(L) ? `<h3>${L.id === "intro" ? "جلسه‌های مبانی تدبر" : "درس‌های سایت"}</h3><p class="small muted">از سایت alisaboohi.com. بعد از دیدن یا شنیدن هر جلسه، تیک «دیده شد» را بزنید تا پیشرفت شما ثبت شود.</p>
+      ${lessonsHtml}` : ""}
     </div></div>`);
   box.querySelectorAll("[data-surah]").forEach(b => b.addEventListener("click", () => openSurah(+b.dataset.surah)));
   box.querySelectorAll("[data-sles]").forEach(b => b.addEventListener("click", () => openLessons(+b.dataset.sles)));
@@ -2030,9 +2035,9 @@ function openLevel(id, state) {
   on("#unpass", () => { delete st.passed[id]; save(); openLevelKeep(id); });
   const br = box.querySelector("#bookread"); if (br) br.addEventListener("change", () => { st.found = st.found || {}; st.found.book = br.checked; save(); openLevelKeep(id); });
   const go = () => { store(lvKey(id), null); openLevel(id, "loading"); fetchLevel(L).then(() => openLevel(id)).catch(() => openLevel(id, "error")); };
-  box.querySelector("#reload").addEventListener("click", go);
+  const rl = box.querySelector("#reload"); if (rl) rl.addEventListener("click", go);
   const rt = box.querySelector("#retry"); if (rt) rt.addEventListener("click", go);
-  if (!items && state !== "error" && state !== "loading") { openLevel(id, "loading"); fetchLevel(L).then(() => openLevel(id)).catch(() => openLevel(id, "error")); }
+  if (levelHasLessons(L) && !items && state !== "error" && state !== "loading") { openLevel(id, "loading"); fetchLevel(L).then(() => openLevel(id)).catch(() => openLevel(id, "error")); }
 }
 // ---------- lessons (alisaboohi.com) ----------
 function openLevelKeep(id) { const b = document.querySelector(".sheet .body"); const y = b ? b.scrollTop : 0; openLevel(id); const nb = document.querySelector(".sheet .body"); if (nb) nb.scrollTop = y; }
@@ -2091,6 +2096,7 @@ function lessonCard(x) {
     <div class="row small">${x.vid ? `<a href="https://www.aparat.com/v/${x.vid}" target="_blank" rel="noopener">فیلم در آپارات</a>` : ""}<a href="${esc(x.link)}" target="_blank" rel="noopener">صفحه درس در سایت</a></div></div>`;
 }
 function openLessons(n, items, state) {
+  if (!hasMedia(n)) return;
   const s = S[n];
   const cached = load("tadabbor-lessons2-" + n, null);
   const stale = cached && (!cached.items.length && Date.now() - cached.at > 6 * 3600e3);
@@ -2145,7 +2151,7 @@ function openSurah(n) {
   ${courseCard(n)}
   ${s.deck ? `<button class="deck-btn" data-deck="${n}"><span class="deck-ic" aria-hidden="true">🗺</span><span><b>نقشه تدبر سوره</b><br><span class="small muted">شناسه، فضای سخن، سیر و جهت هدایتی، دعا</span></span></button>` : ""}
   ${dirBlock(s)}
-  <button id="les">🎬 فیلم و صوت درس‌های تدبر این سوره</button>
+  ${hasMedia(n) ? `<button id="les">🎬 فیلم و صوت درس‌های تدبر این سوره</button>` : ""}
   <div class="row"><button class="small" data-tafsir="${key(n, 1)}">📖 تفسیر سوره</button>${s.siyaqs.length >= 3 ? `<button class="small" data-order="${n}">🧩 تمرین ترتیب سیاق‌ها</button>` : ""}</div>
   ${booksCard(booksForSurah(n), "📚 کتاب‌های تدبر این سوره")}
   ${IS_APP ? (() => { const r = cfg.reciter, h = audioHave(r, s.n), id = audioJobId(r, s.n), rn = reciterName(r);
@@ -2158,7 +2164,7 @@ function openSurah(n) {
     return `${fh}<div class="siyaq-item${nest ? " nested" : ""}" style="--c:${COLORS[stt]}"><span class="stripe"></span><span><b>${s.src === "book" ? qName(q) : esc(title(s, q))}</b>${s.src === "book" && q.title ? `<br><span class="small clamp2">${esc(q.title)}</span>` : ""}<br><span class="small muted">آیات ${FA(q.s)} تا ${FA(q.e)} · ${LABELS[stt]}${it && it.stage < 5 ? " · مرحله " + FA(it.stage + 1) : ""}</span>${n2 && n2.title && q.title ? `<br><span class="mine">برداشت من: ${esc(n2.title)}</span>` : ""}${stt !== "new" || isTad(k) ? `<br>${trackChips(k)}` : ""}${tadDue(k) ? `<br><button class="small" data-tadrev="${k}">مرور تدبر</button>` : ""}</span>
     <button class="${(stt === "new" && surahOpen(n)) || stt === "learn" ? "btn-main" : ""} small" ${stt === "new" && !surahOpen(n) ? `aria-label="قفل"` : ""} data-start="${k}" data-mode="${stt === "new" || stt === "learn" ? "learn" : "review"}">${lbl}</button></div>`; }).join("")}
   </div></div>`);
-  box.querySelector("#les").addEventListener("click", () => openLessons(n));
+  const les = box.querySelector("#les"); if (les) les.addEventListener("click", () => openLessons(n));
   const gc = box.querySelector("#go-cur"); if (gc) gc.addEventListener("click", () => openLevel(currentLevel().id));
   const at = box.querySelector("#au-this"); if (at) at.addEventListener("click", () => downloadAudio(cfg.reciter, n));
   box.querySelector("#pre-mem").addEventListener("change", e => {
@@ -2349,7 +2355,7 @@ function stepUnderstand(nav) {
     ${faslOf(s, q) && faslOf(s, q).t ? `<p class="small"><b>فصل ${FA(faslOf(s, q).n)}:</b> ${esc(faslOf(s, q).t)}</p>` : ""}
     <h3>قدم اول: فهم آیات</h3>
     <p class="small">پیش از تدبر باید بدانید آیات چه می‌گویند. هر آیه را کلمه‌به‌کلمه با معنایش بخوانید، روی کلمه‌ای که نمی‌شناسید بزنید تا تلفظش را بشنوید و اگر خواستید به «لغت‌نامه من» اضافه‌اش کنید. بعد ترجمه کامل آیه را بخوانید و وقتی معنایش را فهمیدید، تیک بزنید.</p>
-    <div class="row"><button id="listen">▶ شنیدن کل سیاق</button><button id="les">🎬 درس استاد درباره این سوره</button></div>
+    <div class="row"><button id="listen">▶ شنیدن کل سیاق</button>${hasMedia(s.n) ? `<button id="les">🎬 درس استاد درباره این سوره</button>` : ""}</div>
     ${!W ? `<p class="small muted">${ses.wbwFail ? "معنای کلمه‌به‌کلمه دریافت نشد؛ برای بار اول به اینترنت نیاز است. فعلاً ترجمه کامل آیات آمده است." : "در حال دریافت معنای کلمه‌به‌کلمه…"}</p>${ses.wbwFail ? `<button class="small" id="w-retry">تلاش دوباره</button>` : ""}` : ""}
     <div class="small muted">فهمیده‌شده: <span class="num">${FA(got)} از ${FA(ays.length)}</span> آیه · ترجمه کامل: ${transName()}</div>${miniBar(got / ays.length, "var(--lapis)")}</div>
     ${ays.map(verse).join("")}
@@ -2357,7 +2363,7 @@ function stepUnderstand(nav) {
     foot: `${cfg.gate ? "" : `<button class="btn-ghost" id="skip">رد شدن از تدبر</button>`}<button class="btn-main" id="next">${got < ays.length ? `فهمیدم (${FA(got)}/${FA(ays.length)})؛ برو به کشف گام‌ها` : "فهمیدم؛ برو به کشف گام‌ها"}</button>`,
     wire: b => {
       b.querySelector("#listen").addEventListener("click", () => playQueue(ays.map(i => [s.n, i])));
-      b.querySelector("#les").addEventListener("click", () => { stopAudio(); const back = () => drawSession(); openLessons(s.n); lastDraw = () => {}; const c = document.querySelector("#sheet [data-close]"); c.replaceWith(c.cloneNode(true)); document.querySelector("#sheet [data-close]").addEventListener("click", back); });
+      b.querySelector("#les") && b.querySelector("#les").addEventListener("click", () => { stopAudio(); const back = () => drawSession(); openLessons(s.n); lastDraw = () => {}; const c = document.querySelector("#sheet [data-close]"); c.replaceWith(c.cloneNode(true)); document.querySelector("#sheet [data-close]").addEventListener("click", back); });
       b.querySelectorAll("[data-uplay]").forEach(x => x.addEventListener("click", () => play(s.n, +x.dataset.uplay, 1)));
       b.querySelectorAll("[data-w]").forEach(x => x.addEventListener("click", () => {
         const [a, i] = x.dataset.w.split(":").map(Number); ses.word = sel && sel[0] === a && sel[1] === i ? null : [a, i];
@@ -2419,9 +2425,9 @@ function stepTeacher(nav) {
   return {
     body: `${nav}
     <div class="card"><h3>قدم دوم: یادگیری تدبر این بخش از استاد</h3>
-      <p class="small">حالا که معنای آیات را می‌دانید، تدبر همین بخش را از درس استاد صبوحی یاد بگیرید: فیلم یا صوت جلسه‌های این سوره را ببینید یا بشنوید، یا بخش مربوط در کتاب را بخوانید. بعد تیک «تدبر این سیاق را یاد گرفتم» را بزنید.</p>
+      <p class="small">حالا که معنای آیات را می‌دانید، تدبر همین بخش را از درس استاد صبوحی یاد بگیرید: ${hasMedia(s.n) ? "فیلم یا صوت جلسه‌های این سوره را ببینید یا بشنوید، یا بخش مربوط در کتاب را بخوانید." : "بخش مربوط در کتاب را بخوانید یا در کلاس استاد یاد بگیرید."} بعد تیک «تدبر این سیاق را یاد گرفتم» را بزنید.</p>
       ${s.deck ? `<button class="deck-btn" id="t-deck"><span class="deck-ic" aria-hidden="true">🗺</span><span><b>نقشه تدبر سوره ${s.name}</b><br><span class="small muted">اسلاید مؤسسه: سیر و جهت هدایتی سوره</span></span></button>` : ""}
-      <div class="row"><button id="t-les" class="btn-main">🎬 فیلم و صوت درس‌های سوره ${s.name}</button><button data-tafsir="${key(s.n, q.s)}">📖 تفسیر این آیات (${esc(tafsirOf(cfg.tafsir)[1].split("،")[0])})</button></div></div>
+      <div class="row">${hasMedia(s.n) ? `<button id="t-les" class="btn-main">🎬 فیلم و صوت درس‌های سوره ${s.name}</button>` : ""}<button data-tafsir="${key(s.n, q.s)}">📖 تفسیر این آیات (${esc(tafsirOf(cfg.tafsir)[1].split("،")[0])})</button></div></div>
     ${q.title ? `<div class="card"><div class="row between"><h3>${s.src === "book" ? "پیام این سیاق از درس استاد" : s.deck ? "جهت و سیر هدایتی (اسلاید مؤسسه)" : "عنوان مرجع (آزمایشی)"}</h3><button class="small" id="t-msg" aria-expanded="${!!ses.tmsg}">${ses.tmsg ? "پنهان کن" : "نشانم بده"}</button></div>
       ${ses.tmsg ? `<div class="meaning"><b>${esc(q.title)}</b>${(q.sum || []).map(x => `<span class="small">${esc(x)}</span>`).join("")}</div>${q.steps.length ? `<ol class="small" style="margin:0;padding-inline-start:20px">${q.steps.map(x => `<li>${esc(x.t)} <span class="muted">(آیات ${FA(x.s)}${x.e > x.s ? " تا " + FA(x.e) : ""})</span></li>`).join("")}</ol>` : ""}${s.source ? `<p class="small muted">از ${esc(s.source)}</p>` : ""}` : `<p class="small muted">بعد از دیدن درس، پیام استاد درباره این سیاق را اینجا ببینید.</p>`}</div>` : ""}
     ${courseCard(s.n)}
@@ -2429,7 +2435,7 @@ function stepTeacher(nav) {
     <div class="card ${n.learned ? "okcard" : ""}"><label class="switch"><span><b>تدبر این سیاق را یاد گرفتم</b><br><span class="small muted">از درس، کتاب یا کلاس استاد</span></span><input type="checkbox" id="t-ok" ${n.learned ? "checked" : ""}></label></div>`,
     foot: `<button id="back">قبلی</button><button class="btn-main" id="next">برو به کشف گام‌ها</button>`,
     wire: b => {
-      b.querySelector("#t-les").addEventListener("click", () => { stopAudio(); const back = () => drawSession(); openLessons(s.n); lastDraw = () => {}; const c = document.querySelector("#sheet [data-close]"); c.replaceWith(c.cloneNode(true)); document.querySelector("#sheet [data-close]").addEventListener("click", back); });
+      b.querySelector("#t-les") && b.querySelector("#t-les").addEventListener("click", () => { stopAudio(); const back = () => drawSession(); openLessons(s.n); lastDraw = () => {}; const c = document.querySelector("#sheet [data-close]"); c.replaceWith(c.cloneNode(true)); document.querySelector("#sheet [data-close]").addEventListener("click", back); });
       const dk = b.querySelector("#t-deck"); if (dk) dk.addEventListener("click", () => { stopAudio(); openDeck(s.n, () => drawSession()); });
       const m = b.querySelector("#t-msg"); if (m) m.addEventListener("click", () => { ses.tmsg = !ses.tmsg; redraw(); });
       b.querySelector("#t-ok").addEventListener("change", e => { n.learned = e.target.checked; save(); redraw(); });
@@ -3467,6 +3473,24 @@ function savedLessons() {
     ((c && c.items) || []).forEach(x => { if (!out.has(x.id) && ((x.mp3 && lessonHave(x, "a")) || (x.vid && lessonHave(x, "v")))) { x.group = label; out.set(x.id, x); } }); } } catch (e) {}
   return [...out.values()];
 }
+// Lessons are kept only for the surahs of levels 1 to 6: drop the saved lists of the other surahs (and of the
+// long-surah courses) and the files downloaded from them, unless a kept list has the same session
+function purgeNoMedia() {
+  try {
+    const drop = [], keep = new Set();
+    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i);
+      const isS = k.startsWith("tadabbor-lessons2-"), isL = k.startsWith("tadabbor-level-");
+      if (!isS && !isL) continue;
+      let c; try { c = JSON.parse(localStorage.getItem(k)); } catch (e) { c = null; }
+      const gone = isS ? !hasMedia(+k.slice(18)) : !!lvl(k.slice(15).replace(/-2$/, "")) && !levelHasLessons(lvl(k.slice(15).replace(/-2$/, "")));
+      if (gone) drop.push([k, (c && c.items) || []]); else ((c && c.items) || []).forEach(x => keep.add(String(x.id)));
+    }
+    drop.forEach(([k, items]) => {
+      if (IS_APP) items.forEach(x => { if (keep.has(String(x.id))) return; ["a", "v"].forEach(kind => { try { if (lessonHave(x, kind)) Android.deletePath(lessonPath(x, kind)); } catch (e) {} }); });
+      localStorage.removeItem(k);
+    });
+  } catch (e) {}
+}
 function openLessonLibrary() {
   lastDraw = openLessonLibrary;
   const items = indexLessons(savedLessons()), groups = [...new Set(items.map(x => x.group))];
@@ -4424,6 +4448,7 @@ window.__back = () => {
 mushafPage = 1;
 if (window.__oldWebView) throw new Error("old webview");
 applySettings();
+purgeNoMedia();
 render();
 setTimeout(autoBackupDaily, 3000);
 const startFlow = () => { if (!profileDone()) showWelcome(); else if (!cfg.seenIntro) showIntro(); };
