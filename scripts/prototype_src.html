@@ -3597,11 +3597,12 @@ function restoreFrom(file) {
 }
 
 // ---------- account and sync (optional) ----------
-// Sign-up and login are handled by PocketBase on the app's own server (/api/); passwords never touch this code
+// Sign-up and login are handled by the account server (PocketBase on the app's own server at /api/, or the Cloudflare Worker in deploy/cloudflare); passwords never touch this code
 // beyond being sent over HTTPS to it. The app works fully without an account; with one, progress and settings
 // are kept in one record per user (rules on the server let a user read and write only their own).
 const sync = {busy: false, msg: "", conflict: null, expired: false, at: 0};
-const ACCT_API = ACCT_ON ? SITE_BASE + "api/" : "";
+const ACCT_URL = "/*ACCOUNTURL*/";     // set when the account server is on another address (Cloudflare Worker); empty = /api/ next to the app
+const ACCT_API = ACCT_ON ? ((ACCT_URL ? ACCT_URL.replace(/\/*$/, "/") : SITE_BASE) + "api/") : "";
 async function pb(path, opts = {}) {
   const r = await fetch(ACCT_API + path, {method: opts.method || "GET", cache: "no-store",
     headers: Object.assign({"Content-Type": "application/json"}, acct && !opts.anon ? {Authorization: acct.token} : {}),

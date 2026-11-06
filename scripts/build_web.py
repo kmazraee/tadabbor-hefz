@@ -6,14 +6,16 @@
 Run from the repo root after scripts/build_quran.py:  python3 scripts/build_web.py
 The app downloads translations and content updates from SITE_BASE (set it to your own server's address
 to move the app off GitHub Pages):  SITE_BASE=https://example.com/ python3 scripts/build_web.py
-Accounts (optional sign-in and sync through PocketBase on that server): add ACCOUNT_API=1 for the Android app;
+Accounts (sign-in and sync): ACCOUNT_URL=https://your-worker.workers.dev/ turns them on in the GitHub Pages copy and the Android app (Cloudflare Worker, deploy/cloudflare);
+or, with PocketBase on your own server, add ACCOUNT_API=1 for the Android app;
 scripts/build_server.py always includes them in the web copy it builds. See deploy/pocketbase/README.md.
 A web copy always reads from the server it is served from. For your own server see scripts/build_server.py.
 """
 import hashlib, json, os, pathlib, re, shutil
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-ACCOUNT_API = os.environ.get("ACCOUNT_API") == "1"
+ACCOUNT_URL = os.environ.get("ACCOUNT_URL", "").strip()          # account server on another address, e.g. the Cloudflare Worker
+ACCOUNT_API = os.environ.get("ACCOUNT_API") == "1" or bool(ACCOUNT_URL)
 SITE_BASE = os.environ.get("SITE_BASE", "https://kmazraee.github.io/tadabbor-hefz/").rstrip("/") + "/"
 tpl = (ROOT / "scripts/prototype_src.html").read_text(encoding="utf-8")
 meta = (ROOT / "data/meta.base.json").read_text(encoding="utf-8")
@@ -77,7 +79,7 @@ _m["v"] = hashlib.sha1(json.dumps(_m["surahs"], ensure_ascii=False, sort_keys=Tr
 meta = json.dumps(_m, ensure_ascii=False, separators=(",", ":"))
 # The update check downloads data/meta.json, so it must be the same full copy the page carries
 (ROOT / "data/meta.json").write_text(meta, encoding="utf-8")
-for ph in ("/*DATA*/", "/*DATABASE*/", "/*SITEBASE*/"):
+for ph in ("/*DATA*/", "/*DATABASE*/", "/*SITEBASE*/", "/*ACCOUNTURL*/"):
     assert ph in tpl, ph
 
 HEAD = ('<!doctype html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="utf-8">\n'
@@ -90,7 +92,7 @@ HEAD = ('<!doctype html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="utf
 def page(pagebase, local_fonts, account=False):
     """account=True adds the optional sign-in and sync section (needs PocketBase behind /api/ on the same server)."""
     body = tpl.replace("/*DATA*/", meta).replace("/*DATABASE*/", pagebase).replace("/*SITEBASE*/", SITE_BASE)
-    body = body.replace("/*ACCOUNTAPI*/", "1" if account else "")
+    body = body.replace("/*ACCOUNTAPI*/", "1" if account else "").replace("/*ACCOUNTURL*/", ACCOUNT_URL if account else "")
     head_part, rest = body.split("</style>", 1)
     head_part += "</style>\n"
     if local_fonts:
@@ -121,7 +123,7 @@ quran = [[" ".join(verses[f"{s['n']}:{a}"]) for a in range(1, s["total"] + 1)] f
 assert sum(map(len, quran)) == 6236 and len(verses) == 6236, "verse text incomplete"
 (ROOT / "data/quran.json").write_text(json.dumps(quran, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
-(ROOT / "prototype/index.html").write_text(page("../data/", False), encoding="utf-8")
+(ROOT / "prototype/index.html").write_text(page("../data/", False, bool(ACCOUNT_URL)), encoding="utf-8")   # the GitHub Pages copy has accounts only when ACCOUNT_URL is set
 
 
 def service_worker():
