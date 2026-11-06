@@ -119,6 +119,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .tabs button{border:none;border-radius:0;background:none;padding:9px 1px;min-height:48px;font-size:10.5px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
 .tabs button[aria-current="page"]{color:var(--lapis);font-weight:700}
 .tabs svg{width:22px;height:22px}
+.navmore{display:none}
 .topbar{display:flex;flex-direction:column;gap:8px}
 .counters{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-start}
 .chip{font-size:12.5px;padding:2px 10px 2px 8px;border-radius:99px;background:var(--surface);border:1px solid var(--line);display:inline-flex;align-items:center;gap:5px}
@@ -460,6 +461,51 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 .tabs button svg{width:56px;height:30px;padding:4px 17px;border-radius:15px;box-sizing:border-box}
 .tabs button[aria-current="page"]{color:var(--ink);font-weight:800}
 .tabs button[aria-current="page"] svg{background:var(--tonal2);color:var(--lapis)}
+.tabs{grid-template-columns:repeat(7,minmax(0,1fr))}
+.tabs>button svg{width:min(56px,100%);padding-inline:min(17px,20%)}
+.navmore .mitem .mi svg{width:20px;height:20px;padding:0;background:none}
+/* Menu: every tool of the app in one list, grouped (phone: the «منو» tab; wide site: the side menu) */
+.mgroup{display:flex;flex-direction:column;gap:2px}
+.mgroup h3{font-size:12.5px;color:var(--muted);font-weight:700;padding:10px 6px 4px}
+.mitem{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:8px 10px;border:none;border-radius:14px;background:none;color:var(--ink);font-size:15px;text-align:start}
+.mitem:hover,.mitem:focus-visible{background:var(--lapis-soft)}
+.mitem .mi{width:38px;height:38px;border-radius:12px;background:var(--tonal);color:var(--lapis);display:grid;place-items:center;flex:none}
+.mitem .mi svg{width:21px;height:21px}
+.mitem .ml{flex:1;min-width:0}
+.mitem .ml small{display:block;color:var(--muted);font-size:12px;font-weight:400}
+.mitem .mb{font-size:11.5px;background:var(--lapis);color:var(--on-lapis);border-radius:99px;padding:0 7px;min-width:20px;text-align:center}
+.mitem[aria-current="page"]{background:var(--lapis-soft);font-weight:700}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 16px}
+/* Home sections that stay open (learning path, surahs learned before) */
+.fixsec{display:flex;flex-direction:column;gap:10px}
+.fixsec>.row h2{font-size:17px}
+.prelist{display:flex;flex-wrap:wrap;gap:6px}
+.prelist button{border:none;border-radius:99px;background:var(--tonal);padding:6px 12px;font-size:13px;min-height:34px}
+.prelist .pm{color:var(--lapis);font-weight:700}
+/* Sign-in: a full page of its own */
+.intro.gate{max-width:none;margin:0;padding:0;justify-content:stretch;overflow-y:auto;display:grid;grid-template-rows:auto 1fr}
+.gate .gbrand{padding:calc(40px + env(safe-area-inset-top,0px)) 24px 24px;display:flex;flex-direction:column;gap:12px}
+.gate .glogo{width:64px;height:64px;border-radius:20px;background:color-mix(in srgb,var(--on-lapis) 16%,transparent);display:grid;place-items:center}
+.gate .glogo svg{width:40px;height:40px}
+.gate .gfeat{list-style:none;padding:0;margin:4px 0 0;display:flex;flex-direction:column;gap:6px;font-size:14.5px;opacity:.92}
+.gate .gfeat li::before{content:"✓ ";font-weight:800}
+.gate .gform{background:var(--paper);color:var(--ink);border-radius:28px 28px 0 0;padding:26px 24px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.gate .gform h2{font-size:20px}
+.gate .gtabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--tonal);border-radius:99px;padding:4px}
+.gate .gtabs button{border:none;border-radius:99px;background:none;color:var(--muted);min-height:42px;font-weight:700;margin:0}
+.gate .gtabs button[aria-selected="true"]{background:var(--surface);color:var(--lapis);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.gate .wform input{background:var(--surface);border:1px solid var(--line)}
+.gate .wform button[type=submit]{background:var(--lapis);color:var(--on-lapis);min-height:52px;font-size:16px}
+.gate .werr{background:var(--rose,#F6D9D6);color:var(--ink)}
+.gate .gnote{font-size:13px;color:var(--muted)}
+@media (min-width:760px){
+  .intro.gate{grid-template-rows:none;grid-template-columns:minmax(0,1.1fr) minmax(380px,1fr)}
+  .gate .gbrand{justify-content:center;padding:48px clamp(32px,6vw,88px)}
+  .gate .gbrand h1{font-size:34px}
+  .gate .gbrand p{font-size:17px;max-width:520px}
+  .gate .gform{border-radius:0;justify-content:center;padding:48px clamp(32px,5vw,72px)}
+  .gate .gform>*{width:100%;max-width:420px;margin-inline:auto}
+}
 .player{border:none;border-radius:24px}
 .searchbar{border:none;background:var(--tonal);border-radius:28px;min-height:56px;padding-inline:20px;font-size:15px}
 .hello{display:flex;align-items:center;gap:12px}
@@ -494,9 +540,17 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
   html.site .tabs button:hover{background:var(--lapis-soft)}
   html.site .tabs button[aria-current="page"] svg{background:none;color:var(--lapis)}
   html.site .tabs button[aria-current="page"]{background:var(--lapis-soft)}
+  html.site .tabs{overflow-y:auto;padding-bottom:24px}
+  html.site .tabs button[data-menu]{display:none}
+  html.site .tabs>button svg{width:24px;height:24px;padding:0;flex:none}
+  html.site .navmore{display:flex;flex-direction:column;gap:2px;margin-top:6px;border-top:1px solid var(--line);padding-top:4px}
+  html.site .navmore .mitem{min-height:40px;font-size:14px;padding:6px 10px;gap:10px}
+  html.site .navmore .mitem .mi{width:30px;height:30px;border-radius:10px;background:none}
+  html.site .navmore .mgroup h3{padding:10px 10px 2px}
   html.site main{grid-column:2;grid-row:1;padding-block:28px 48px;padding-inline:32px;max-width:860px;width:100%;margin-inline:auto}
   html.site .sheet{max-width:860px;inset-block:0;box-shadow:0 0 0 100vmax rgba(0,0,0,.28)}
   html.site .intro{max-width:560px}
+  html.site .intro.gate{max-width:none}
   html.site #wordbar .wordbar,html.site .wordbar{bottom:0;max-width:860px}
   html.site .dl-pill{bottom:20px}
   html.site .toast{bottom:28px}
@@ -517,6 +571,8 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
     <button data-tab="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>مرور</button>
     <button data-tab="path"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4v-5h4v-5h4V5h4"/><circle cx="20" cy="5" r="1.5" fill="currentColor"/></svg>مسیر</button>
     <button data-tab="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>پیشرفت</button>
+    <button data-menu aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>منو</button>
+    <div class="navmore" id="navmore"></div>
   </nav>
 </div>
 <div id="wordbar"></div>
@@ -1210,11 +1266,11 @@ try { document.fonts.addEventListener("loadingdone", () => fitPages()); } catch 
 
 // ---------- tabs ----------
 let tab = "home";
-document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => { tab = b.dataset.tab; closeWordbar(); render(); window.scrollTo(0, 0); }));
+document.querySelectorAll(".tabs button[data-tab]").forEach(b => b.addEventListener("click", () => { tab = b.dataset.tab; closeWordbar(); render(); window.scrollTo(0, 0); }));
 
 function render() {
   lastDraw = render;
-  document.querySelectorAll(".tabs button").forEach(b => b.dataset.tab === tab ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  document.querySelectorAll(".tabs button[data-tab]").forEach(b => b.dataset.tab === tab ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
   const v = document.getElementById("view"), html = ({home, map, review, mushaf, path, progress})[tab](), same = render.tab === tab, y = window.scrollY;
   if (QUIET && same && render.html === html) return;
   render.tab = tab; render.html = html;
@@ -1240,6 +1296,7 @@ function render() {
   v.querySelectorAll("[data-pday]").forEach(el => el.addEventListener("click", () => { prog.pick = +el.dataset.pday; render(); }));
   wireQcf(v);
   fitPages(v);
+  paintNavMore();
   clearTimeout(render.t); render.t = setTimeout(() => { checkBadges(); updateNative(); }, 1500);
 }
 
@@ -1299,6 +1356,16 @@ function todayCard(all, due, tdDue, weak, fresh) {
   return `<section class="card" aria-label="کارهای امروز"><div class="row between"><h2>امروز</h2>${usePlan ? `<button class="small btn-ghost" data-planmin="0" aria-label="تغییر زمان روزانه">${FA(cfg.dailyMin)} دقیقه ✎</button>` : due.length ? `<button class="btn-ghost small" data-start="${due[0].k}" data-mode="review">شروع مرور</button>` : ""}</div>${chips}${list}
     ${!usePlan && (passed("intro") || cfg.freePath) ? `<details class="more"><summary>برنامه روزانه بر اساس وقت من</summary><div>${planCard()}</div></details>` : ""}</section>`;
 }
+// Surahs the user recorded as memorized or tadabbur'd before using the app: always shown on the home page
+function preCard() {
+  const list = DATA.surahs.map(s => {
+    const m = s.siyaqs.some(q => (st.items[key(s.n, q.n)] || {}).pre), t = s.siyaqs.some(q => (st.notes[key(s.n, q.n)] || {}).pre);
+    return m || t ? {s, m, t} : null; }).filter(Boolean);
+  return `<section class="card fixsec" aria-label="سوره‌هایی که از قبل یاد گرفته‌اید"><div class="row between"><h2>سوره‌هایی که از قبل یاد گرفته‌اید</h2><button class="small btn-ghost" data-goto="map">ثبت سوره ‹</button></div>
+    ${list.length ? `<div class="prelist">${list.map(x => `<button data-open="${x.s.n}">${x.s.name} <span class="small muted">${x.m && x.t ? "حفظ و تدبر" : x.m ? "حفظ" : "تدبر"}</span></button>`).join("")}</div>
+      <span class="small muted num">${FA(list.length)} سوره · مرور این سوره‌ها در برنامه شما هست.</span>`
+    : `<p class="small">سوره‌هایی را که از قبل حفظ یا تدبر کرده‌اید از «نقشه سیاق» یا صفحه هر سوره ثبت کنید تا از همین حالا مرورشان شروع شود. این کار به قدم‌های مسیر ربطی ندارد و همیشه آزاد است.</p><div class="row"><button class="small" data-goto="map">ثبت سوره‌های حفظ‌شده</button></div>`}</section>`;
+}
 function home() {
   const all = siyaqs();
   const due = all.filter(x => status(x.k) === "due");
@@ -1307,7 +1374,6 @@ function home() {
   const solidAyat = all.filter(x => (st.items[x.k] || {}).stage >= 5).reduce((a, x) => a + ayahCount(x.q), 0);
   const totalAyat = DATA.surahs.reduce((a, s) => a + s.total, 0);
   const fresh = !Object.keys(st.items).length && !Object.keys(st.notes).length;
-  const anyPre = Object.values(st.items).some(x => x.pre);
   const backupOld = !cfg.lastBackup || (Date.now() - cfg.lastBackup) > 7 * 864e5;
   const started = all.filter(x => status(x.k) !== "new" || isTad(x.k)).map(x => x.k);
   const trActive = IS_APP && TRANSLATIONS.some(x => jobActive("tr-" + x[0]));
@@ -1327,32 +1393,15 @@ function home() {
   ${resumeCard()}
   ${todayCard(all, due, tdDue, weak, fresh)}
   ${weak.length ? `<section class="card"><div class="row between"><span class="small"><b class="num">${FA(weak.length)}</b> آیه نیازمند تثبیت در دفتر اشتباهات</span><span class="row" style="gap:6px"><button class="small" data-weak>دفتر اشتباهات</button><button class="small btn-main" data-drill>تمرین</button></span></div></section>` : ""}
-  <section aria-label="دسترسی سریع"><h2 class="sec">دسترسی سریع</h2><div class="tiles">
-    ${tile("data-goto=\"mushaf\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/></svg>`, "مصحف")}
-    ${tile("data-goto=\"map\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/></svg>`, "نقشه سیاق")}
-    ${tile("data-goto=\"progress\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>`, "پیشرفت")}
-    ${tile("data-notebook", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 4h14v16H5zM9 9h6M9 13h6"/></svg>`, "دفتر تدبر", nNotes)}
-    ${tile("data-weak", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2-.5-.5-2z"/></svg>`, "دفتر اشتباهات", weak.length)}
-    ${tile("data-vocab", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h6"/></svg>`, "لغت‌نامه", nVocab)}
-    ${tile("data-quiz=\"next\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.01"/></svg>`, "آزمون")}
-    ${tile("data-weekly", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>`, "کارنامه هفته")}
-    ${tile("data-goal", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>`, st.goal ? "هدف من" : "هدف بگذار")}
-    ${tile("data-guide=\"\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8v.01"/></svg>`, "راهنما")}
-    ${tile("data-settings", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>`, "تنظیمات")}
-    ${tile("data-dls", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>`, "دانلودها")}
-    ${tile("data-lib", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10 9l5 2.5-5 2.5zM8 20h8"/></svg>`, "درس‌های آفلاین")}
-    ${tile("data-reciters", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v5H4zM17 14h3v5h-3z"/></svg>`, "ترتیل‌ها")}
-    ${tile("data-search", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>`, "جستجو")}
-    ${tile("data-goto=\"path\"", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20h4v-5h4v-5h4V5h4"/></svg>`, "مسیر یادگیری")}
-  </div></section>
   ${fresh ? "" : `<button class="weekcard" data-goto="progress" aria-label="دیدن پیشرفت روزانه، ماهانه و سالانه"><span class="row between"><b>این هفته</b><span class="small muted">${FA(streakNow())} روز پیوسته · پیشرفت کامل ‹</span></span>
     <span class="wbars" aria-hidden="true">${wvals.map((v, i) => `<span class="${i === 6 ? "now" : ""}"><i style="height:${Math.max(6, v / wmax * 44)}px"></i><small>${WD[(wdays[i] + 5) % 7]}</small></span>`).join("")}</span>
     <span class="small muted num">${FA(wk.a)} آیه · ${FA(wk.t)} سیاق تدبر · ${FA(wk.r + wk.tr)} مرور · ${FA(solidAyat)} از ${FA(totalAyat)} آیه قرآن تثبیت شده</span></button>`}
+  <section class="card fixsec" aria-label="مسیر یادگیری"><div class="row between"><h2>مسیر یادگیری</h2><button class="small btn-ghost" data-goto="path">همه قدم‌ها ‹</button></div>
+    ${passed("intro") ? "" : `<span class="small muted">قدم‌ها به ترتیب باز می‌شوند.</span>`}${stepper()}</section>
+  ${preCard()}
   <h2 class="sec">بیشتر</h2>
-  ${fold("path", "مسیر شما", "مراحل یادگیری", `<div class="row between"><span class="small muted">${passed("intro") ? "" : "قدم‌ها به ترتیب باز می‌شوند."}</span><button class="small btn-ghost" data-goto="path">همه قدم‌ها</button></div>${stepper()}`)}
   ${st.goal ? fold("goal", "هدف: " + goalName(st.goal), "", goalCard()) : ""}
   ${fresh || !started.length ? "" : fold("four", "چهار مرحله یادگیری", `از ${FA(started.length)} سیاق`, trackBars(trackCounts(started)))}
-  ${anyPre ? "" : fold("pre", "سوره‌هایی را از قبل حفظ هستید؟", "", `<p class="small">آن‌ها را از «نقشه سیاق» ثبت کنید تا از همین حالا مرورشان شروع شود. این کار به قدم‌های مسیر ربطی ندارد و همیشه آزاد است.</p><div class="row"><button class="small" data-goto="map">ثبت سوره‌های حفظ‌شده</button></div>`)}
   ${fresh ? "" : fold("grid", "نقشه پیشرفت ۱۱۴ سوره", `${FA(solidAyat)} از ${FA(totalAyat)} آیه`, `<div class="bar"><i style="width:${(solidAyat / totalAyat * 100).toFixed(1)}%"></i></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px">
       ${DATA.surahs.map(s => `<button data-open="${s.n}" style="padding:6px;display:flex;flex-direction:column;gap:4px;align-items:stretch;font-size:12px">${s.name}${strip(s)}</button>`).join("")}
@@ -3472,6 +3521,61 @@ document.addEventListener("click", e => {
   for (const attr in ACT) { const el = e.target.closest(`[${attr}]`); if (el) { e.preventDefault(); ACT[attr](el.getAttribute(attr)); return; } }
 });
 
+// ---------- menu: every tool of the app, grouped. Phone: the «منو» tab opens it; wide site: it sits in the side menu ----------
+const MI = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">${d}</svg>`;
+const goTab = t => { document.getElementById("sheet").innerHTML = ""; tab = t; closeWordbar(); render(); window.scrollTo(0, 0); };
+function menuGroups() {
+  const weak = weakOpen().length, notes = notebookEntries().length, vocab = Object.keys(st.vocab || {}).length;
+  const due = siyaqs().filter(x => status(x.k) === "due").length;
+  return [
+    {t: "یادگیری", tabs: true, items: [
+      {id: "home", l: "امروز", d: "کارهای امروز و قدم بعدی", ic: MI(`<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>`), go: () => goTab("home")},
+      {id: "path", l: "مسیر یادگیری", d: "مبانی تدبر و سطح ۱ تا ۶", ic: MI(`<path d="M4 20h4v-5h4v-5h4V5h4"/>`), go: () => goTab("path")},
+      {id: "map", l: "نقشه سیاق", d: "همه سوره‌ها و سیاق‌ها", ic: MI(`<rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/>`), go: () => goTab("map")},
+      {id: "mushaf", l: "مصحف", d: "خواندن و شنیدن صفحه‌به‌صفحه", ic: MI(`<path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/>`), go: () => goTab("mushaf")},
+      {id: "review", l: "مرور", d: "مرور حفظ و تدبر", ic: MI(`<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/>`), go: () => goTab("review"), b: due},
+      {id: "progress", l: "پیشرفت", d: "روزانه، ماهانه و سالانه", ic: MI(`<path d="M5 20V11M12 20V5M19 20v-7"/>`), go: () => goTab("progress")}]},
+    {t: "دفترها", items: [
+      {l: "دفتر تدبر من", d: "برداشت‌ها و پاسخ‌ها", ic: MI(`<path d="M5 4h14v16H5zM9 9h6M9 13h6"/>`), go: openNotebook, b: notes},
+      {l: "دفتر اشتباهات", d: "آیه‌های نیازمند تثبیت", ic: MI(`<path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2-.5-.5-2z"/>`), go: openWeak, b: weak},
+      {l: "لغت‌نامه من", d: "کلمه‌ها و تمرین کارتی", ic: MI(`<path d="M4 7h16M4 12h10M4 17h6"/>`), go: () => openVocab(), b: vocab}]},
+    {t: "تمرین و برنامه", items: [
+      {l: "آزمون", d: "«آیه بعد چیست؟» و «این آیه کجاست؟»", ic: MI(`<circle cx="12" cy="12" r="8"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.01"/>`), go: () => openQuiz("next")},
+      {l: st.goal ? "هدف من" : "هدف بگذار", d: "هدف حفظ با تاریخ", ic: MI(`<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/>`), go: openGoal},
+      {l: "کارنامه هفته", d: "فعالیت هفت روز اخیر", ic: MI(`<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>`), go: openWeekly},
+      {l: "کلاس و استاد", d: "فرستادن کارنامه، کلاس من", ic: MI(`<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 11a3 3 0 1 0 0-6M21 20a6 6 0 0 0-4-5.6"/>`), go: openClass}]},
+    {t: "درس، ترتیل و کتاب", items: [
+      {l: "درس‌های آفلاین", d: "فیلم و صوت ذخیره‌شده", ic: MI(`<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10 9l5 2.5-5 2.5zM8 20h8"/>`), go: () => openLessonLibrary()},
+      {l: "ترتیل‌ها", d: "قاری‌ها و دانلود ترتیل", ic: MI(`<path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v5H4zM17 14h3v5h-3z"/>`), go: () => openReciters()},
+      {l: "دانلودها", d: "وضعیت ذخیره روی دستگاه", ic: MI(`<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>`), go: () => openDownloads()},
+      {l: "کتاب‌های تدبر", d: "کتاب هر سطح و تدبر سوره‌ها", ic: MI(`<path d="M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z"/>`), go: openBooks},
+      {l: "جستجو", d: "آیه، سوره، سیاق، دفتر تدبر", ic: ICON_SEARCH, go: openSearch}]},
+    {t: "برنامه و حساب", items: [
+      {l: "تنظیمات", d: ACCT_ON && acct ? acct.email : "قلم، رنگ، ترجمه، پشتیبان", ic: ICON_GEAR, go: openSettings},
+      {l: "راهنما", d: "روش کار و پرسش‌های رایج", ic: ICON_HELP, go: () => openGuide("")}]}
+  ];
+}
+const menuItemHtml = (x, gi, ii) => `<button class="mitem" data-mi="${gi}:${ii}"${x.id && x.id === tab ? ` aria-current="page"` : ""}><span class="mi">${x.ic}</span><span class="ml">${x.l}${x.d ? `<small>${esc(x.d)}</small>` : ""}</span>${x.b ? `<b class="mb num">${FA(x.b)}</b>` : ""}</button>`;
+function menuClick(root, groups) {
+  root.querySelectorAll("[data-mi]").forEach(el => el.addEventListener("click", () => { const [g, i] = el.dataset.mi.split(":").map(Number); groups[g].items[i].go(); }));
+}
+function openMenu() {
+  const groups = menuGroups();
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="منو">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>منو</h2></header>
+    <div class="body"><div class="menu-grid">${groups.map((g, gi) => `<div class="mgroup"><h3>${g.t}</h3>${g.items.map((x, ii) => menuItemHtml(x, gi, ii)).join("")}</div>`).join("")}</div></div></div>`);
+  menuClick(box, groups);
+}
+// Side menu of the wide site: the tabs are already there, so only the other groups are added under them
+function paintNavMore() {
+  const el = document.getElementById("navmore"); if (!el) return;
+  const groups = menuGroups();
+  const html = groups.map((g, gi) => g.tabs ? "" : `<div class="mgroup"><h3>${g.t}</h3>${g.items.map((x, ii) => menuItemHtml(x, gi, ii)).join("")}</div>`).join("");
+  if (paintNavMore.html === html) return;
+  paintNavMore.html = html; el.innerHTML = html; menuClick(el, groups);
+}
+document.querySelector(".tabs [data-menu]").addEventListener("click", openMenu);
+
 // ---------- backup (Google Drive via the share sheet) ----------
 const backupName = () => `tadabbor-hefz-backup-${new Date().toISOString().slice(0, 10)}.json`;
 const backupJson = () => JSON.stringify({app: "tadabbor-hefz", v: 1, at: new Date().toISOString(), progress: st, settings: cfg}, null, 1);
@@ -4012,32 +4116,45 @@ const normPhone = v => faNum(String(v || "")).replace(/[\s\-()]/g, "").replace(/
 const PHONE_OK = v => /^09\d{9}$/.test(v);
 // When accounts are available (own-server builds) signing in is required: nothing is shown before it.
 // An account that has signed in once keeps working offline with the saved sign-in.
-function showLogin(err, email) {
-  const box = document.getElementById("intro");
-  box.innerHTML = `<div class="intro" role="dialog" aria-modal="true" aria-label="ورود" data-gate>
-    <h1>ورود به حفظ تدبری</h1>
-    <p>برای استفاده از برنامه وارد حساب خود شوید یا حساب تازه بسازید. پیشرفت شما با همین حساب روی سرور نگه داشته می‌شود و در گوشی و سایت یکی است.</p>
-    <form id="lg" class="wform" novalidate>
-      <label for="lg-email">ایمیل</label><input id="lg-email" type="email" dir="ltr" autocomplete="username" inputmode="email" value="${esc(email || (acct && acct.email) || sync.draft || "")}" required>
-      <label for="lg-pass">رمز عبور (دست‌کم ۸ نویسه)</label><input id="lg-pass" type="password" dir="ltr" autocomplete="current-password" required>
-      ${err ? `<p class="werr" role="alert">${esc(err)}</p>` : ""}
-      <button type="submit" id="lg-in">ورود</button>
-      <button type="button" id="lg-up" class="ghost-btn">ساخت حساب تازه</button>
-      <p class="small" style="opacity:.85">رمز عبور روی سرور به‌صورت رمزگذاری‌شده ذخیره می‌شود. شماره همراه شما فقط روی همین دستگاه می‌ماند.</p>
-    </form></div>`;
-  const go = async create => {
-    const em = box.querySelector("#lg-email").value.trim(), pw = box.querySelector("#lg-pass").value;
-    if (!em || !pw) return showLogin("ایمیل و رمز عبور را بنویسید.", em);
+// A full page of its own (not a popup): the app's name and what an account gives on one side, the form on the other.
+function showLogin(err, email, mode) {
+  const box = document.getElementById("intro"), up = mode === "up";
+  box.innerHTML = `<div class="intro gate" role="dialog" aria-modal="true" aria-label="${up ? "ساخت حساب" : "ورود"}" data-gate>
+    <div class="gbrand">
+      <span class="glogo" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M10 22a14 14 0 0 1 28 0M15 24a9 9 0 0 1 18 0M20 26a4 4 0 0 1 8 0"/><path d="M24 40c-4-3-10-4-16-3V29c6-1 12 0 16 3 4-3 10-4 16-3v8c-6-1-12 0-16 3z"/></svg></span>
+      <h1>حفظ تدبری قرآن</h1>
+      <p>حفظ قرآن با تدبر، به روش «تدبر در قرآن کریم» استاد علی صبوحی طسوجی.</p>
+      <ul class="gfeat"><li>پیشرفت، تدبرها و تنظیمات شما روی حساب‌تان می‌ماند</li><li>در گوشی و سایت یکی است و با عوض کردن دستگاه از دست نمی‌رود</li><li>بعد از یک بار ورود، بدون اینترنت هم کار می‌کند</li></ul>
+    </div>
+    <div class="gform">
+      <h2>${up ? "ساخت حساب تازه" : "ورود به حساب"}</h2>
+      <div class="gtabs" role="tablist" aria-label="ورود یا ساخت حساب"><button type="button" role="tab" id="lg-tin" aria-selected="${!up}">ورود</button><button type="button" role="tab" id="lg-tup" aria-selected="${up}">ساخت حساب</button></div>
+      <form id="lg" class="wform" novalidate>
+        <label for="lg-email">ایمیل</label><input id="lg-email" type="email" dir="ltr" autocomplete="username" inputmode="email" value="${esc(email || (acct && acct.email) || sync.draft || "")}" required>
+        <label for="lg-pass">رمز عبور${up ? " (دست‌کم ۸ نویسه)" : ""}</label><input id="lg-pass" type="password" dir="ltr" autocomplete="${up ? "new-password" : "current-password"}" required>
+        ${err ? `<p class="werr" role="alert">${esc(err)}</p>` : ""}
+        <button type="submit" id="lg-go">${up ? "ساخت حساب و ورود" : "ورود"}</button>
+      </form>
+      <p class="gnote">${up ? "حساب دارید؟" : "حساب ندارید؟"} <a href="#" id="lg-switch">${up ? "وارد شوید" : "یک حساب تازه بسازید"}</a></p>
+      <p class="gnote">برای استفاده از برنامه داشتن حساب لازم است. رمز عبور روی سرور به‌صورت رمزگذاری‌شده ذخیره می‌شود و شماره همراه شما فقط روی همین دستگاه می‌ماند.</p>
+    </div></div>`;
+  const val = () => box.querySelector("#lg-email").value.trim();
+  const go = async () => {
+    const em = val(), pw = box.querySelector("#lg-pass").value;
+    if (!em || !pw) return showLogin("ایمیل و رمز عبور را بنویسید.", em, mode);
+    if (up && pw.length < 8) return showLogin("رمز عبور باید دست‌کم ۸ نویسه باشد.", em, mode);
     sync.draft = em; box.querySelectorAll("button").forEach(b => { b.disabled = true; });
-    try { await acctSignIn(em, pw, create); } catch (e) { return showLogin(acctErr(e), em); }
+    try { await acctSignIn(em, pw, up); } catch (e) { return showLogin(acctErr(e), em, mode); }
     sync.expired = false; sync.msg = "";
     await syncNow();
     if (sync.conflict) await syncResolve("merge");       // this device has data and so does the account: keep both
     box.innerHTML = ""; render(); startFlow();
   };
-  box.querySelector("#lg").addEventListener("submit", e => { e.preventDefault(); go(false); });
-  box.querySelector("#lg-up").addEventListener("click", () => go(true));
-  setTimeout(() => { const i = box.querySelector(email || acct ? "#lg-pass" : "#lg-email"); if (i) i.focus(); }, 50);
+  box.querySelector("#lg").addEventListener("submit", e => { e.preventDefault(); go(); });
+  box.querySelector("#lg-tin").addEventListener("click", () => { if (up) showLogin("", val(), "in"); });
+  box.querySelector("#lg-tup").addEventListener("click", () => { if (!up) showLogin("", val(), "up"); });
+  box.querySelector("#lg-switch").addEventListener("click", e => { e.preventDefault(); showLogin("", val(), up ? "in" : "up"); });
+  setTimeout(() => { const i = box.querySelector(val() ? "#lg-pass" : "#lg-email"); if (i) i.focus(); }, 50);
 }
 function showWelcome(err) {
   const box = document.getElementById("intro");
