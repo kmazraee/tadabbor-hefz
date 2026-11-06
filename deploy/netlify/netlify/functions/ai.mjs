@@ -80,17 +80,18 @@ const handle = {
     if (env.AI_FALLBACK_API_KEY) {
       const fb = {base: env.AI_FALLBACK_BASE_URL || "https://api.groq.com/openai/v1/", key: env.AI_FALLBACK_API_KEY, model: env.AI_FALLBACK_MODEL || "llama-3.3-70b-versatile"};
       // AI_PREFER_FALLBACK=1 puts the fast provider (Groq) first and Gemini behind it
-      if (env.AI_PREFER_FALLBACK === "1") providers.unshift(fb); else providers.push(fb);
+      // Default order: first Gemini model (5 s), then Groq, then the remaining Gemini models
+      if (env.AI_PREFER_FALLBACK === "1") providers.unshift(fb); else providers.splice(1, 0, fb);
     }
     let last = 0; const seen = [];
     for (const [i, p] of providers.entries()) {
       const req = {model: p.model, messages, temperature: mode === "daily" ? 0.8 : 0.4, max_tokens: mode === "daily" ? 350 : 800};
       if (p.base.includes("generativelanguage.googleapis.com") && !/lite/.test(p.model)) req.reasoning_effort = "low";   // Gemini: keep "thinking" short (lite does not think)
       try {
-        // A slow model is abandoned after 9 seconds so the next one can answer
+        // The first provider gets 5 seconds, later ones 9, so a slow model gives way to the next
         const r = await fetch(p.base.replace(/\/+$/, "") + "/chat/completions", {
           method: "POST", headers: {"Content-Type": "application/json", "Authorization": "Bearer " + p.key}, body: JSON.stringify(req),
-          signal: AbortSignal.timeout(i < providers.length - 1 ? 9000 : 20000)});
+          signal: AbortSignal.timeout(i === 0 ? 5000 : i < providers.length - 1 ? 9000 : 20000)});
         last = r.status; seen.push(p.model + ":" + r.status);
         if (r.ok) {
           const j = await r.json();
