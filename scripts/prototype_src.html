@@ -3626,7 +3626,7 @@ function paintNavMore() {
 document.querySelector(".tabs [data-menu]").addEventListener("click", openMenu);
 
 // ---------- AI assistant: daily message at the top of home + chat ----------
-// The model is called only through a small server function (deploy/netlify/netlify/functions/ai.mjs) whose address is set at
+// The model is called only through a small server function (deploy/cloudflare-pages/functions/api/ai.js) whose address is set at
 // build time (AI_API); its API key never reaches the app. Without it, the daily box still works from a local summary.
 const AI_URL = "/*AIAPI*/".startsWith("http") ? "/*AIAPI*/" : "";
 const AI_ON = () => !!AI_URL;
