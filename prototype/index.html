@@ -558,6 +558,19 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
   html.site .card{padding:20px}
   html.site .hero{padding:26px 28px}
 }
+.ai-card{background:linear-gradient(135deg,var(--lapis-soft),var(--gold-soft));border:none;gap:10px}
+.ai-card .ai-h{display:inline-flex;align-items:center;gap:6px}
+.ai-card .ai-dot{color:var(--gold);font-size:18px}
+.ai-card .ai-text{line-height:2;font-size:15px}
+.ai-chat{display:flex;flex-direction:column;gap:10px}
+.ai-sugg{display:flex;flex-wrap:wrap;gap:6px}
+.ai-msgs{display:flex;flex-direction:column;gap:8px}
+.ai-msgs .msg{max-width:88%;padding:10px 14px;border-radius:18px;line-height:1.9;overflow-wrap:anywhere}
+.ai-msgs .msg.me{align-self:flex-start;background:var(--lapis);color:var(--on-lapis);border-end-start-radius:6px}
+.ai-msgs .msg.bot{align-self:flex-end;background:var(--surface);border:1px solid var(--line);border-end-end-radius:6px}
+.ai-input{display:flex;gap:8px;align-items:flex-end;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
+.ai-input textarea{flex:1;min-height:44px;max-height:140px;resize:vertical;border-radius:18px;padding:10px 14px;font:inherit}
+.ai-input .btn-main{min-height:44px}
 </style>
 </head>
 <body>
@@ -1286,6 +1299,7 @@ function render() {
   v.querySelectorAll("[data-search]").forEach(el => el.addEventListener("click", openSearch));
   v.querySelectorAll("[data-books]").forEach(el => el.addEventListener("click", openBooks));
   v.querySelectorAll("[data-weak]").forEach(el => el.addEventListener("click", openWeak));
+  wireAi(v);
   v.querySelectorAll("[data-tadrev]").forEach(el => el.addEventListener("click", () => openTadReview(el.dataset.tadrev)));
   v.querySelectorAll("[data-vocab]").forEach(el => el.addEventListener("click", () => openVocab()));
   v.querySelectorAll("[data-drill]").forEach(el => el.addEventListener("click", () => openDrill(weakOpen().slice(0, 10).map(x => x.vk), 0)));
@@ -1384,6 +1398,7 @@ function home() {
   const wdays = range(t0 - 6, t0), wvals = wdays.map(dayAct), wmax = Math.max(1, ...wvals);
   return `
   ${topBar(`<div class="hello"><span class="av" aria-hidden="true">${esc((myName() || "ح").trim().charAt(0))}</span><div><h1>${myName() ? "سلام " + esc(myName()) : "حفظ تدبری"}</h1><span class="small muted">${wdn} ${FA(tj.d)} ${JM[tj.m - 1]}</span></div></div>`)}
+  ${aiCard()}
   <button class="searchbar" data-search aria-label="جستجو در همه‌جا"><span aria-hidden="true">${ICON_SEARCH}</span><span>جستجو: آیه، سوره، سیاق، دفتر تدبر…</span></button>
   ${upd.app ? `<section class="card">${appUpdHtml()}</section>` : ""}
   ${upd.meta ? `<section class="card"><div class="row between"><span class="small"><b>به‌روزرسانی آماده است:</b> محتوای تازه سیاق‌ها</span><button class="small btn-main" data-settings>مشاهده</button></div></section>` : ""}
@@ -3550,7 +3565,8 @@ function menuGroups() {
       {l: "ترتیل‌ها", d: "قاری‌ها و دانلود ترتیل", ic: MI(`<path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v5H4zM17 14h3v5h-3z"/>`), go: () => openReciters()},
       {l: "دانلودها", d: "وضعیت ذخیره روی دستگاه", ic: MI(`<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>`), go: () => openDownloads()},
       {l: "کتاب‌های تدبر", d: "کتاب هر سطح و تدبر سوره‌ها", ic: MI(`<path d="M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z"/>`), go: openBooks},
-      {l: "جستجو", d: "آیه، سوره، سیاق، دفتر تدبر", ic: ICON_SEARCH, go: openSearch}]},
+      {l: "جستجو", d: "آیه، سوره، سیاق، دفتر تدبر", ic: ICON_SEARCH, go: openSearch},
+      {l: "دستیار هوشمند", d: "پرسش درباره قرآن و یادگیری", ic: MI(`<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/>`), go: () => openAiChat()}]},
     {t: "برنامه و حساب", items: [
       {l: "تنظیمات", d: ACCT_ON && acct ? acct.email : "قلم، رنگ، ترجمه، پشتیبان", ic: ICON_GEAR, go: openSettings},
       {l: "راهنما", d: "روش کار و پرسش‌های رایج", ic: ICON_HELP, go: () => openGuide("")}]}
@@ -3576,6 +3592,157 @@ function paintNavMore() {
   paintNavMore.html = html; el.innerHTML = html; menuClick(el, groups);
 }
 document.querySelector(".tabs [data-menu]").addEventListener("click", openMenu);
+
+// ---------- AI assistant: daily message at the top of home + chat ----------
+// The model is called only through a small Cloudflare Worker (deploy/cloudflare/ai-worker.js) whose address is set at
+// build time (AI_API); its API key never reaches the app. Without it, the daily box still works from a local summary.
+const AI_URL = "https://tadabbor-ai.kmazraee.workers.dev/".startsWith("http") ? "https://tadabbor-ai.kmazraee.workers.dev/" : "";
+const AI_ON = () => !!AI_URL;
+const aiDevice = () => { let d = load("tadabbor-device", ""); if (!d) { d = Math.random().toString(36).slice(2) + Date.now().toString(36); store("tadabbor-device", d); } return d; };
+const ai = {busy: false, err: "", off: false, chat: load("tadabbor-ai-chat", []), chatBusy: false, chatErr: ""};
+const dayPart = (h = new Date().getHours()) => h < 4 ? "midnight" : h < 11 ? "morning" : h < 15 ? "noon" : h < 19 ? "afternoon" : "night";
+const PART_FA = {midnight: "نیمه‌شب", morning: "صبح", noon: "ظهر", afternoon: "عصر", night: "شب"};
+// A compact picture of the user's status: the only thing the model knows about them
+function aiContext() {
+  const all = siyaqs(), t0 = today(), now = new Date();
+  const due = all.filter(x => status(x.k) === "due"), td = all.filter(x => tadDue(x.k)), weak = weakOpen();
+  const c = surahCounts(), L = currentLevel(), pr = levelProgress(L), nx = nextToLearn(), wk = weekSum(t0 - 6, t0), tj = jd(t0);
+  const nm = s => s.name, siyaqName = x => `${x.s.name} ${FA(x.q.s)}-${FA(x.q.e)}: ${title(x.s, x.q)}`;
+  const memS = DATA.surahs.filter(s => surahAll(s, isMem)).map(nm), tadS = DATA.surahs.filter(s => surahAll(s, isTad)).map(nm);
+  const pre = DATA.surahs.filter(s => s.siyaqs.some(q => (st.items[key(s.n, q.n)] || {}).pre || (st.notes[key(s.n, q.n)] || {}).pre)).map(nm);
+  const inProg = all.filter(x => status(x.k) === "learn").slice(0, 8).map(x => siyaqName(x) + " (مرحله " + FA(Math.min((st.items[x.k] || {}).stage || 0, 4) + 1) + " از ۵)");
+  const g = st.goal ? goalStatus(st.goal) : null;
+  const away = st.lastActive === null ? null : t0 - st.lastActive;
+  const tdLog = (st.log || {})[t0] || {};
+  return {
+    name: myName() || null,
+    now: {time: now.toTimeString().slice(0, 5), part: PART_FA[dayPart(now.getHours())],
+      date: ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"][(t0 + 4) % 7] + " " + FA(tj.d) + " " + JM[tj.m - 1] + " " + FA(tj.y)},
+    streakDays: streakNow(), daysSinceLastActivity: away,
+    surahsOf114: {memorized: c.m, tadabbur: c.t}, memorizedSurahs: memS.slice(0, 60), tadabburSurahs: tadS.slice(0, 60), learnedBeforeApp: pre.slice(0, 60),
+    learningPath: {currentStep: L.t, stepNo: JOURNEY.indexOf(L) + 1, steps: JOURNEY.length, progressPct: Math.round((pr.total || 0) * 100),
+      surahsOfStep: L.surahs.map(n => S[n].name), lessonsWatched: pr.ls.watched || 0, lessonsTotal: pr.ls.total || 0, readyToPass: !!pr.ready && !passed(L.id)},
+    next: nx ? {siyaq: siyaqName(nx), surahDirection: nx.s.dir || null, stage: STAGES[Math.min((st.items[nx.k] || {}).stage || 0, 4)]} : null,
+    inProgress: inProg,
+    overdue: {memReviews: due.length, memReviewList: due.slice(0, 6).map(siyaqName), tadReviews: td.length, tadReviewList: td.slice(0, 6).map(siyaqName), openMistakes: weak.length},
+    today: {ayatMemorized: tdLog.a || 0, siyaqTadabbur: tdLog.t || 0, reviews: (tdLog.r || 0) + (tdLog.tr || 0), dailyPlanMinutes: cfg.dailyMin || 0},
+    last7days: {ayat: wk.a, tadabbur: wk.t, reviews: wk.r + wk.tr},
+    goal: g ? {name: goalName(st.goal), doneAyat: g.done, totalAyat: g.total, daysLeft: g.left, ayatPerDayNeeded: g.perDay, behindSchedule: g.ahead < 0 && g.done < g.total} : null,
+    app: {translation: cfg.trans, tafsir: cfg.tafsir, reciter: cfg.reciter}
+  };
+}
+// Offline daily message: used when there is no server/sign-in, while the model answers, or if it fails
+function aiLocalBrief() {
+  const x = aiContext(), part = dayPart(), n = x.name ? " " + x.name : "";
+  const hi = {midnight: `نیمه‌شب بخیر${n}! چراغ شما هنوز روشن است؛ اگر بیدارید، چند آیه مرور از هر سریالی می‌ارزد.`,
+    morning: `صبح بخیر${n}! روز تازه، فرصت تازه.`, noon: `ظهر بخیر${n}! قبل از اینکه ناهار خواب‌آلودتان کند، یک نگاه به کارهای امروز بیندازیم.`,
+    afternoon: `عصر بخیر${n}! چای عصرانه با یک سیاق تدبر بیشتر می‌چسبد.`, night: `شب بخیر${n}! پیش از خواب، بهترین وقت برای مرور است.`}[part];
+  const o = x.overdue, behind = [];
+  if (o.memReviews) behind.push(`${FA(o.memReviews)} مرور حفظ`);
+  if (o.tadReviews) behind.push(`${FA(o.tadReviews)} مرور تدبر`);
+  if (o.openMistakes) behind.push(`${FA(o.openMistakes)} آیه در دفتر اشتباهات`);
+  const lines = [hi];
+  if (x.daysSinceLastActivity > 1) lines.push(`${FA(x.daysSinceLastActivity)} روز است سری نزده‌اید؛ قرآن منتظر است، ما هم!`);
+  else if (x.streakDays > 1) lines.push(`${FA(x.streakDays)} روز پیوسته آمده‌اید؛ ماشاءالله، این زنجیر را پاره نکنید.`);
+  if (x.surahsOf114.memorized || x.surahsOf114.tadabbur) lines.push(`تا امروز ${FA(x.surahsOf114.memorized)} سوره حفظ و ${FA(x.surahsOf114.tadabbur)} سوره تدبر کرده‌اید.`);
+  if (behind.length) lines.push(`عقب‌مانده‌ها: ${behind.join("، ")}.`);
+  if (x.goal && x.goal.behindSchedule) lines.push(`برای هدف «${x.goal.name}» کمی عقبید؛ روزی ${FA(x.goal.ayatPerDayNeeded)} آیه کار را درست می‌کند.`);
+  if (!behind.length && !(x.goal && x.goal.behindSchedule)) lines.push("چیزی عقب نمانده؛ آفرین!");
+  if (x.next) lines.push(`قدم بعد: ${x.next.siyaq}.`);
+  return lines.join(" ");
+}
+const aiBriefKey = () => today() + ":" + dayPart();
+function aiCard() {
+  const c = load("tadabbor-ai-brief", null), fresh = c && c.k === aiBriefKey();
+  const text = fresh ? c.text : aiLocalBrief();
+  if (AI_ON() && !fresh && !ai.busy && !ai.off) setTimeout(() => aiBrief(false), 0);
+  return `<section class="card ai-card" aria-label="پیام امروز دستیار" aria-live="polite">
+    <div class="row between" style="flex-wrap:nowrap"><span class="ai-h"><span class="ai-dot" aria-hidden="true">✦</span><b>پیام امروز</b>${AI_ON() ? `<span class="small muted">· دستیار هوشمند</span>` : ""}</span>
+      ${AI_ON() ? `<button class="icon-btn btn-ghost" data-aibrief aria-label="پیام تازه"${ai.busy ? " disabled" : ""}>↻</button>` : ""}</div>
+    <div class="ai-text" id="ai-brief">${ai.busy && !fresh ? `<span class="small muted">دستیار دارد وضعیت شما را می‌خواند…</span><br>` : ""}${aiFmt(text)}</div>
+    ${ai.err ? `<span class="small muted">${esc(ai.err)}</span>` : ""}
+    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button></div></section>`;
+}
+// Safe formatting of the model's text: escape everything, then allow **bold**, line breaks and "- " lists
+function aiFmt(t) {
+  return esc(t).replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>").split(/\n/).map(l => /^\s*[-•*]\s+/.test(l) ? "• " + l.replace(/^\s*[-•*]\s+/, "") : l).join("<br>");
+}
+function aiErrText(e) {
+  if (!e.status) return "اتصال به سرور برقرار نشد.";
+  if (e.status === 403) return "این نسخه اجازه استفاده از دستیار را ندارد.";
+  if (e.status === 429) return (e.data && e.data.code === "ai_limit") || /limit/.test(e.message) ? "کمی آهسته‌تر! چند ثانیه بعد دوباره بپرسید." : "دستیار سرش شلوغ است؛ کمی بعد دوباره بپرسید.";
+  if (e.status === 503) return "دستیار هوشمند هنوز راه‌اندازی نشده است.";
+  return "دستیار فعلاً جواب نداد؛ کمی بعد دوباره امتحان کنید.";
+}
+async function aiCall(body) {
+  const r = await fetch(AI_URL, {method: "POST", cache: "no-store",
+    headers: {"Content-Type": "application/json", "X-Device": aiDevice()}, body: JSON.stringify(body)});
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) { const e = new Error((j && (j.code || j.message)) || "HTTP " + r.status); e.status = r.status; e.data = j || {}; throw e; }
+  return j;
+}
+async function aiBrief(force) {
+  if (!AI_ON() || ai.busy) return;
+  const k = aiBriefKey(), c = load("tadabbor-ai-brief", null);
+  if (!force && c && c.k === k) return;
+  ai.busy = true; ai.err = ""; paintAiCard();
+  try {
+    const j = await aiCall({mode: "daily", ctx: aiContext()});
+    store("tadabbor-ai-brief", {k, text: j.text, at: Date.now()});
+  } catch (e) {
+    ai.err = aiErrText(e); if (e.status === 503) ai.off = true;
+    store("tadabbor-ai-brief", {k, text: aiLocalBrief(), at: Date.now(), local: true});   // no retry loop within this part of the day
+  } finally { ai.busy = false; paintAiCard(); }
+}
+// Repaint only the box, so a late answer never moves the page
+function paintAiCard() {
+  const old = document.querySelector("#view .ai-card"); if (!old) return;
+  const d = document.createElement("div"); d.innerHTML = aiCard(); const nw = d.firstElementChild;
+  old.replaceWith(nw); wireAi(nw);
+}
+function wireAi(root) {
+  root.querySelectorAll("[data-aichat]").forEach(el => el.addEventListener("click", () => openAiChat()));
+  root.querySelectorAll("[data-aibrief]").forEach(el => el.addEventListener("click", () => aiBrief(true)));
+}
+const AI_SUGGEST = ["امروز از کجا شروع کنم؟", "مرورهای عقب‌افتاده‌ام را چطور جبران کنم؟", "سیاق بعدی من درباره چیست؟", "پیام اصلی سوره‌ای که می‌خوانم چیست؟", "چطور تدبر را با حفظ هماهنگ کنم؟"];
+function openAiChat(q) {
+  lastDraw = () => openAiChat();
+  const on = AI_ON();
+  const msgs = ai.chat.map(m => `<div class="msg ${m.role === "user" ? "me" : "bot"}">${aiFmt(m.content)}</div>`).join("");
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="دستیار هوشمند">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>دستیار هوشمند</h2>${ai.chat.length ? `<button class="small btn-ghost" id="ai-clear">گفتگوی تازه</button>` : ""}</header>
+    <div class="body ai-chat">
+      ${on ? "" : `<p class="small">دستیار هوشمند در این نسخه هنوز فعال نشده است.</p>`}
+      ${ai.chat.length ? "" : `<p class="small muted">هر سؤالی درباره قرآن، سیاق‌ها، روش تدبر و حفظ، یا وضعیت یادگیری‌تان دارید بپرسید. دستیار پیشرفت شما را می‌بیند. حکم شرعی نمی‌دهد و برای احکام شما را به مرجع تقلیدتان ارجاع می‌دهد.</p>
+        <div class="ai-sugg">${AI_SUGGEST.map((s, i) => `<button class="small" data-sugg="${i}"${on ? "" : " disabled"}>${s}</button>`).join("")}</div>`}
+      <div class="ai-msgs" id="ai-msgs">${msgs}${ai.chatBusy ? `<div class="msg bot muted">در حال نوشتن…</div>` : ""}</div>
+      ${ai.chatErr ? `<p class="small" style="color:var(--st-due)">${esc(ai.chatErr)}</p>` : ""}
+      <p class="small muted">پاسخ‌ها را هوش مصنوعی می‌نویسد و ممکن است خطا داشته باشد؛ آیه‌ها را با مصحف برنامه تطبیق دهید.</p>
+    </div>
+    <form class="ai-input" id="ai-form"><textarea id="ai-q" rows="1" maxlength="1500" placeholder="سؤالتان را بنویسید…" ${on ? "" : "disabled"}></textarea><button class="btn-main" type="submit" ${on && !ai.chatBusy ? "" : "disabled"} aria-label="فرستادن">ارسال</button></form></div>`);
+  const body = box.querySelector(".body"), ta = box.querySelector("#ai-q");
+  if (body) body.scrollTop = body.scrollHeight;
+  if (q && ta) ta.value = q;
+  const send = txt => { txt = (txt || "").trim(); if (!txt || !on || ai.chatBusy) return; aiAsk(txt); };
+  box.querySelector("#ai-form").addEventListener("submit", ev => { ev.preventDefault(); send(ta.value); });
+  ta.addEventListener("keydown", ev => { if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); send(ta.value); } });
+  box.querySelectorAll("[data-sugg]").forEach(el => el.addEventListener("click", () => send(AI_SUGGEST[+el.dataset.sugg])));
+  const cl = box.querySelector("#ai-clear"); if (cl) cl.addEventListener("click", () => { ai.chat = []; ai.chatErr = ""; store("tadabbor-ai-chat", []); openAiChat(); });
+  if (on && !ai.chatBusy) setTimeout(() => { try { ta.focus({preventScroll: true}); } catch (e) {} }, 50);
+}
+async function aiAsk(txt) {
+  ai.chat.push({role: "user", content: txt}); ai.chatBusy = true; ai.chatErr = "";
+  store("tadabbor-ai-chat", ai.chat.slice(-30)); openAiChat();
+  try {
+    const j = await aiCall({mode: "chat", ctx: aiContext(), messages: ai.chat.slice(-12)});
+    ai.chat.push({role: "assistant", content: j.text});
+  } catch (e) { ai.chatErr = aiErrText(e); ai.chat.pop(); }
+  finally {
+    ai.chatBusy = false; ai.chat = ai.chat.slice(-30); store("tadabbor-ai-chat", ai.chat);
+    const d = document.getElementById("ai-q"), draft = d ? d.value : "";
+    if (document.querySelector('#sheet .sheet[aria-label="دستیار هوشمند"]')) openAiChat(ai.chatErr && !draft ? txt : draft);
+  }
+}
 
 // ---------- backup (Google Drive via the share sheet) ----------
 const backupName = () => `tadabbor-hefz-backup-${new Date().toISOString().slice(0, 10)}.json`;
