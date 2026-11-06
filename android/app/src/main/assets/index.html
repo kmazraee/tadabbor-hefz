@@ -3604,7 +3604,7 @@ document.querySelector(".tabs [data-menu]").addEventListener("click", openMenu);
 // ---------- AI assistant: daily message at the top of home + chat ----------
 // The model is called only through a small Cloudflare Worker (deploy/cloudflare/ai-worker.js) whose address is set at
 // build time (AI_API); its API key never reaches the app. Without it, the daily box still works from a local summary.
-const AI_URL = "".startsWith("http") ? "" : "";
+const AI_URL = "https://tadabbor-ai.kmazraee.workers.dev/".startsWith("http") ? "https://tadabbor-ai.kmazraee.workers.dev/" : "";
 const AI_ON = () => !!AI_URL;
 const aiDevice = () => { let d = load("tadabbor-device", ""); if (!d) { d = Math.random().toString(36).slice(2) + Date.now().toString(36); store("tadabbor-device", d); } return d; };
 const ai = {busy: false, err: "", off: false, chat: load("tadabbor-ai-chat", []), chatBusy: false, chatErr: ""};
