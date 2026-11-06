@@ -77,7 +77,11 @@ const handle = {
     const base1 = env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai/";
     const providers = (env.AI_MODEL || "gemini-flash-lite-latest,gemini-flash-latest").split(",").map(m => m.trim()).filter(Boolean)
       .map(model => ({base: base1, key: env.AI_API_KEY, model}));
-    if (env.AI_FALLBACK_API_KEY) providers.push({base: env.AI_FALLBACK_BASE_URL || "https://api.groq.com/openai/v1/", key: env.AI_FALLBACK_API_KEY, model: env.AI_FALLBACK_MODEL || "llama-3.3-70b-versatile"});
+    if (env.AI_FALLBACK_API_KEY) {
+      const fb = {base: env.AI_FALLBACK_BASE_URL || "https://api.groq.com/openai/v1/", key: env.AI_FALLBACK_API_KEY, model: env.AI_FALLBACK_MODEL || "llama-3.3-70b-versatile"};
+      // AI_PREFER_FALLBACK=1 puts the fast provider (Groq) first and Gemini behind it
+      if (env.AI_PREFER_FALLBACK === "1") providers.unshift(fb); else providers.push(fb);
+    }
     let last = 0; const seen = [];
     for (const [i, p] of providers.entries()) {
       const req = {model: p.model, messages, temperature: mode === "daily" ? 0.8 : 0.4, max_tokens: mode === "daily" ? 350 : 800};
