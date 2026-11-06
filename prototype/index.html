@@ -624,7 +624,7 @@ function jsonOf(url) {
   }
   return fetch(url).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
 }
-const VERSION = "0.13.0";
+const VERSION = "0.13.1";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
 if (!IS_APP) document.documentElement.classList.add("site");
 // The app downloads content from the configured site; a web copy reads it from the server it is served from
@@ -3710,19 +3710,37 @@ function aiFmt(t) {
   return esc(t).replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>").split(/\n/).map(l => /^\s*[-•*]\s+/.test(l) ? "• " + l.replace(/^\s*[-•*]\s+/, "") : l).join("<br>");
 }
 function aiErrText(e) {
-  if (!e.status) return e && e.name === "TimeoutError" ? "دستیار دیر جواب داد؛ دوباره بپرسید." : "اتصال به سرور برقرار نشد (" + String((e && (e.name + " " + e.message)) || "").slice(0, 60) + ").";
+  if (!e.status) return e && e.name === "TimeoutError" ? "دستیار دیر جواب داد؛ دوباره بپرسید." : "اتصال به سرور برقرار نشد (" + String((e && (e.name + " " + e.message)) || "").slice(0, 100) + ").";
   if (e.status === 403) return "این نسخه اجازه استفاده از دستیار را ندارد.";
   if (e.status === 429) return (e.data && e.data.code === "ai_limit") || /limit/.test(e.message) ? "کمی آهسته‌تر! چند ثانیه بعد دوباره بپرسید." : "دستیار سرش شلوغ است؛ کمی بعد دوباره بپرسید.";
   if (e.status === 503) return "دستیار هوشمند هنوز راه‌اندازی نشده است.";
   return "دستیار فعلاً جواب نداد؛ کمی بعد دوباره امتحان کنید.";
 }
+// In the Android app the request can also go through native code (the page's own fetch from file:// may be refused)
+const nativePending = {};
+window.__nativePost = (id, status, text) => { const f = nativePending[id]; if (f) { delete nativePending[id]; f(status, text); } };
+const nativePost = body => new Promise((ok, fail) => {
+  const id = Math.random().toString(36).slice(2), tm = setTimeout(() => { delete nativePending[id]; const e = new Error("timeout"); e.name = "TimeoutError"; fail(e); }, 50000);
+  nativePending[id] = (status, text) => { clearTimeout(tm); ok({status, text}); };
+  try { Android.httpPost(id, AI_URL, aiDevice(), JSON.stringify(body)); } catch (e) { clearTimeout(tm); delete nativePending[id]; fail(e); }
+});
 async function aiCall(body) {
   const go = () => fetch(AI_URL, {method: "POST", cache: "no-store", signal: AbortSignal.timeout(45000),
     headers: {"Content-Type": "application/json", "X-Device": aiDevice()}, body: JSON.stringify(body)});
-  let r;
+  let r, j = null;
   try { r = await go(); }
-  catch (e) { if (e && e.name === "TimeoutError") throw e; await new Promise(z => setTimeout(z, 1200)); r = await go(); }   // one quiet retry on a network hiccup
-  let j = null; try { j = await r.json(); } catch (e) {}
+  catch (e) {
+    if (e && e.name === "TimeoutError") throw e;
+    if (IS_APP && typeof Android.httpPost === "function") {
+      const n = await nativePost(body);
+      try { j = JSON.parse(n.text); } catch (x) {}
+      if (n.status === -1) { const er = new Error(n.text); er.name = "NetError"; throw er; }
+      if (n.status < 200 || n.status >= 300) { const er = new Error((j && (j.code || j.message)) || "HTTP " + n.status); er.status = n.status; er.data = j || {}; throw er; }
+      return j;
+    }
+    await new Promise(z => setTimeout(z, 1200)); r = await go();   // one quiet retry on a network hiccup
+  }
+  try { j = await r.json(); } catch (e) {}
   if (!r.ok) { const e = new Error((j && (j.code || j.message)) || "HTTP " + r.status); e.status = r.status; e.data = j || {}; throw e; }
   return j;
 }
