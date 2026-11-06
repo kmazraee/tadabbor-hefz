@@ -36,7 +36,7 @@ const cors = (origin) => ({
   "Vary": "Origin",
 });
 
-export default {
+const handle = {
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
     const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
@@ -92,5 +92,17 @@ export default {
       } catch (e) { last = 599; console.log("hefz-ai: provider " + i + " unreachable: " + e); }
     }
     return out(502, {code: last === 429 ? "ai_busy" : "ai_upstream", message: "provider error " + last});
+  },
+};
+
+// Any unexpected error is answered as JSON with its text (never the keys), so it can be read in a browser
+export default {
+  async fetch(request, env, ctx) {
+    try { return await handle.fetch(request, env || {}); }
+    catch (e) {
+      console.log("hefz-ai crash: " + ((e && e.stack) || e));
+      return new Response(JSON.stringify({code: "ai_crash", message: String((e && e.stack) || e).slice(0, 600)}),
+        {status: 500, headers: {"Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store"}});
+    }
   },
 };
