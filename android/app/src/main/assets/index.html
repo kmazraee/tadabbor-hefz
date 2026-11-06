@@ -3695,15 +3695,18 @@ function aiFmt(t) {
   return esc(t).replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>").split(/\n/).map(l => /^\s*[-•*]\s+/.test(l) ? "• " + l.replace(/^\s*[-•*]\s+/, "") : l).join("<br>");
 }
 function aiErrText(e) {
-  if (!e.status) return "اتصال به سرور برقرار نشد.";
+  if (!e.status) return e && e.name === "TimeoutError" ? "دستیار دیر جواب داد؛ دوباره بپرسید." : "اتصال به سرور برقرار نشد (" + String((e && (e.name + " " + e.message)) || "").slice(0, 60) + ").";
   if (e.status === 403) return "این نسخه اجازه استفاده از دستیار را ندارد.";
   if (e.status === 429) return (e.data && e.data.code === "ai_limit") || /limit/.test(e.message) ? "کمی آهسته‌تر! چند ثانیه بعد دوباره بپرسید." : "دستیار سرش شلوغ است؛ کمی بعد دوباره بپرسید.";
   if (e.status === 503) return "دستیار هوشمند هنوز راه‌اندازی نشده است.";
   return "دستیار فعلاً جواب نداد؛ کمی بعد دوباره امتحان کنید.";
 }
 async function aiCall(body) {
-  const r = await fetch(AI_URL, {method: "POST", cache: "no-store",
+  const go = () => fetch(AI_URL, {method: "POST", cache: "no-store", signal: AbortSignal.timeout(45000),
     headers: {"Content-Type": "application/json", "X-Device": aiDevice()}, body: JSON.stringify(body)});
+  let r;
+  try { r = await go(); }
+  catch (e) { if (e && e.name === "TimeoutError") throw e; await new Promise(z => setTimeout(z, 1200)); r = await go(); }   // one quiet retry on a network hiccup
   let j = null; try { j = await r.json(); } catch (e) {}
   if (!r.ok) { const e = new Error((j && (j.code || j.message)) || "HTTP " + r.status); e.status = r.status; e.data = j || {}; throw e; }
   return j;
