@@ -1817,6 +1817,22 @@ const booksForSurah = sn => { const L = levelOfSurah(sn); return BOOKS.filter(b 
 const booksForLevel = id => id === "intro" ? BOOKS.filter(b => b.found) : BOOKS.filter(b => b.level === id || (b.s || []).some(sn => (lvl(id).surahs || []).includes(sn)));
 const bookList = list => list.length ? `<div class="books">${list.map(b => `<a class="book" href="${pubUrl(b)}" target="_blank" rel="noopener"><span class="bk-ic" aria-hidden="true">📚</span><span><b>${esc(b.t)}</b><br><span class="small muted">${b.k} · انتشارات تدبر در کلام وحی</span></span><span class="small bk-buy">خرید</span></a>`).join("")}</div>` : "";
 const booksCard = (list, title) => list.length ? `<div class="card"><h3>${title || "کتاب‌ها"}</h3>${bookList(list)}<p class="small muted">خرید از فروشگاه انتشارات تدبر (tadabborpub.ir)؛ قیمت و موجودی در همان سایت است.</p></div>` : "";
+// ---------- course registration on the institute's course site (tadabboramooz.com) ----------
+const TA = "https://tadabboramooz.com/events/";
+// The site's own course for one surah (levels 1 and 2): Hamd, Muzzammil, Muddaththir, then Qiyamah to Nas in order
+const TA_SURAH = {1: 7099, 73: 7041, 74: 7046};
+for (let sn = 75; sn <= 114; sn++) TA_SURAH[sn] = 7059 + sn - 75;
+// The whole course of a level (or of a long surah) that contains the surah
+const TA_LEVEL = {l1: [7031, "دوره سطح ۱ آموزش تدبر در قرآن کریم"], l3: [6028, "دوره سطح ۳ آموزش تدبر در قرآن کریم"], l4: [8108, "دوره سطح ۴ آموزش تدبر در قرآن کریم"], l5: [7100, "دوره سطح ۵ آموزش تدبر در قرآن کریم"], l6: [8100, "دوره سطح ۶ آموزش تدبر در قرآن کریم"]};
+const TA_LONG = {2: [10131, "آموزش تدبر در سوره بقره"]};
+const courseLinks = sn => {
+  const L = levelOfSurah(sn), out = [];
+  if (TA_SURAH[sn]) out.push([TA_SURAH[sn], `آموزش تدبر در سوره ${S[sn].name}`, "دوره همین سوره"]);
+  const c = TA_LONG[sn] || (L && TA_LEVEL[L.id]);
+  if (c) out.push([c[0], c[1], TA_LONG[sn] ? "دوره همین سوره" : `دوره کامل ${L.t} که این سوره را دارد`]);
+  return out;
+};
+const courseCard = sn => { const list = courseLinks(sn); return list.length ? `<div class="card course-reg"><h3>🎓 ثبت‌نام در دوره تدبر این سوره</h3><div class="books">${list.map(([id, t, k]) => `<a class="book" href="${TA}${id}/" target="_blank" rel="noopener"><span class="bk-ic" aria-hidden="true">🎓</span><span><b>${esc(t)}</b><br><span class="small muted">${k} · تدبرآموز، مؤسسه تدبر در کلام وحی</span></span><span class="small bk-buy">ثبت‌نام</span></a>`).join("")}</div><p class="small muted">ثبت‌نام و پرداخت در سایت تدبرآموز (tadabboramooz.com) انجام می‌شود.</p></div>` : ""; };
 function openBooks() {
   lastDraw = () => {};
   const groups = [...new Set(BOOKS.map(b => b.k))];
@@ -2100,7 +2116,7 @@ function openLessons(n, items, state) {
       : `<div class="card"><p>درسی برای این سوره در سایت پیدا نشد.</p><a href="${surahPageUrl(n)}" target="_blank" rel="noopener">صفحه سوره در سایت</a></div>`;
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="درس‌های سوره ${s.name}">
     <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>درس‌های تدبر سوره ${s.name}</h2><button class="icon-btn btn-ghost" id="reload" aria-label="دریافت دوباره از سایت">⟳</button></header>
-    <div class="body"><p class="small muted">از سایت استاد علی صبوحی طسوجی · <a href="${surahPageUrl(n)}" target="_blank" rel="noopener">صفحه سوره</a></p><div class="row"><button class="small" data-lib>📚 درس‌های ذخیره‌شده (آفلاین)</button></div>${body}</div></div>`);
+    <div class="body">${courseCard(n)}<p class="small muted">از سایت استاد علی صبوحی طسوجی · <a href="${surahPageUrl(n)}" target="_blank" rel="noopener">صفحه سوره</a></p><div class="row"><button class="small" data-lib>📚 درس‌های ذخیره‌شده (آفلاین)</button></div>${body}</div></div>`);
   box.querySelectorAll("[data-vid]").forEach(b => b.addEventListener("click", () => { openVid = +b.dataset.vid; const y = box.querySelector(".body").scrollTop; openLessons(n, items); document.querySelector(".sheet .body").scrollTop = y; }));
   box.querySelectorAll("[data-watch]").forEach(c => c.addEventListener("change", () => { st.watched = st.watched || {}; st.watched[c.dataset.watch] = c.checked; save(); }));
   box.querySelectorAll("details[data-course]").forEach(d => d.addEventListener("toggle", () => { lessonOpen[n + d.dataset.course] = d.open; }));
@@ -2136,6 +2152,7 @@ function openSurah(n) {
   <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>سوره ${s.name}</h2><span class="small muted">${s.type === "meccan" ? "مکی" : "مدنی"} · ${FA(s.total)} آیه</span></header>
   <div class="body">${surahInfo(s)}${strip(s)}${legend()}
   ${surahOpen(n) ? "" : (() => { const L = levelOfSurah(n); return `<div class="card startnote"><b>${ICON_LOCK} تدبر این سوره هنوز باز نیست</b><p class="small">${L ? `این سوره در «${L.t}» است و بعد از گذراندن «${blocker(L).t}» باز می‌شود.` : "این سوره بعد از گذراندن سطح ۶ باز می‌شود."} ثبت «از قبل حفظ هستم» و مرور همیشه آزاد است.</p><div class="row"><button class="small btn-main" id="go-cur">ادامه ${currentLevel().t}</button></div></div>`; })()}
+  ${courseCard(n)}
   ${s.deck ? `<button class="deck-btn" data-deck="${n}"><span class="deck-ic" aria-hidden="true">🗺</span><span><b>نقشه تدبر سوره</b><br><span class="small muted">شناسه، فضای سخن، سیر و جهت هدایتی، دعا</span></span></button>` : ""}
   ${dirBlock(s)}
   <button id="les">🎬 فیلم و صوت درس‌های تدبر این سوره</button>
@@ -2417,6 +2434,7 @@ function stepTeacher(nav) {
       <div class="row"><button id="t-les" class="btn-main">🎬 فیلم و صوت درس‌های سوره ${s.name}</button><button data-tafsir="${key(s.n, q.s)}">📖 تفسیر این آیات (${esc(tafsirOf(cfg.tafsir)[1].split("،")[0])})</button></div></div>
     ${q.title ? `<div class="card"><div class="row between"><h3>${s.src === "book" ? "پیام این سیاق از درس استاد" : s.deck ? "جهت و سیر هدایتی (اسلاید مؤسسه)" : "عنوان مرجع (آزمایشی)"}</h3><button class="small" id="t-msg" aria-expanded="${!!ses.tmsg}">${ses.tmsg ? "پنهان کن" : "نشانم بده"}</button></div>
       ${ses.tmsg ? `<div class="meaning"><b>${esc(q.title)}</b>${(q.sum || []).map(x => `<span class="small">${esc(x)}</span>`).join("")}</div>${q.steps.length ? `<ol class="small" style="margin:0;padding-inline-start:20px">${q.steps.map(x => `<li>${esc(x.t)} <span class="muted">(آیات ${FA(x.s)}${x.e > x.s ? " تا " + FA(x.e) : ""})</span></li>`).join("")}</ol>` : ""}${s.source ? `<p class="small muted">از ${esc(s.source)}</p>` : ""}` : `<p class="small muted">بعد از دیدن درس، پیام استاد درباره این سیاق را اینجا ببینید.</p>`}</div>` : ""}
+    ${courseCard(s.n)}
     ${booksCard(books, "📚 کتاب‌های تدبر این سوره")}
     <div class="card ${n.learned ? "okcard" : ""}"><label class="switch"><span><b>تدبر این سیاق را یاد گرفتم</b><br><span class="small muted">از درس، کتاب یا کلاس استاد</span></span><input type="checkbox" id="t-ok" ${n.learned ? "checked" : ""}></label></div>`,
     foot: `<button id="back">قبلی</button><button class="btn-main" id="next">برو به کشف گام‌ها</button>`,
