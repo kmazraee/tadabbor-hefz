@@ -4,7 +4,7 @@
 // Setup (Persian, step by step): deploy/cloudflare/README.md
 //
 // Settings (Worker → Settings → Variables and Secrets):
-//   AI_API_KEY (secret, required)      AI_MODEL (default gemini-flash-latest)
+//   AI_API_KEY (secret, required)      AI_MODEL (default gemini-flash-latest,gemini-flash-lite-latest; comma separated, tried in order)
 //   AI_BASE_URL (default https://generativelanguage.googleapis.com/v1beta/openai/)
 //   AI_FALLBACK_API_KEY (secret) / AI_FALLBACK_BASE_URL / AI_FALLBACK_MODEL: second provider (e.g. Groq), tried when the first refuses
 //   ALLOWED_ORIGINS (optional, comma separated): web origins allowed besides the Android app; empty = any
@@ -73,25 +73,28 @@ const handle = {
     if (mode === "daily") messages.push({role: "user", content: "پیام امروز من را بنویس."});
     else messages.push(...msgs);
 
-    const providers = [{base: env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai/", key: env.AI_API_KEY, model: env.AI_MODEL || "gemini-flash-latest"}];
+    // Several models of the main provider are tried in turn: a busy one (503) or one over its quota (429) is skipped
+    const base1 = env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai/";
+    const providers = (env.AI_MODEL || "gemini-flash-latest,gemini-flash-lite-latest").split(",").map(m => m.trim()).filter(Boolean)
+      .map(model => ({base: base1, key: env.AI_API_KEY, model}));
     if (env.AI_FALLBACK_API_KEY) providers.push({base: env.AI_FALLBACK_BASE_URL || "https://api.groq.com/openai/v1/", key: env.AI_FALLBACK_API_KEY, model: env.AI_FALLBACK_MODEL || "llama-3.3-70b-versatile"});
-    let last = 0;
+    let last = 0; const seen = [];
     for (const [i, p] of providers.entries()) {
       const req = {model: p.model, messages, temperature: mode === "daily" ? 0.8 : 0.4, max_tokens: mode === "daily" ? 400 : 1200};
       if (p.base.includes("generativelanguage.googleapis.com")) req.reasoning_effort = "low";   // Gemini: keep "thinking" short
       try {
         const r = await fetch(p.base.replace(/\/+$/, "") + "/chat/completions", {
           method: "POST", headers: {"Content-Type": "application/json", "Authorization": "Bearer " + p.key}, body: JSON.stringify(req)});
-        last = r.status;
+        last = r.status; seen.push(p.model + ":" + r.status);
         if (r.ok) {
           const j = await r.json();
           const text = ((((j.choices || [])[0] || {}).message || {}).content || "").trim();
           if (text) return out(200, {text, mode});
           last = 502;
         } else console.log("hefz-ai: provider " + i + " answered " + r.status + ": " + (await r.text()).slice(0, 300));
-      } catch (e) { last = 599; console.log("hefz-ai: provider " + i + " unreachable: " + e); }
+      } catch (e) { last = 599; seen.push(p.model + ":net"); console.log("hefz-ai: provider " + i + " unreachable: " + e); }
     }
-    return out(502, {code: last === 429 ? "ai_busy" : "ai_upstream", message: "provider error " + last});
+    return out(502, {code: last === 429 ? "ai_busy" : "ai_upstream", message: "provider error " + last + " (" + seen.join(", ") + ")"});
   },
 };
 
