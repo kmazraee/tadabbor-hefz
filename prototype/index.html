@@ -339,11 +339,13 @@ video{width:100%;border-radius:10px;background:#000}
 .startnote{border:2px dashed var(--gold)}
 .wform{display:flex;flex-direction:column;gap:8px}
 .wform label{font-weight:700;font-size:14px}
-.wform input{background:var(--surface);color:var(--ink);border:none;border-radius:12px;padding:12px 14px;font-size:16px}
+.wform input,.wform select{background:var(--surface);color:var(--ink);border:none;border-radius:12px;padding:12px 14px;font-size:16px;font-family:inherit;min-width:0}
+.wform .trio{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px}
+.wform .duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .wform button{margin-top:8px}
 .wform .ghost-btn{background:transparent;color:inherit;border:1px solid currentColor}
 .werr{background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
-.intro{position:fixed;inset:0;z-index:40;background:var(--lapis);color:var(--on-lapis);display:flex;flex-direction:column;justify-content:center;padding:32px 24px;gap:20px;max-width:480px;margin-inline:auto}
+.intro{position:fixed;inset:0;z-index:40;background:var(--lapis);color:var(--on-lapis);display:flex;flex-direction:column;justify-content:center;padding:32px max(24px,calc(50% - 240px));gap:20px;}
 .intro h1{font-size:26px}
 .intro p{font-size:16px;opacity:.9}
 .intro .dots{display:flex;gap:6px}
@@ -483,7 +485,7 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 .prelist button{border:none;border-radius:99px;background:var(--tonal);padding:6px 12px;font-size:13px;min-height:34px}
 .prelist .pm{color:var(--lapis);font-weight:700}
 /* Sign-in: a full page of its own */
-.intro.gate{max-width:none;margin:0;padding:0;justify-content:stretch;overflow-y:auto;display:grid;grid-template-rows:auto 1fr}
+.intro.gate{padding:0;justify-content:stretch;overflow-y:auto;display:grid;grid-template-rows:auto 1fr}
 .gate .gbrand{padding:calc(40px + env(safe-area-inset-top,0px)) 24px 24px;display:flex;flex-direction:column;gap:12px}
 .gate .glogo{width:64px;height:64px;border-radius:20px;background:color-mix(in srgb,var(--on-lapis) 16%,transparent);display:grid;place-items:center}
 .gate .glogo svg{width:40px;height:40px}
@@ -494,7 +496,7 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 .gate .gtabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--tonal);border-radius:99px;padding:4px}
 .gate .gtabs button{border:none;border-radius:99px;background:none;color:var(--muted);min-height:42px;font-weight:700;margin:0}
 .gate .gtabs button[aria-selected="true"]{background:var(--surface);color:var(--lapis);box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.gate .wform input{background:var(--surface);border:1px solid var(--line)}
+.gate .wform input,.gate .wform select{background:var(--surface);border:1px solid var(--line)}
 .gate .wform button[type=submit]{background:var(--lapis);color:var(--on-lapis);min-height:52px;font-size:16px}
 .gate .werr{background:var(--rose,#F6D9D6);color:var(--ink)}
 .gate .gnote{font-size:13px;color:var(--muted)}
@@ -549,8 +551,7 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
   html.site .navmore .mgroup h3{padding:10px 10px 2px}
   html.site main{grid-column:2;grid-row:1;padding-block:28px 48px;padding-inline:32px;max-width:860px;width:100%;margin-inline:auto}
   html.site .sheet{max-width:860px;inset-block:0;box-shadow:0 0 0 100vmax rgba(0,0,0,.28)}
-  html.site .intro{max-width:560px}
-  html.site .intro.gate{max-width:none}
+  html.site .intro.gate{padding:0}
   html.site #wordbar .wordbar,html.site .wordbar{bottom:0;max-width:860px}
   html.site .dl-pill{bottom:20px}
   html.site .toast{bottom:28px}
@@ -623,7 +624,7 @@ function jsonOf(url) {
   }
   return fetch(url).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
 }
-const VERSION = "0.10.2";
+const VERSION = "0.11.0";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
 if (!IS_APP) document.documentElement.classList.add("site");
 // The app downloads content from the configured site; a web copy reads it from the server it is served from
@@ -3839,6 +3840,11 @@ async function syncNow(manual) {
     else if (syncMeta.recId !== rec.id) {              // first time this device meets this account
       if (hasData(rec.progress) && hasData(st)) sync.conflict = rec;
       else if (hasData(rec.progress)) { applyRemote(rec); markSynced(rec, startedAt); render(); }
+      else if (rec.settings && rec.settings.name && !myName()) {   // the account has a profile but no progress yet: take the profile, keep this device's progress
+        const keep = Object.fromEntries(DEVICE_KEYS.filter(k => k in cfg).map(k => [k, cfg[k]]));
+        syncApplying = true; try { cfg = Object.assign({}, DEFAULTS, rec.settings, keep); store("tadabbor-settings", cfg); applySettings(); } finally { syncApplying = false; }
+        await pushRemote(rec.id, startedAt); render();
+      }
       else await pushRemote(rec.id, startedAt);
     } else {
       const remoteNew = rec.updated !== syncMeta.remoteVer;
@@ -4190,7 +4196,7 @@ function openSettings() {
   on("#reset-progress", () => { confirmReset = "progress"; openSettingsKeep(); });
   on("#no", () => { confirmReset = ""; openSettingsKeep(); });
   on("#yes-progress", () => { st = EMPTY(); save(); confirmReset = ""; openSettingsKeep(); toast("پیشرفت پاک شد"); });
-  on("#reset-settings", () => { const keep = {seenIntro: cfg.seenIntro, lastBackup: cfg.lastBackup, name: cfg.name, phone: cfg.phone, defaultsV: 3}; cfg = Object.assign({}, DEFAULTS, keep); saveCfg(); applySettings(); openSettingsKeep(); toast("تنظیمات به حالت پیش‌فرض برگشت"); });
+  on("#reset-settings", () => { const keep = {seenIntro: cfg.seenIntro, lastBackup: cfg.lastBackup, name: cfg.name, family: cfg.family, byear: cfg.byear, bmonth: cfg.bmonth, bday: cfg.bday, gender: cfg.gender, phone: cfg.phone, defaultsV: 3}; cfg = Object.assign({}, DEFAULTS, keep); saveCfg(); applySettings(); openSettingsKeep(); toast("تنظیمات به حالت پیش‌فرض برگشت"); });
   on("[data-guide-open]", () => openGuide(""));
   fitPages(box);
 }
@@ -4284,7 +4290,7 @@ const PHONE_OK = v => /^09\d{9}$/.test(v);
 // When accounts are available (own-server builds) signing in is required: nothing is shown before it.
 // An account that has signed in once keeps working offline with the saved sign-in.
 // A full page of its own (not a popup): the app's name and what an account gives on one side, the form on the other.
-function showLogin(err, email, mode) {
+function showLogin(err, email, mode, prof) {
   const box = document.getElementById("intro"), up = mode === "up";
   box.innerHTML = `<div class="intro gate" role="dialog" aria-modal="true" aria-label="${up ? "ساخت حساب" : "ورود"}" data-gate>
     <div class="gbrand">
@@ -4297,6 +4303,7 @@ function showLogin(err, email, mode) {
       <h2>${up ? "ساخت حساب تازه" : "ورود به حساب"}</h2>
       <div class="gtabs" role="tablist" aria-label="ورود یا ساخت حساب"><button type="button" role="tab" id="lg-tin" aria-selected="${!up}">ورود</button><button type="button" role="tab" id="lg-tup" aria-selected="${up}">ساخت حساب</button></div>
       <form id="lg" class="wform" novalidate>
+        ${up ? profileFields(prof || cfg, "lg") : ""}
         <label for="lg-email">ایمیل</label><input id="lg-email" type="email" dir="ltr" autocomplete="username" inputmode="email" value="${esc(email || (acct && acct.email) || sync.draft || "")}" required>
         <label for="lg-pass">رمز عبور${up ? " (دست‌کم ۸ نویسه)" : ""}</label><input id="lg-pass" type="password" dir="ltr" autocomplete="${up ? "new-password" : "current-password"}" required>
         ${err ? `<p class="werr" role="alert">${esc(err)}</p>` : ""}
@@ -4307,11 +4314,12 @@ function showLogin(err, email, mode) {
     </div></div>`;
   const val = () => box.querySelector("#lg-email").value.trim();
   const go = async () => {
-    const em = val(), pw = box.querySelector("#lg-pass").value;
-    if (!em || !pw) return showLogin("ایمیل و رمز عبور را بنویسید.", em, mode);
-    if (up && pw.length < 8) return showLogin("رمز عبور باید دست‌کم ۸ نویسه باشد.", em, mode);
+    const em = val(), pw = box.querySelector("#lg-pass").value, pr = up ? readProfile(box, "lg") : null;
+    if (pr && pr.err) { showLogin(pr.err, em, mode, pr.d); return setTimeout(() => { const i = box.querySelector("#" + pr.id); if (i) i.focus(); }, 60); }
+    if (!em || !pw) return showLogin("ایمیل و رمز عبور را بنویسید.", em, mode, pr && pr.d);
+    if (up && pw.length < 8) return showLogin("رمز عبور باید دست‌کم ۸ نویسه باشد.", em, mode, pr && pr.d);
     sync.draft = em; box.querySelectorAll("button").forEach(b => { b.disabled = true; });
-    try { await acctSignIn(em, pw, up); } catch (e) { return showLogin(acctErr(e), em, mode); }
+    try { await acctSignIn(em, pw, up); if (pr) { Object.assign(cfg, pr.d); saveCfg(); } } catch (e) { return showLogin(acctErr(e), em, mode, pr && pr.d); }
     sync.expired = false; sync.msg = "";
     await syncNow();
     if (sync.conflict) await syncResolve("merge");       // this device has data and so does the account: keep both
@@ -4321,31 +4329,56 @@ function showLogin(err, email, mode) {
   box.querySelector("#lg-tin").addEventListener("click", () => { if (up) showLogin("", val(), "in"); });
   box.querySelector("#lg-tup").addEventListener("click", () => { if (!up) showLogin("", val(), "up"); });
   box.querySelector("#lg-switch").addEventListener("click", e => { e.preventDefault(); showLogin("", val(), up ? "in" : "up"); });
-  setTimeout(() => { const i = box.querySelector(val() ? "#lg-pass" : "#lg-email"); if (i) i.focus(); }, 50);
+  setTimeout(() => { const i = box.querySelector(up && !(prof && prof.name) ? "#lg-name" : val() ? "#lg-pass" : "#lg-email"); if (i) i.focus(); }, 50);
 }
-function showWelcome(err) {
-  const box = document.getElementById("intro");
+const profileCore = () => myName() && (cfg.family || "").trim() && cfg.byear && cfg.bmonth && cfg.bday && (cfg.gender === "m" || cfg.gender === "f");
+const profileDone = () => profileCore() && PHONE_OK(cfg.phone);
+// Name, family name, Jalali birth date (three menus) and gender: used by the sign-up page and, if anything is missing, the welcome step
+function profileFields(v, pre) {
+  const y0 = jd(today()).y, opt = (val, label, sel) => `<option value="${val}"${String(sel) === String(val) ? " selected" : ""}>${label}</option>`;
+  const years = Array.from({length: y0 - 3 - 1300 + 1}, (_, i) => y0 - 3 - i);
+  return `<div class="duo"><div><label for="${pre}-name">نام</label><input id="${pre}-name" type="text" autocomplete="given-name" value="${esc(v.name)}" placeholder="مثلاً کمیل" required></div>
+      <div><label for="${pre}-family">نام خانوادگی</label><input id="${pre}-family" type="text" autocomplete="family-name" value="${esc(v.family)}" required></div></div>
+      <label id="${pre}-bl">تاریخ تولد (شمسی)</label>
+      <div class="trio" role="group" aria-labelledby="${pre}-bl">
+        <select id="${pre}-by" aria-label="سال تولد" autocomplete="bday-year"><option value="">سال</option>${years.map(y => opt(y, FA(y), v.byear)).join("")}</select>
+        <select id="${pre}-bm" aria-label="ماه تولد" autocomplete="bday-month"><option value="">ماه</option>${JM.map((n, i) => opt(i + 1, n, v.bmonth)).join("")}</select>
+        <select id="${pre}-bd" aria-label="روز تولد" autocomplete="bday-day"><option value="">روز</option>${Array.from({length: 31}, (_, i) => opt(i + 1, FA(i + 1), v.bday)).join("")}</select></div>
+      <label for="${pre}-gender">جنسیت</label>
+      <select id="${pre}-gender"><option value="">انتخاب کنید</option>${opt("m", "مرد", v.gender)}${opt("f", "زن", v.gender)}</select>`;
+}
+// Reads and checks those fields: {d} on success, {err, id} (message and the field to focus) on a mistake
+function readProfile(box, pre) {
+  const q = id => box.querySelector("#" + pre + "-" + id).value;
+  const d = {name: q("name").trim(), family: q("family").trim(), byear: +q("by") || "", bmonth: +q("bm") || "", bday: +q("bd") || "", gender: q("gender")};
+  const bad = d.name.length < 2 ? ["نام خود را بنویسید.", "name"] : d.family.length < 2 ? ["نام خانوادگی خود را بنویسید.", "family"]
+    : !d.byear || !d.bmonth || !d.bday ? ["سال، ماه و روز تولد را انتخاب کنید.", "by"]
+    : d.bday > (d.bmonth <= 6 ? 31 : 30) ? ["این روز در ماهِ انتخاب‌شده وجود ندارد.", "bd"]
+    : !d.gender ? ["جنسیت را انتخاب کنید.", "gender"] : null;
+  return bad ? {d, err: bad[0], id: pre + "-" + bad[1]} : {d};
+}
+function showWelcome(err, keep) {
+  const box = document.getElementById("intro"), v = keep || cfg, needProfile = !profileCore();
   box.innerHTML = `<div class="intro" role="dialog" aria-modal="true" aria-label="خوش آمدید" data-welcome>
     <h1>به حفظ تدبری خوش آمدید</h1>
-    <p>برای شروع، خودتان را معرفی کنید تا برنامه با نام خودتان همراهتان باشد.</p>
+    <p>${needProfile ? "برای شروع، خودتان را معرفی کنید تا برنامه با نام خودتان همراهتان باشد." : "یک قدم مانده: شماره همراه شما."}</p>
     <form id="wl" class="wform" novalidate>
-      <label for="wl-name">نام شما</label><input id="wl-name" type="text" autocomplete="given-name" value="${esc(cfg.name)}" placeholder="مثلاً کمیل" required>
-      <label for="wl-phone">شماره همراه</label><input id="wl-phone" type="tel" inputmode="numeric" dir="ltr" autocomplete="tel" value="${esc(cfg.phone)}" placeholder="09xxxxxxxxx" required>
+      ${needProfile ? profileFields(v, "wl") : ""}
+      <label for="wl-phone">شماره همراه</label><input id="wl-phone" type="tel" inputmode="numeric" dir="ltr" autocomplete="tel" value="${esc(v.phone)}" placeholder="09xxxxxxxxx" required>
       ${err ? `<p class="werr" role="alert">${err}</p>` : ""}
       <button type="submit">ادامه</button>
-      <p class="small" style="opacity:.85">این اطلاعات فقط روی همین گوشی ذخیره می‌شود و برای کسی فرستاده نمی‌شود. بعداً از تنظیمات قابل تغییر است.</p>
+      <p class="small" style="opacity:.85">شماره همراه فقط روی همین دستگاه ذخیره می‌شود و برای کسی فرستاده نمی‌شود. بعداً از تنظیمات قابل تغییر است.</p>
     </form></div>`;
   box.querySelector("#wl").addEventListener("submit", e => { e.preventDefault();
-    const name = box.querySelector("#wl-name").value.trim(), phone = normPhone(box.querySelector("#wl-phone").value);
-    cfg.name = name; cfg.phone = phone;
-    if (name.length < 2) return showWelcome("نام خود را بنویسید.");
-    if (!PHONE_OK(phone)) return showWelcome("شماره همراه را درست بنویسید؛ ۱۱ رقم که با ۰۹ شروع شود.");
-    saveCfg(); box.innerHTML = ""; render();
-    if (!cfg.seenIntro) showIntro(); else toast("خوش آمدید " + name);
+    const phone = normPhone(box.querySelector("#wl-phone").value), pr = needProfile ? readProfile(box, "wl") : {d: {}};
+    const again = (msg, id) => { showWelcome(msg, Object.assign({}, v, pr.d, {phone})); setTimeout(() => { const i = box.querySelector("#" + id); if (i) i.focus(); }, 60); };
+    if (pr.err) return again(pr.err, pr.id);
+    if (!PHONE_OK(phone)) return again("شماره همراه را درست بنویسید؛ ۱۱ رقم که با ۰۹ شروع شود.", "wl-phone");
+    Object.assign(cfg, pr.d, {phone}); saveCfg(); box.innerHTML = ""; render();
+    if (!cfg.seenIntro) showIntro(); else toast("خوش آمدید " + cfg.name);
   });
-  setTimeout(() => { const i = box.querySelector(err && err.includes("شماره") ? "#wl-phone" : "#wl-name"); if (i) i.focus(); }, 50);
+  setTimeout(() => { if (!err) { const i = box.querySelector(needProfile ? "#wl-name" : "#wl-phone"); if (i) i.focus(); } }, 50);
 }
-
 // ---------- first-run intro ----------
 const INTRO = [
   ["اول بفهم، بعد حفظ کن", "هر بخش از آیات اول تدبر می‌شود: می‌خوانید، گام‌های معنایی‌اش را پیدا می‌کنید و به چند پرسش جواب می‌دهید."],
@@ -4382,7 +4415,7 @@ if (window.__oldWebView) throw new Error("old webview");
 applySettings();
 render();
 setTimeout(autoBackupDaily, 3000);
-const startFlow = () => { if (!myName() || !PHONE_OK(cfg.phone)) showWelcome(); else if (!cfg.seenIntro) showIntro(); };
+const startFlow = () => { if (!profileDone()) showWelcome(); else if (!cfg.seenIntro) showIntro(); };
 if (ACCT_ON && !acct) showLogin(); else startFlow();
 if (IS_APP && !qcfLocal() && !cfg.qcfAsked && cfg.qfont === "qcf") qcfStart();
 if (IS_APP && !cfg.transAsked) { cfg.transAsked = true; saveCfg(); setTimeout(downloadAllTrans, 1500); }
