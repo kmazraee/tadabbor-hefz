@@ -79,6 +79,8 @@ _m["v"] = hashlib.sha1(json.dumps(_m["surahs"], ensure_ascii=False, sort_keys=Tr
 meta = json.dumps(_m, ensure_ascii=False, separators=(",", ":"))
 # The update check downloads data/meta.json, so it must be the same full copy the page carries
 (ROOT / "data/meta.json").write_text(meta, encoding="utf-8")
+# Feature modules kept in their own files and inlined into the page script
+tpl = tpl.replace("/*HEFZQUIZ*/", (ROOT / "scripts/quiz_hefz.js").read_text(encoding="utf-8"))
 for ph in ("/*DATA*/", "/*DATABASE*/", "/*SITEBASE*/"):
     assert ph in tpl, ph
 
