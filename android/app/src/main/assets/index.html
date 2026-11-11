@@ -671,7 +671,7 @@ const VERSION = "0.15.0";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
 if (!IS_APP) document.documentElement.classList.add("site");
 // The app downloads content from the configured site; a web copy reads it from the server it is served from
-const SITE_BASE = !IS_APP && /^https?:/.test(location.protocol) ? new URL(DATA_BASE + "../", location.href).href : "https://kmazraee.github.io/tadabbor-hefz/";
+const SITE_BASE = !IS_APP && /^https?:/.test(location.protocol) ? new URL(DATA_BASE + "../", location.href).href : "https://ganjineh-tadabbor.ir/";
 const REPO_API = "https://api.github.com/repos/kmazraee/tadabbor-hefz/releases?per_page=10";
 const BAZAAR_ID = "ir.tadabbor.hefz";
 const RATE_URL = IS_APP ? "bazaar://details?id=" + BAZAAR_ID : "https://cafebazaar.ir/app/" + BAZAAR_ID;
@@ -4731,7 +4731,7 @@ function openSettings() {
       </div>
       <div class="about-actions">
         <button data-guide-open>راهنمای برنامه</button>
-        <a class="btnlink" href="https://kmazraee.github.io/tadabbor-hefz/privacy.html" target="_blank" rel="noopener">حریم خصوصی</a>
+        <a class="btnlink" href="https://ganjineh-tadabbor.ir/privacy.html" target="_blank" rel="noopener">حریم خصوصی</a>
       </div>
       <h3>ارتباط با ما</h3>
       <div class="contact-row"><span class="contact-title">گزارش مشکل یا پیشنهاد برای توسعه</span><div class="contact-ch">

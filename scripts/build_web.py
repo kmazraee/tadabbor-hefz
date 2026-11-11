@@ -16,7 +16,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 ACCOUNT_API = os.environ.get("ACCOUNT_API") == "1"
 # Address of the AI assistant Worker (deploy/cloudflare/README.md). Empty: the app shows only its local daily summary.
 AI_API = os.environ.get("AI_API", (ROOT / "deploy/cloudflare/AI_API").read_text().strip() if (ROOT / "deploy/cloudflare/AI_API").exists() else "")
-SITE_BASE = os.environ.get("SITE_BASE", "https://kmazraee.github.io/tadabbor-hefz/").rstrip("/") + "/"
+SITE_BASE = os.environ.get("SITE_BASE", "https://ganjineh-tadabbor.ir/").rstrip("/") + "/"
 tpl = (ROOT / "scripts/prototype_src.html").read_text(encoding="utf-8")
 meta = (ROOT / "data/meta.base.json").read_text(encoding="utf-8")
 
