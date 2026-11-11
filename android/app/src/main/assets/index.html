@@ -687,7 +687,7 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", aiTip: false, aiTipAt: "08:00", autoBackup: true, tips: {}};
+const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {}};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 // One-time move of earlier installs to the new defaults: Parhizgar recitation and Safavi translation
@@ -708,7 +708,7 @@ let acct = load("tadabbor-account", null);                       // {token, id, 
 const syncMeta = Object.assign({localAt: 0, syncAt: 0, recId: null, remoteVer: "", cfgSig: "", sig: ""}, load("tadabbor-sync", {}));
 const syncSave = () => store("tadabbor-sync", syncMeta);
 // Settings that belong to one device (or are private) are not sent to the server
-const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "aiTip", "aiTipAt", "ui", "phone", "seenIntro",
+const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "ui", "phone", "seenIntro",
   "lastUpdateCheck", "qcfAsked", "transAsked"];
 const syncSettings = () => Object.fromEntries(Object.entries(cfg).filter(([k]) => !DEVICE_KEYS.includes(k)));
 let syncApplying = false, syncTimer = 0;
@@ -3787,9 +3787,6 @@ function updateNative() {
   const all = siyaqs(), md = all.filter(x => status(x.k) === "due").length, td = all.filter(x => tadDue(x.k)).length, L = currentLevel(), nx = nextToLearn();
   const line = [md ? FA(md) + " مرور حفظ" : "", td ? FA(td) + " مرور تدبر" : "", nx ? "قدم بعد: " + nx.s.name + " · سیاق " + FA(nx.q.n) : passed(L.id) ? "" : L.t].filter(Boolean).join(" · ") || "امروز کاری نمانده";
   try { if (Android.setReminder) Android.setReminder(!!cfg.remind, +(cfg.remindAt || "20:00").split(":")[0], +(cfg.remindAt || "20:00").split(":")[1], (myName() ? myName() + "، " : "") + "وقت حفظ تدبری است", line); } catch (e) {}
-  // The assistant's daily message as a notification: the phone fetches it at the chosen time with this picture of the progress
-  try { if (Android.setDailyTip) { const [th, tm] = (cfg.aiTipAt || "08:00").split(":").map(Number);
-    Android.setDailyTip(!!cfg.aiTip, th, tm, AI_URL, aiDevice(), JSON.stringify(aiContext()), aiLocalBrief(), myName() || ""); } } catch (e) {}
   const [vs, va] = verseOfDay();
   loadText().then(() => { try { if (Android.setWidget) Android.setWidget((myName() ? "سلام " + myName() + " · " : "") + "حفظ تدبری", line, vplain(vs, va), (trans(vs, va) || "") + " (" + S[vs].name + " " + FA(va) + ")"); } catch (e) {} }).catch(() => {});
 }
@@ -3947,13 +3944,7 @@ function aiLocalBrief() {
   return lines.join(" ");
 }
 const aiBriefKey = () => today() + ":" + dayPart();
-// The notification may already have fetched this part of the day's message: show the same one
-function aiFromNotification() {
-  try { if (!IS_APP || !Android.lastTip) return; const t = JSON.parse(Android.lastTip() || "{}"), c = load("tadabbor-ai-brief", null);
-    if (t.k === aiBriefKey() && t.text && !(c && c.k === t.k)) store("tadabbor-ai-brief", {k: t.k, text: t.text, at: Date.now()}); } catch (e) {}
-}
 function aiCard() {
-  aiFromNotification();
   const c = load("tadabbor-ai-brief", null), fresh = c && c.k === aiBriefKey();
   const text = fresh ? c.text : aiLocalBrief();
   if (AI_ON() && !fresh && !ai.busy && !ai.off) setTimeout(() => aiBrief(false), 0);
@@ -3962,8 +3953,7 @@ function aiCard() {
       ${AI_ON() ? `<button class="icon-btn btn-ghost" data-aibrief aria-label="پیام تازه"${ai.busy ? " disabled" : ""}>↻</button>` : ""}</div>
     <div class="ai-text" id="ai-brief">${ai.busy && !fresh ? `<span class="small muted">دستیار دارد وضعیت شما را می‌خواند…</span><br>` : ""}${aiFmt(text)}</div>
     ${ai.err ? `<span class="small muted">${esc(ai.err)}</span>` : ""}
-    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button></div>
-    ${IS_APP && !cfg.aiTip && !(cfg.tips || {}).aitip ? `<div class="row between small" style="border-top:1px solid var(--line);padding-top:8px"><span>🔔 هر روز این پیام را به‌صورت اعلان بفرستم؟</span><span class="row" style="gap:6px"><button class="small btn-main" data-aitip="on">بله، ساعت ${FA(cfg.aiTipAt || "08:00")}</button><button class="small btn-ghost" data-aitip="no">نه</button></span></div>` : ""}</section>`;
+    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button></div></section>`;
 }
 // Safe formatting of the model's text: escape everything, then allow **bold**, line breaks and "- " lists
 function aiFmt(t) {
@@ -4012,7 +4002,6 @@ async function aiBrief(force) {
   try {
     const j = await aiCall({mode: "daily", ctx: aiContext()});
     store("tadabbor-ai-brief", {k, text: j.text, at: Date.now()});
-    try { if (IS_APP && Android.tipToday) Android.tipToday(k, j.text); } catch (e) {}
   } catch (e) {
     ai.err = aiErrText(e); if (e.status === 503) ai.off = true;
     store("tadabbor-ai-brief", {k, text: aiLocalBrief(), at: Date.now(), local: true});   // no retry loop within this part of the day
@@ -4027,11 +4016,6 @@ function paintAiCard() {
 function wireAi(root) {
   root.querySelectorAll("[data-aichat]").forEach(el => el.addEventListener("click", () => openAiChat()));
   root.querySelectorAll("[data-aibrief]").forEach(el => el.addEventListener("click", () => aiBrief(true)));
-  root.querySelectorAll("[data-aitip]").forEach(el => el.addEventListener("click", () => {
-    cfg.tips = cfg.tips || {}; cfg.tips.aitip = true;
-    if (el.dataset.aitip === "on") { cfg.aiTip = true; toast("هر روز ساعت " + FA(cfg.aiTipAt) + " پیام دستیار اعلان می‌شود؛ ساعت را در تنظیمات ← یادآور روزانه عوض کنید", 5000); }
-    saveCfg(); updateNative(); paintAiCard();
-  }));
 }
 const AI_SUGGEST = ["امروز از کجا شروع کنم؟", "مرورهای عقب‌افتاده‌ام را چطور جبران کنم؟", "سیاق بعدی من درباره چیست؟", "پیام اصلی سوره‌ای که می‌خوانم چیست؟", "چطور تدبر را با حفظ هماهنگ کنم؟"];
 function openAiChat(q) {
@@ -4445,8 +4429,6 @@ function openSettings() {
     <section class="card"><h3>یادآور روزانه</h3>
       ${IS_APP ? `<label class="switch small"><span>هر روز یادآوری کن<br><span class="muted">با تعداد مرورهای امروز و قدم بعدی شما</span></span><input type="checkbox" id="rm-on" ${cfg.remind ? "checked" : ""}></label>
       <div class="field"><label for="rm-at" class="small">ساعت</label><input type="time" id="rm-at" value="${esc(cfg.remindAt || "20:00")}" dir="ltr"></div>
-      <label class="switch small"><span>پیام روزانه دستیار هوشمند<br><span class="muted">«پیام امروز» دستیار، بر پایه پیشرفت شما، هر روز به‌صورت اعلان؛ بدون اینترنت، خلاصه همان پیام از روی گوشی</span></span><input type="checkbox" id="tip-on" ${cfg.aiTip ? "checked" : ""}></label>
-      <div class="field"><label for="tip-at" class="small">ساعت پیام دستیار</label><input type="time" id="tip-at" value="${esc(cfg.aiTipAt || "08:00")}" dir="ltr"></div>
       <p class="small muted">برای ویجت صفحه اصلی: صفحه اصلی گوشی را نگه دارید، «ابزارک‌ها» را بزنید و «حفظ تدبری» را بکشید.</p>` : `<p class="small muted">یادآور و ویجت فقط در برنامه اندروید است.</p>`}
     </section>
     <section class="card"><h3>روش حفظ</h3>
@@ -4514,8 +4496,6 @@ function openSettings() {
   IDB.keys("wbw:").then(k => { const el = box.querySelector("#wbw-st"); if (el && !wbwAll) el.textContent = `${FA(k.length)} از ۱۱۴ سوره روی دستگاه`; });
   box.querySelector("#wbw-all").addEventListener("click", e => { e.target.disabled = true; downloadAllWbw(); });
   const rmOn = box.querySelector("#rm-on"); if (rmOn) rmOn.addEventListener("change", e => { cfg.remind = e.target.checked; saveCfg(); updateNative(); toast(cfg.remind ? "یادآور روزانه روشن شد" : "یادآور خاموش شد"); });
-  const tipOn = box.querySelector("#tip-on"); if (tipOn) tipOn.addEventListener("change", e => { cfg.aiTip = e.target.checked; cfg.tips = cfg.tips || {}; cfg.tips.aitip = true; saveCfg(); updateNative(); toast(cfg.aiTip ? "پیام روزانه دستیار روشن شد" : "پیام روزانه دستیار خاموش شد"); });
-  const tipAt = box.querySelector("#tip-at"); if (tipAt) tipAt.addEventListener("change", e => { cfg.aiTipAt = e.target.value || "08:00"; saveCfg(); updateNative(); });
   const rmAt = box.querySelector("#rm-at"); if (rmAt) rmAt.addEventListener("change", e => { cfg.remindAt = e.target.value || "20:00"; saveCfg(); updateNative(); });
   const ab = box.querySelector("#ab-on"); if (ab) ab.addEventListener("change", e => { cfg.autoBackup = e.target.checked; saveCfg(); if (cfg.autoBackup) { cfg.lastAutoDay = null; autoBackupDaily(); openSettingsKeep(); } });
   box.querySelector("#freepath").addEventListener("change", e => set("freePath", e.target.checked));
@@ -4606,7 +4586,6 @@ function openGuide(section) {
 
     <details ${open("ai")}><summary>دستیار هوشمند</summary><div>
       <p><b>پیام امروز:</b> کادر بالای صفحه «امروز» هر روز با توجه به ساعت به شما سلام می‌کند و مرورهای عقب‌مانده و قدم بعدی را می‌گوید.</p>
-      <p><b>اعلان روزانه:</b> در برنامه اندروید، تنظیمات ← «یادآور روزانه» ← «پیام روزانه دستیار هوشمند» را روشن کنید تا همین پیام هر روز در ساعتی که انتخاب می‌کنید (پیش‌فرض ۸ صبح) به‌صورت اعلان بیاید.</p>
       <p><b>گفتگو:</b> از منو ← «دستیار هوشمند» درباره آیات، روش تدبر، برنامه حفظ و پیشرفت خودتان بپرسید.</p>
       <p>پاسخ‌ها را یک مدل هوش مصنوعی می‌نویسد و ممکن است خطا داشته باشد؛ فتوای شرعی نیست و جای تفسیر و استاد را نمی‌گیرد. اطلاعات شخصی در پرسش‌ها ننویسید. اگر اینترنت نباشد، پیام امروز از خلاصه‌ای که روی خود گوشی ساخته می‌شود نشان داده می‌شود.</p></div></details>
 

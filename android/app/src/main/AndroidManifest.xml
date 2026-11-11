@@ -37,16 +37,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- The AI assistant's daily message as a notification (DailyTip wakes, DailyTipJob fetches and shows it) -->
-        <receiver android:name=".DailyTip" android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-                <action android:name="ir.tadabbor.hefz.DAILY_TIP" />
-            </intent-filter>
-        </receiver>
-        <service android:name=".DailyTipJob" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
-
         <receiver android:name=".Widget" android:exported="false" android:label="حفظ تدبری">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
