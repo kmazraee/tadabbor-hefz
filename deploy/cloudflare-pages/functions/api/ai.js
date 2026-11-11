@@ -10,7 +10,7 @@
 //   ALLOWED_ORIGINS (optional, comma separated): web origins allowed besides the Android app; empty = any
 // Optional binding RATE (Rate Limiting): per device/IP cap per minute, see wrangler.toml.
 //
-// Request: POST /  {mode: "daily"|"chat", ctx: {...}, messages: [{role, content}]}  →  {text}
+// Request: POST /  {mode: "daily"|"chat", notify?: true, ctx: {...}, messages: [{role, content}]}  →  {text}
 
 const sys = [
   "تو «دستیار حفظ تدبری» هستی؛ دستیار هوشمند برنامه‌ای برای تدبر و حفظ قرآن کریم به روش استاد علی صبوحی طسوجی (تدبر سیاق‌محور: هر سوره به سیاق‌ها و گام‌ها تقسیم می‌شود؛ اول تدبر، بعد حفظ، بعد مرور).",
@@ -27,6 +27,10 @@ const daily = [
   "۲) یک جمله درباره وضعیتش (پیوستگی روزها، سوره‌های حفظ/تدبرشده، قدم مسیر).",
   "۳) کارهای عقب‌مانده را مشخص بگو (مرورهای سررسیده حفظ و تدبر، اشتباه‌های باز، عقب‌ماندن از هدف، چند روز غیبت). اگر چیزی عقب نیست، تحسین کن.",
   "۴) یک قدم مشخص برای همین الان پیشنهاد کن. یک شوخی ملایم کوتاه مجاز است.",
+].join("\n");
+// Same message as a phone notification (body.notify): it is read on the lock screen, so shorter and plain
+const notify = [
+  "این پیام به‌صورت اعلان (نوتیفیکیشن) روی گوشی نشان داده می‌شود: حداکثر ۴۵ کلمه، متن ساده در یک یا دو جمله کوتاه، بدون ستاره، علامت‌گذاری یا فهرست.",
 ].join("\n");
 const cors = (origin) => ({
   ...(origin ? {"Access-Control-Allow-Origin": origin} : {}),
@@ -69,7 +73,7 @@ const handle = {
       }
     }
 
-    const messages = [{role: "system", content: sys + (mode === "daily" ? "\n\n" + daily : "") + "\n\nوضعیت کاربر (JSON):\n" + ctx}];
+    const messages = [{role: "system", content: sys + (mode === "daily" ? "\n\n" + daily + (body.notify ? "\n" + notify : "") : "") + "\n\nوضعیت کاربر (JSON):\n" + ctx}];
     if (mode === "daily") messages.push({role: "user", content: "پیام امروز من را بنویس."});
     else messages.push(...msgs);
 
