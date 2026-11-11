@@ -119,7 +119,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .surah-row{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;padding:10px 0;border:none;border-bottom:1px solid var(--line);background:none;border-radius:0;text-align:right;width:100%}
 .surah-row .idx{font-size:12px;color:var(--muted);text-align:center}
 .surah-row .nm{display:flex;justify-content:space-between;gap:8px;font-weight:600}
-.tabs{position:fixed;bottom:0;inset-inline:0;max-width:480px;margin-inline:auto;display:grid;grid-template-columns:repeat(6,1fr);background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+.tabs{position:fixed;bottom:0;inset-inline:0;max-width:480px;margin-inline:auto;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
 .tabs button{border:none;border-radius:0;background:none;padding:9px 1px;min-height:48px;font-size:10.5px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
 .tabs button[aria-current="page"]{color:var(--lapis);font-weight:700}
 .tabs svg{width:22px;height:22px}
@@ -431,6 +431,7 @@ details.more summary{padding:8px 0;font-size:13px;font-weight:600;color:var(--la
 details.more > div{padding-bottom:4px}
 details > summary{min-height:44px;display:flex;align-items:center;gap:8px}
 details > summary::after{margin-inline-start:auto}
+.subnav{display:flex;gap:4px;padding:4px;border-radius:99px;background:var(--tonal)}.subnav button{flex:1;min-height:40px;border:none;border-radius:99px;background:none;font-size:14px;color:var(--muted)}.subnav button[aria-current="page"]{background:var(--surface);color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .pseg{display:flex;gap:6px}.pseg button{flex:1;min-height:44px}
 .pseg button[aria-pressed="true"]{background:var(--lapis);color:var(--on-lapis);border-color:var(--lapis)}
 .bars{display:flex;align-items:flex-end;gap:4px;height:96px}
@@ -491,7 +492,7 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 .tabs button svg{width:56px;height:30px;padding:4px 17px;border-radius:15px;box-sizing:border-box}
 .tabs button[aria-current="page"]{color:var(--ink);font-weight:800}
 .tabs button[aria-current="page"] svg{background:var(--tonal2);color:var(--lapis)}
-.tabs{grid-template-columns:repeat(7,minmax(0,1fr))}
+.tabs{grid-template-columns:repeat(5,minmax(0,1fr))}
 .tabs>button svg{width:min(56px,100%);padding-inline:min(17px,20%)}
 .navmore .mitem .mi svg{width:20px;height:20px;padding:0;background:none}
 /* Menu: every tool of the app in one list, grouped (phone: the «منو» tab; wide site: the side menu) */
@@ -571,7 +572,6 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
   html.site .tabs button[aria-current="page"] svg{background:none;color:var(--lapis)}
   html.site .tabs button[aria-current="page"]{background:var(--lapis-soft)}
   html.site .tabs{overflow-y:auto;padding-bottom:24px}
-  html.site .tabs button[data-menu]{display:none}
   html.site .tabs>button svg{width:24px;height:24px;padding:0;flex:none}
   html.site .navmore{display:flex;flex-direction:column;gap:2px;margin-top:6px;border-top:1px solid var(--line);padding-top:4px}
   html.site .navmore .mitem{min-height:40px;font-size:14px;padding:6px 10px;gap:10px}
@@ -606,12 +606,10 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
   <main id="view" tabindex="-1"></main>
   <nav class="tabs" aria-label="بخش‌ها">
     <button data-tab="home" aria-current="page"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>امروز</button>
-    <button data-tab="mushaf"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/><path d="M12 6v14.5"/></svg>مصحف</button>
-    <button data-tab="map"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/></svg>نقشه</button>
-    <button data-tab="review"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>مرور</button>
     <button data-tab="path"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4v-5h4v-5h4V5h4"/><circle cx="20" cy="5" r="1.5" fill="currentColor"/></svg>مسیر</button>
-    <button data-tab="progress"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>پیشرفت</button>
-    <button data-menu aria-haspopup="dialog"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>منو</button>
+    <button data-tab="mushaf"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/><path d="M12 6v14.5"/></svg>قرآن</button>
+    <button data-tab="review"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>تمرین</button>
+    <button data-tab="me"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>من</button>
     <div class="navmore" id="navmore"></div>
   </nav>
 </div>
@@ -1454,12 +1452,22 @@ try { document.fonts.addEventListener("loadingdone", () => fitPages()); } catch 
 
 // ---------- tabs ----------
 let tab = "home";
-document.querySelectorAll(".tabs button[data-tab]").forEach(b => b.addEventListener("click", () => { tab = b.dataset.tab; closeWordbar(); render(); window.scrollTo(0, 0); }));
+// Five sections in the bottom bar; some sections hold two pages (Quran: mushaf + surahs, Me: summary + progress)
+const SEC = {home: "home", path: "path", mushaf: "quran", map: "quran", review: "practice", me: "me", progress: "me"};
+const secPage = {quran: "mushaf", me: "me"};          // last page opened in a two-page section
+document.querySelectorAll(".tabs button[data-tab]").forEach(b => b.addEventListener("click", () => {
+  const sec = SEC[b.dataset.tab], again = SEC[tab] === sec;
+  document.getElementById("sheet").innerHTML = "";
+  tab = again ? b.dataset.tab : (secPage[sec] || b.dataset.tab); closeWordbar(); render(); window.scrollTo(0, 0); }));
+const subnav = (items, label) => `<nav class="subnav" aria-label="${label}">${items.map(([t, l]) => `<button data-goto="${t}"${t === tab ? ` aria-current="page"` : ""}>${l}</button>`).join("")}</nav>`;
+const quranNav = () => subnav([["mushaf", "مصحف"], ["map", "سوره‌ها و سیاق‌ها"]], "قرآن");
+const meNav = () => subnav([["me", "خلاصه"], ["progress", "پیشرفت"]], "من");
 
 function render() {
   lastDraw = render;
-  document.querySelectorAll(".tabs button[data-tab]").forEach(b => b.dataset.tab === tab ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
-  const v = document.getElementById("view"), html = ({home, map, review, mushaf, path, progress})[tab](), same = render.tab === tab, y = window.scrollY;
+  if (secPage[SEC[tab]]) secPage[SEC[tab]] = tab;
+  document.querySelectorAll(".tabs button[data-tab]").forEach(b => SEC[b.dataset.tab] === SEC[tab] ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  const v = document.getElementById("view"), html = ({home, map, review, mushaf, path, progress, me})[tab](), same = render.tab === tab, y = window.scrollY;
   if (QUIET && same && render.html === html) return;
   render.tab = tab; render.html = html;
   v.innerHTML = html;
@@ -1573,6 +1581,10 @@ function home() {
   const wdays = range(t0 - 6, t0), wvals = wdays.map(dayAct), wmax = Math.max(1, ...wvals);
   return `
   ${topBar(`<div class="hello"><span class="av" aria-hidden="true">${esc((myName() || "ح").trim().charAt(0))}</span><div><h1>${myName() ? "سلام " + esc(myName()) : "حفظ تدبری"}</h1><span class="small muted">${wdn} ${FA(tj.d)} ${JM[tj.m - 1]}</span></div></div>`)}
+  ${journeyHero()}
+  ${resumeCard()}
+  ${dayGoalCard(fresh)}
+  ${todayCard(all, due, tdDue, weak, fresh)}
   ${aiCard()}
   <button class="searchbar" data-search aria-label="جستجو در همه‌جا"><span aria-hidden="true">${ICON_SEARCH}</span><span>جستجو: آیه، سوره، سیاق، دفتر تدبر…</span></button>
   ${upd.app ? `<section class="card">${appUpdHtml()}</section>` : ""}
@@ -1580,32 +1592,19 @@ function home() {
   ${qcfCard()}
   ${trActive ? `<section class="card"><h3>ذخیره ترجمه‌ها روی گوشی</h3><p class="small muted">${FA(TRANSLATIONS.filter(x => x[0] !== "none" && (x[3] || transLocal(x[0]))).length)} از ۱۳ ترجمه روی گوشی است.</p></section>` : ""}
   ${tipCard("home")}
-  ${journeyHero()}
-  ${resumeCard()}
-  ${dayGoalCard(fresh)}
-  ${todayCard(all, due, tdDue, weak, fresh)}
   ${weak.length ? `<section class="card"><div class="row between"><span class="small"><b class="num">${FA(weak.length)}</b> آیه نیازمند تثبیت در دفتر اشتباهات</span><span class="row" style="gap:6px"><button class="small" data-weak>دفتر اشتباهات</button><button class="small btn-main" data-drill>تمرین</button></span></div></section>` : ""}
   ${fresh ? "" : `<button class="weekcard" data-goto="progress" aria-label="دیدن پیشرفت روزانه، ماهانه و سالانه"><span class="row between"><b>این هفته</b><span class="small muted">${FA(streakNow())} روز پیوسته${streakBest() > streakNow() ? " · رکورد " + FA(streakBest()) : ""} · پیشرفت کامل ‹</span></span>
     <span class="wbars" aria-hidden="true">${wvals.map((v, i) => `<span class="${i === 6 ? "now" : ""}"><i style="height:${Math.max(6, v / wmax * 44)}px"></i><small>${WD[(wdays[i] + 5) % 7]}</small></span>`).join("")}</span>
     <span class="small muted num">${FA(wk.a)} آیه · ${FA(wk.t)} سیاق تدبر · ${FA(wk.r + wk.tr)} مرور · ${FA(solidAyat)} از ${FA(totalAyat)} آیه قرآن تثبیت شده</span></button>`}
-  ${surahsCard()}
   <section class="card fixsec" aria-label="مسیر یادگیری"><div class="row between"><h2>مسیر یادگیری</h2><button class="small btn-ghost" data-goto="path">همه قدم‌ها ‹</button></div>
     ${passed("intro") ? "" : `<span class="small muted">قدم‌ها به ترتیب باز می‌شوند.</span>`}${stepper()}</section>
   ${preCard()}
-  <h2 class="sec">بیشتر</h2>
-  ${st.goal ? fold("goal", "هدف: " + goalName(st.goal), "", goalCard()) : ""}
-  ${fresh || !started.length ? "" : fold("four", "چهار مرحله یادگیری", `از ${FA(started.length)} سیاق`, trackBars(trackCounts(started)))}
-  ${fresh ? "" : fold("grid", "نقشه پیشرفت ۱۱۴ سوره", `${FA(solidAyat)} از ${FA(totalAyat)} آیه`, `<div class="bar"><i style="width:${(solidAyat / totalAyat * 100).toFixed(1)}%"></i></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px">
-      ${DATA.surahs.map(s => `<button data-open="${s.n}" style="padding:6px;display:flex;flex-direction:column;gap:4px;align-items:stretch;font-size:12px">${s.name}${strip(s)}</button>`).join("")}
-    </div>${legend()}`)}
-  ${backupOld && !fresh ? `<section class="card"><div class="row between"><span class="small">${cfg.lastBackup ? "بیش از یک هفته از آخرین پشتیبان گذشته." : "هنوز از پیشرفت و تدبرهایتان پشتیبان نگرفته‌اید."}</span><button class="small" data-settings>پشتیبان‌گیری</button></div></section>` : ""}
   `;
 }
 const siyaqButton = (x, mode) => `<button class="siyaq-item" data-start="${x.k}" data-mode="${mode}" style="--c:${COLORS[status(x.k)]}"><span class="stripe"></span><span><b>${x.s.name}</b> · ${esc(title(x.s, x.q))}<br><span class="small muted">آیات ${FA(x.q.s)} تا ${FA(x.q.e)}</span>${isMem(x.k) ? " " + masteryChip(x.k) : ""}</span><span class="small muted">${FA(ayahCount(x.q))} آیه</span></button>`;
 
 function map() {
-  return `${topBar(`<h1>نقشه سیاق‌ها</h1>`)}${tipCard("map")}${legend()}${testNote.replace("مرز سیاق‌ها بر اساس", "مرز سیاق‌های سوره‌هایی که اسلاید مؤسسه ندارند بر اساس")}
+  return `${topBar(`<h1>قرآن</h1>`)}${quranNav()}${quranTools()}${tipCard("map")}${legend()}${testNote.replace("مرز سیاق‌ها بر اساس", "مرز سیاق‌های سوره‌هایی که اسلاید مؤسسه ندارند بر اساس")}
   <section class="card" style="gap:0;padding-block:4px">
   ${DATA.surahs.map(s => `<button class="surah-row" data-open="${s.n}"><span class="idx num">${FA(s.n)}</span><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span class="nm"><span>${s.name}${surahOpen(s.n) ? "" : ` <span class="muted" aria-label="قفل">${ICON_LOCK}</span>`}</span><span class="small muted num">${s.fasls ? FA(s.fasls.length) + " فصل · " : ""}${FA(s.siyaqs.length)} سیاق · ${FA(s.total)} آیه</span></span>${strip(s)}</span></button>`).join("")}
   </section>`;
@@ -1615,18 +1614,16 @@ function review() {
   const all = siyaqs();
   const due = all.filter(x => status(x.k) === "due");
   const soon = all.filter(x => status(x.k) === "solid").sort((a, b) => st.items[a.k].due - st.items[b.k].due);
-  return `${topBar(`<h1>مرور</h1>`)}${tipCard("review")}
-  <p class="muted small">هر مرور با یادآوری معنا شروع می‌شود: اول عنوان و گام‌های سیاق را به خاطر بیاورید، بعد آیات را از حفظ بخوانید. اشتباه‌های هر آیه را ثبت کنید تا در «دفتر اشتباهات» بماند.</p>
-  ${masteryCard()}
-  <section class="card"><h2>تمرین و آزمون</h2><p class="small muted">آزمون ۱۰ سؤالی از سیاق‌هایی که حفظ کرده‌اید.</p>
-    <div class="row"><button class="small btn-main" data-hq>آزمون حفظ</button><button class="small" data-quiz="next">آیه بعد چیست؟</button><button class="small" data-quiz="where">این آیه کجاست؟</button></div></section>
-  <section class="card"><div class="row between"><h2>دفتر تدبر من</h2><button class="small" data-notebook>باز کن</button></div><p class="small muted">همه برداشت‌ها و پاسخ‌های تدبری شما، با جستجو و خروجی فایل.</p></section>
-  <section class="card"><div class="row between"><h2>کارنامه هفته</h2><button class="small" data-weekly>ببین</button></div></section>
-  <section class="card"><div class="row between"><h2>لغت‌نامه من</h2><button class="small" data-vocab>${Object.keys(st.vocab || {}).length ? "تمرین و فهرست" : "باز کن"}</button></div><p class="small muted">${Object.keys(st.vocab || {}).length ? FA(Object.keys(st.vocab).length) + " کلمه که در «فهم آیات» یا مصحف نشان کرده‌اید؛ با کارت تمرینشان کنید." : "کلمه‌هایی که معنایشان را نمی‌دانستید اینجا جمع می‌شوند."}</p></section>
-  ${weakCard() || `<section class="card"><div class="row between"><h2>دفتر اشتباهات</h2><button class="small" data-weak>باز کن</button></div><p class="small muted">${Object.keys(st.err || {}).length ? "همه آیه‌های ثبت‌شده تثبیت شده‌اند." : "اشتباه‌هایی که در حفظ و مرور ثبت کنید اینجا جمع می‌شوند."}</p></section>`}
-  ${(() => { const td = all.filter(x => tadDue(x.k)); return `<section class="card"><h2>مرور تدبر امروز (${FA(td.length)})</h2><p class="small muted">تثبیت تدبر: پیام و گام‌های هر سیاق را به یاد بیاورید و با برداشت خودتان و پیام استاد مقایسه کنید. هر سیاق با ${FA(TAD_FIX)} بار یادآوری کامل، تثبیت می‌شود.</p>${td.length ? td.map(tadReviewButton).join("") : `<p class="muted small">مرور تدبری برای امروز نمانده.</p>`}</section>`; })()}
+  return `${topBar(`<h1>تمرین</h1>`)}${tipCard("review")}
   <section class="card"><h2>مرور حفظ امروز (${FA(due.length)})</h2>
   ${due.length ? due.map(x => siyaqButton(x, "review")).join("") : `<p class="muted small">چیزی برای مرور نمانده.</p>`}</section>
+  ${(() => { const td = all.filter(x => tadDue(x.k)); return `<section class="card"><h2>مرور تدبر امروز (${FA(td.length)})</h2><p class="small muted">تثبیت تدبر: پیام و گام‌های هر سیاق را به یاد بیاورید و با برداشت خودتان و پیام استاد مقایسه کنید. هر سیاق با ${FA(TAD_FIX)} بار یادآوری کامل، تثبیت می‌شود.</p>${td.length ? td.map(tadReviewButton).join("") : `<p class="muted small">مرور تدبری برای امروز نمانده.</p>`}</section>`; })()}
+  <section class="card"><h2>تمرین و آزمون</h2><p class="small muted">آزمون ۱۰ سؤالی از سیاق‌هایی که حفظ کرده‌اید.</p>
+    <div class="row"><button class="small btn-main" data-hq>آزمون حفظ</button><button class="small" data-quiz="next">آیه بعد چیست؟</button><button class="small" data-quiz="where">این آیه کجاست؟</button></div></section>
+  ${weakCard() || `<section class="card"><div class="row between"><h2>دفتر اشتباهات</h2><button class="small" data-weak>باز کن</button></div><p class="small muted">${Object.keys(st.err || {}).length ? "همه آیه‌های ثبت‌شده تثبیت شده‌اند." : "اشتباه‌هایی که در حفظ و مرور ثبت کنید اینجا جمع می‌شوند."}</p></section>`}
+  <section class="card"><div class="row between"><h2>لغت‌نامه من</h2><button class="small" data-vocab>${Object.keys(st.vocab || {}).length ? "تمرین و فهرست" : "باز کن"}</button></div><p class="small muted">${Object.keys(st.vocab || {}).length ? FA(Object.keys(st.vocab).length) + " کلمه که در «فهم آیات» یا مصحف نشان کرده‌اید؛ با کارت تمرینشان کنید." : "کلمه‌هایی که معنایشان را نمی‌دانستید اینجا جمع می‌شوند."}</p></section>
+  ${masteryCard()}
+  <p class="muted small">هر مرور با یادآوری معنا شروع می‌شود: اول عنوان و گام‌های سیاق را به خاطر بیاورید، بعد آیات را از حفظ بخوانید. اشتباه‌های هر آیه را ثبت کنید تا در «دفتر اشتباهات» بماند.</p>
   <section class="card"><h2>مرورهای آینده</h2>
   ${soon.map(x => `<div class="row between small"><span>${x.s.name} · ${esc(title(x.s, x.q))} ${masteryChip(x.k)}</span><span class="muted num">${st.items[x.k].due - today() === 1 ? "فردا" : FA(st.items[x.k].due - today()) + " روز دیگر"}</span></div>`).join("")}</section>`;
 }
@@ -1714,7 +1711,7 @@ function planTrack() {
 }
 function progress() {
   const segs = [["day", "روزانه"], ["month", "ماهانه"], ["year", "سالانه"], ["plan", "برنامه"]];
-  return `${topBar(`<h1>پیشرفت</h1>`)}
+  return `${topBar(`<h1>من</h1>`)}${meNav()}
   <div class="pseg" role="group" aria-label="بازه زمانی">${segs.map(([v, l]) => `<button data-pseg="${v}" aria-pressed="${prog.seg === v}">${l}</button>`).join("")}</div>
   ${({day: progDay, month: progMonth, year: progYear, plan: planTrack})[prog.seg]()}
   <p class="small muted">آمار از روزی که این بخش به برنامه اضافه شد جمع می‌شود؛ روزهای قبل از آن خالی دیده می‌شوند.</p>`;
@@ -1729,7 +1726,7 @@ function mushaf() {
   const here = pg ? pg.here : [];
   const cur = here[0] || DATA.surahs.filter(s => s.vp[0] <= mushafPage).pop().n;
   const juz = Math.min(30, Math.floor((mushafPage - 2) / 20) + 1);
-  return `${topBar(`<h1>مصحف</h1>`)}${tipCard("mushaf")}
+  return `${topBar(`<h1>قرآن</h1>`)}${quranNav()}${tipCard("mushaf")}
   <div class="row" style="flex-wrap:nowrap"><select id="mushaf-surah" aria-label="رفتن به سوره">${DATA.surahs.map(x => `<option value="${x.n}" ${cur === x.n ? "selected" : ""}>${FA(x.n)}. ${x.name}</option>`).join("")}</select>
   <select id="mushaf-juz" aria-label="رفتن به جزء" style="max-width:110px">${range(1, 30).map(j => `<option value="${j}" ${juz === j ? "selected" : ""}>جزء ${FA(j)}</option>`).join("")}</select>
   <button class="icon-btn" id="mu-favs" aria-label="یادداشت‌ها، نشانک‌ها و علاقه‌مندی‌ها" style="flex:none;color:var(--gold)">🔖</button></div>
@@ -2212,6 +2209,7 @@ function path() {
   ${PATH.filter(L => L.req).map(L => stepRow(L, cur)).join("")}
   ${badgesCard()}
   <section class="card"><div class="row between"><h3>👥 کلاس و استاد</h3><button class="small" data-class>باز کن</button></div><p class="small muted">کارنامه‌تان را برای استاد بفرستید؛ یا اگر مربی هستید، کارنامه شاگردان را یکجا ببینید.</p></section>
+  <section class="card" style="gap:2px">${featBtn(featByKey("lessons"))}</section>
   <section class="card"><div class="row between"><h3>📚 کتاب‌های تدبر</h3><button class="small" data-books>همه کتاب‌ها</button></div><p class="small muted">کتاب درسی هر سطح و کتاب‌های تدبر در سوره‌ها، برای خرید از انتشارات تدبر.</p></section>
   <section class="card"><h3>برنامه پیشنهادی هر هفته</h3><ol class="small" style="margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px">
     <li>دو جلسه از درس‌های قدم فعلی را ببینید یا بشنوید و تیک «دیده شد» را بزنید.</li>
@@ -3113,7 +3111,10 @@ function openSearch() {
 }
 function searchGroups(raw) {
   const q = normFa(faNum(raw)).trim(); if (q.length < 1) return "";
-  const out = [], sc = searchState.scope, sOk = s => normFa(s.name).includes(q.replace(/^سوره\s+/, "")) || String(s.n) === q;
+  const out = [], sc = searchState.scope;
+  const fm = q.length >= 2 && sc === "all" ? featMatches(q).slice(0, 4) : [];
+  if (fm.length) out.push(`<div class="sres-group"><h3>امکانات برنامه</h3>${fm.map(x => featBtn(Object.assign({}, x, {d: "در بخش «" + x.sec + "»" + (x.d ? " · " + x.d : "")}))).join("")}</div>`);
+  const _u = 0, sOk = s => normFa(s.name).includes(q.replace(/^سوره\s+/, "")) || String(s.n) === q;
   if (sc !== "tad") {
     const surahs = DATA.surahs.filter(s => inLv(s.n) && (q.length >= 2 || /^\d+$/.test(q) ? sOk(s) : false)).slice(0, 5);
     if (surahs.length) out.push(`<div class="sres-group"><h3>سوره‌ها</h3>${surahs.map(s => `<button data-sopen="${s.n}">${FA(s.n)}. سوره ${s.name} <span class="small muted">· ${FA(s.total)} آیه</span></button>`).join("")}</div>`);
@@ -3928,7 +3929,8 @@ const TIPS = {
   home: "داشبورد هر روز «قدم بعدی» شما را نشان می‌دهد. اگر «برنامه روزانه» را تنظیم کنید، کارهای همان روز به اندازه وقتتان چیده می‌شود.",
   mushaf: "روی هر کلمه بزنید تا معنا، ریشه، تفسیر، آیات مشابه و ترتیل آن را ببینید. پخش‌کننده پایین صفحه از هر آیه تا آخر صفحه، سیاق یا سوره می‌خواند.",
   map: "هر نوار یک سوره است و هر تکه آن یک سیاق. رنگ‌ها وضعیت حفظ را نشان می‌دهند؛ روی سوره بزنید تا اطلاعات و پیشرفت چهارمرحله‌ای آن را ببینید.",
-  review: "اینجا مرورهای حفظ و تدبر امروز، دفتر اشتباهات، لغت‌نامه، آزمون‌ها و دفتر تدبر شماست.",
+  me: "خلاصه پیشرفت، دفترها، کلاس، دانلودها و تنظیمات اینجاست. اگر امکانی را پیدا نمی‌کنید، اسمش را در کادر «دنبال چه امکانی هستید؟» بنویسید.",
+  review: "اول مرورهای حفظ و تدبر امروز آمده؛ بعد آزمون‌ها، دفتر اشتباهات و لغت‌نامه. دفتر تدبر و کارنامه هفته در بخش «من» است.",
   path: "مسیر قدم‌به‌قدم است. هدف، نشان‌ها، کتاب‌ها و کلاس هم در همین صفحه است."
 };
 const tipCard = id => !TIPS[id] || (cfg.tips || {})[id] ? "" : `<div class="card tip" role="note"><div class="row between"><b>💡 نکته</b><button class="small btn-ghost" data-tip="${id}">فهمیدم</button></div><p class="small">${TIPS[id]}</p></div>`;
@@ -3986,6 +3988,8 @@ const ACT = {
   "data-quiz": v => openQuiz(v),
   "data-order": v => openOrder(+v),
   "data-notebook": () => openNotebook(),
+  "data-feat": v => { const x = featByKey(v); if (x) x.go(); },
+  "data-featfind": () => openFeatFind(),
   "data-weekly": () => openWeekly(),
   "data-goal": () => openGoal(),
   "data-class": () => openClass(),
@@ -4005,6 +4009,50 @@ document.addEventListener("click", e => {
   for (const attr in ACT) { const el = e.target.closest(`[${attr}]`); if (el) { e.preventDefault(); ACT[attr](el.getAttribute(attr)); return; } }
 });
 
+// ---------- «من»: progress summary, notebooks, class, device and app settings, and a finder over every feature ----------
+function me() {
+  const all = siyaqs(), solidAyat = all.filter(x => (st.items[x.k] || {}).stage >= 5).reduce((a, x) => a + ayahCount(x.q), 0);
+  const totalAyat = DATA.surahs.reduce((a, s) => a + s.total, 0);
+  const fresh = !Object.keys(st.items).length && !Object.keys(st.notes).length;
+  const started = all.filter(x => status(x.k) !== "new" || isTad(x.k)).map(x => x.k);
+  const backupOld = !cfg.lastBackup || (Date.now() - cfg.lastBackup) > 7 * 864e5;
+  const g = menuGroups().find(x => x.sec === "me");
+  return `${topBar(`<h1>من</h1>`)}${meNav()}${tipCard("me")}
+  <button class="searchbar" data-featfind aria-label="پیدا کردن امکانات برنامه"><span aria-hidden="true">${ICON_SEARCH}</span><span>دنبال چه امکانی هستید؟ مثلاً «آزمون» یا «دانلود»</span></button>
+  ${backupOld && !fresh ? `<section class="card"><div class="row between"><span class="small">${cfg.lastBackup ? "بیش از یک هفته از آخرین پشتیبان گذشته." : "هنوز از پیشرفت و تدبرهایتان پشتیبان نگرفته‌اید."}</span><button class="small" data-settings>پشتیبان‌گیری</button></div></section>` : ""}
+  <section class="card" style="gap:2px">${g.items.map(x => featBtn(x)).join("")}</section>
+  ${surahsCard()}
+  ${st.goal ? `<section class="card">${goalCard()}</section>` : ""}
+  ${fresh || !started.length ? "" : `<section class="card"><h2>چهار مرحله یادگیری <span class="small muted">از ${FA(started.length)} سیاق</span></h2>${trackBars(trackCounts(started))}</section>`}
+  ${fresh ? "" : `<section class="card"><h2>نقشه پیشرفت ۱۱۴ سوره <span class="small muted">${FA(solidAyat)} از ${FA(totalAyat)} آیه</span></h2><div class="bar"><i style="width:${(solidAyat / totalAyat * 100).toFixed(1)}%"></i></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px">
+      ${DATA.surahs.map(s => `<button data-open="${s.n}" style="padding:6px;display:flex;flex-direction:column;gap:4px;align-items:stretch;font-size:12px">${s.name}${strip(s)}</button>`).join("")}
+    </div>${legend()}</section>`}`;
+}
+// A row of the tools that belong to the Quran section, above the list of surahs
+const quranTools = () => { const g = menuGroups().find(x => x.sec === "quran"); return `<section class="card" style="gap:2px">${g.items.filter(x => !x.id).map(x => featBtn(x)).join("")}</section>`; };
+const featBtn = x => `<button class="mitem" data-feat="${x.k}"><span class="mi">${x.ic}</span><span class="ml">${x.l}${x.d ? `<small>${esc(x.d)}</small>` : ""}</span>${x.b ? `<b class="mb num">${FA(x.b)}</b>` : ""}</button>`;
+const featByKey = k => { for (const g of menuGroups()) for (const x of g.items) if (x.k === k) return x; return null; };
+// Feature finder: every tool of the app by name, grouped by the section it lives in
+function featMatches(q) {
+  q = normFa(faNum(q || "")).trim(); if (!q) return [];
+  return menuGroups().flatMap(g => g.items.filter(x => normFa(x.l + " " + (x.d || "") + " " + (x.kw || "")).includes(q)).map(x => Object.assign({}, x, {sec: g.t})));
+}
+function openFeatFind() {
+  lastDraw = () => {};
+  const groups = menuGroups();
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="همه امکانات">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>همه امکانات</h2></header>
+    <div class="body"><input type="search" id="ff-q" placeholder="نام امکان؛ مثل آزمون، دانلود، قاری، هدف" aria-label="جستجوی امکانات">
+    <div id="ff-out"></div></div></div>`);
+  const out = box.querySelector("#ff-out"), q = box.querySelector("#ff-q");
+  const draw = () => {
+    const m = featMatches(q.value);
+    out.innerHTML = q.value.trim() ? (m.length ? `<div class="mgroup">${m.map(x => featBtn(Object.assign({}, x, {d: x.sec + (x.d ? " · " + x.d : "")}))).join("")}</div>` : `<p class="small muted">امکانی با این نام پیدا نشد. برای جستجو در آیات و سوره‌ها از جستجوی بالای صفحه استفاده کنید.</p>`)
+      : `<div class="menu-grid">${groups.map(g => `<div class="mgroup"><h3>${g.t}</h3>${g.items.map(x => featBtn(x)).join("")}</div>`).join("")}</div>`;
+  };
+  q.addEventListener("input", draw); draw(); setTimeout(() => q.focus(), 50);
+}
 // ---------- menu: every tool of the app, grouped. Phone: the «منو» tab opens it; wide site: it sits in the side menu ----------
 const MI = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">${d}</svg>`;
 const goTab = t => { document.getElementById("sheet").innerHTML = ""; tab = t; closeWordbar(); render(); window.scrollTo(0, 0); };
@@ -4012,34 +4060,34 @@ function menuGroups() {
   const weak = weakOpen().length, notes = notebookEntries().length, vocab = Object.keys(st.vocab || {}).length;
   const due = siyaqs().filter(x => status(x.k) === "due").length;
   return [
-    {t: "یادگیری", tabs: true, items: [
-      {id: "home", l: "امروز", d: "کارهای امروز و قدم بعدی", ic: MI(`<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>`), go: () => goTab("home")},
-      {id: "path", l: "مسیر یادگیری", d: "مبانی تدبر و سطح ۱ تا ۶", ic: MI(`<path d="M4 20h4v-5h4v-5h4V5h4"/>`), go: () => goTab("path")},
-      {id: "map", l: "نقشه سیاق", d: "همه سوره‌ها و سیاق‌ها", ic: MI(`<rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/>`), go: () => goTab("map")},
-      {id: "mushaf", l: "مصحف", d: "خواندن و شنیدن صفحه‌به‌صفحه", ic: MI(`<path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/>`), go: () => goTab("mushaf")},
-      {id: "review", l: "مرور", d: "مرور حفظ و تدبر", ic: MI(`<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/>`), go: () => goTab("review"), b: due},
-      {id: "progress", l: "پیشرفت", d: "روزانه، ماهانه و سالانه", ic: MI(`<path d="M5 20V11M12 20V5M19 20v-7"/>`), go: () => goTab("progress")}]},
-    {t: "دفترها", items: [
-      {l: "دفتر تدبر من", d: "برداشت‌ها و پاسخ‌ها", ic: MI(`<path d="M5 4h14v16H5zM9 9h6M9 13h6"/>`), go: openNotebook, b: notes},
-      {l: "یادداشت‌ها و نشانک‌ها", d: "یادداشت آیه‌ها، نشانک‌ها، علاقه‌مندی‌ها", ic: MI(`<path d="M7 4h10v16l-5-3.5L7 20z"/>`), go: () => openMyVerses("all"), b: Object.keys(st.vnote || {}).length + Object.keys(st.bm || {}).length},
-      {l: "دفتر اشتباهات", d: "آیه‌های نیازمند تثبیت", ic: MI(`<path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2-.5-.5-2z"/>`), go: openWeak, b: weak},
-      {l: "لغت‌نامه من", d: "کلمه‌ها و تمرین کارتی", ic: MI(`<path d="M4 7h16M4 12h10M4 17h6"/>`), go: () => openVocab(), b: vocab}]},
-    {t: "تمرین و برنامه", items: [
-      {l: "آزمون", d: "«آیه بعد چیست؟» و «این آیه کجاست؟»", ic: MI(`<circle cx="12" cy="12" r="8"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.01"/>`), go: () => openQuiz("next")},
-      {l: "آزمون حفظ", d: "کلمه‌های پنهان، تکمیل آیه، آیه بعد · با نمودار پیشرفت", ic: MI(`<path d="M4 6h16M4 12h7M15 12h5M4 18h5M13 18h7"/>`), go: () => openHq()},
-      {l: st.goal ? "هدف من" : "هدف بگذار", d: "هدف حفظ با تاریخ", ic: MI(`<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/>`), go: openGoal},
-      {l: "کارنامه هفته", d: "فعالیت هفت روز اخیر", ic: MI(`<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>`), go: openWeekly},
-      {l: "کلاس و استاد", d: "فرستادن کارنامه، کلاس من", ic: MI(`<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 11a3 3 0 1 0 0-6M21 20a6 6 0 0 0-4-5.6"/>`), go: openClass}]},
-    {t: "درس، ترتیل و کتاب", items: [
-      {l: "درس‌های آفلاین", d: "فیلم و صوت ذخیره‌شده", ic: MI(`<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10 9l5 2.5-5 2.5zM8 20h8"/>`), go: () => openLessonLibrary()},
-      {l: "ترتیل‌ها", d: "قاری‌ها و دانلود ترتیل", ic: MI(`<path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v5H4zM17 14h3v5h-3z"/>`), go: () => openReciters()},
-      {l: "دانلودها", d: "وضعیت ذخیره روی دستگاه", ic: MI(`<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>`), go: () => openDownloads()},
-      {l: "کتاب‌های تدبر", d: "کتاب هر سطح و تدبر سوره‌ها", ic: MI(`<path d="M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z"/>`), go: openBooks},
-      {l: "جستجو", d: "آیه، ترجمه، محتوای تدبر، یادداشت‌ها", ic: ICON_SEARCH, go: openSearch},
-      {l: "دستیار هوشمند", d: "پرسش درباره قرآن و یادگیری", ic: MI(`<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/>`), go: () => openAiChat()}]},
-    {t: "برنامه و حساب", items: [
-      {l: "تنظیمات", d: ACCT_ON && acct ? acct.email : "قلم، رنگ، ترجمه، پشتیبان", ic: ICON_GEAR, go: openSettings},
-      {l: "راهنما", d: "روش کار و پرسش‌های رایج", ic: ICON_HELP, go: () => openGuide("")}]}
+    {t: "امروز", sec: "home", items: [
+      {k: "home", kw: "داشبورد خانه برنامه روزانه", id: "home", l: "امروز", d: "کارهای امروز و قدم بعدی", ic: MI(`<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>`), go: () => goTab("home")},
+      {k: "ai", kw: "هوش مصنوعی پیام روز گفتگو", l: "دستیار هوشمند", d: "پرسش درباره قرآن و یادگیری", ic: MI(`<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/>`), go: () => openAiChat()}]},
+    {t: "مسیر", sec: "path", items: [
+      {k: "path", kw: "سطح قدم مبانی دوره", id: "path", l: "مسیر یادگیری", d: "مبانی تدبر و سطح ۱ تا ۶", ic: MI(`<path d="M4 20h4v-5h4v-5h4V5h4"/>`), go: () => goTab("path")},
+      {k: "lessons", kw: "فیلم صوت درس استاد صبوحی", l: "درس‌های آفلاین", d: "فیلم و صوت ذخیره‌شده", ic: MI(`<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10 9l5 2.5-5 2.5zM8 20h8"/>`), go: () => openLessonLibrary()},
+      {k: "books", kw: "کتاب خرید", l: "کتاب‌های تدبر", d: "کتاب هر سطح و تدبر سوره‌ها", ic: MI(`<path d="M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z"/>`), go: openBooks},
+      {k: "goal", kw: "هدف تاریخ برنامه", l: st.goal ? "هدف من" : "هدف بگذار", d: "هدف حفظ با تاریخ", ic: MI(`<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/>`), go: openGoal}]},
+    {t: "قرآن", sec: "quran", items: [
+      {k: "mushaf", kw: "قرآن صفحه خواندن پخش ترتیل", id: "mushaf", l: "مصحف", d: "خواندن و شنیدن صفحه‌به‌صفحه", ic: MI(`<path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/>`), go: () => goTab("mushaf")},
+      {k: "map", kw: "سوره سیاق فهرست نقشه", id: "map", l: "سوره‌ها و سیاق‌ها", d: "فهرست سوره‌ها و سیاق‌ها", ic: MI(`<rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/>`), go: () => goTab("map")},
+      {k: "search", kw: "آیه ترجمه پیدا کردن", l: "جستجو", d: "آیه، ترجمه، محتوای تدبر، یادداشت‌ها", ic: ICON_SEARCH, go: openSearch},
+      {k: "vnotes", kw: "علاقه‌مندی نشانک", l: "یادداشت‌ها و نشانک‌ها", d: "یادداشت آیه‌ها، نشانک‌ها، علاقه‌مندی‌ها", ic: MI(`<path d="M7 4h10v16l-5-3.5L7 20z"/>`), go: () => openMyVerses("all"), b: Object.keys(st.vnote || {}).length + Object.keys(st.bm || {}).length},
+      {k: "reciters", kw: "قاری صوت دانلود ترتیل", l: "ترتیل‌ها", d: "قاری‌ها و دانلود ترتیل", ic: MI(`<path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v5H4zM17 14h3v5h-3z"/>`), go: () => openReciters()}]},
+    {t: "تمرین", sec: "practice", items: [
+      {k: "review", kw: "مرور حفظ تدبر امروز", id: "review", l: "مرور", d: "مرور حفظ و تدبر", ic: MI(`<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/>`), go: () => goTab("review"), b: due},
+      {k: "hq", kw: "آزمون امتحان", l: "آزمون حفظ", d: "کلمه‌های پنهان، تکمیل آیه، آیه بعد · با نمودار پیشرفت", ic: MI(`<path d="M4 6h16M4 12h7M15 12h5M4 18h5M13 18h7"/>`), go: () => openHq()},
+      {k: "quiz", kw: "امتحان آیه بعد", l: "آزمون", d: "«آیه بعد چیست؟» و «این آیه کجاست؟»", ic: MI(`<circle cx="12" cy="12" r="8"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.01"/>`), go: () => openQuiz("next")},
+      {k: "weak", kw: "اشتباه تثبیت", l: "دفتر اشتباهات", d: "آیه‌های نیازمند تثبیت", ic: MI(`<path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2-.5-.5-2z"/>`), go: openWeak, b: weak},
+      {k: "vocab", kw: "کلمه لغت کارت", l: "لغت‌نامه من", d: "کلمه‌ها و تمرین کارتی", ic: MI(`<path d="M4 7h16M4 12h10M4 17h6"/>`), go: () => openVocab(), b: vocab}]},
+    {t: "من", sec: "me", items: [
+      {k: "progress", kw: "آمار نمودار کارنامه", id: "progress", l: "پیشرفت", d: "روزانه، ماهانه، سالانه و برنامه", ic: MI(`<path d="M5 20V11M12 20V5M19 20v-7"/>`), go: () => goTab("progress")},
+      {k: "weekly", kw: "هفته گزارش", l: "کارنامه هفته", d: "فعالیت هفت روز اخیر", ic: MI(`<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>`), go: openWeekly},
+      {k: "notebook", kw: "برداشت پاسخ تدبر", l: "دفتر تدبر من", d: "برداشت‌ها و پاسخ‌ها", ic: MI(`<path d="M5 4h14v16H5zM9 9h6M9 13h6"/>`), go: openNotebook, b: notes},
+      {k: "class", kw: "مربی شاگرد", l: "کلاس و استاد", d: "فرستادن کارنامه، کلاس من", ic: MI(`<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 11a3 3 0 1 0 0-6M21 20a6 6 0 0 0-4-5.6"/>`), go: openClass},
+      {k: "downloads", kw: "ذخیره آفلاین دانلود", l: "دانلودها", d: "وضعیت ذخیره روی دستگاه", ic: MI(`<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>`), go: () => openDownloads()},
+      {k: "settings", kw: "قلم رنگ ترجمه پشتیبان حساب اعلان یادآور", l: "تنظیمات", d: ACCT_ON && acct ? acct.email : "قلم، رنگ، ترجمه، پشتیبان", ic: ICON_GEAR, go: openSettings},
+      {k: "guide", kw: "کمک پرسش", l: "راهنما", d: "روش کار و پرسش‌های رایج", ic: ICON_HELP, go: () => openGuide("")}]}
   ];
 }
 const menuItemHtml = (x, gi, ii) => `<button class="mitem" data-mi="${gi}:${ii}"${x.id && x.id === tab ? ` aria-current="page"` : ""}><span class="mi">${x.ic}</span><span class="ml">${x.l}${x.d ? `<small>${esc(x.d)}</small>` : ""}</span>${x.b ? `<b class="mb num">${FA(x.b)}</b>` : ""}</button>`;
@@ -4057,11 +4105,10 @@ function openMenu() {
 function paintNavMore() {
   const el = document.getElementById("navmore"); if (!el) return;
   const groups = menuGroups();
-  const html = groups.map((g, gi) => g.tabs ? "" : `<div class="mgroup"><h3>${g.t}</h3>${g.items.map((x, ii) => menuItemHtml(x, gi, ii)).join("")}</div>`).join("");
+  const html = groups.map((g, gi) => { const xs = g.items.map((x, ii) => x.id && SEC[x.id] === g.sec ? "" : menuItemHtml(x, gi, ii)).join(""); return xs ? `<div class="mgroup"><h3>${g.t}</h3>${xs}</div>` : ""; }).join("");
   if (paintNavMore.html === html) return;
   paintNavMore.html = html; el.innerHTML = html; menuClick(el, groups);
 }
-document.querySelector(".tabs [data-menu]").addEventListener("click", openMenu);
 
 // ---------- AI assistant: daily message at the top of home + chat ----------
 // The model is called only through a small server function (deploy/cloudflare-pages/functions/api/ai.js) whose address is set at
@@ -4946,7 +4993,7 @@ window.__back = () => {
   if (document.getElementById("wordbar").innerHTML) { closeWordbar(); return true; }
   const box = document.getElementById("sheet");
   if (box.innerHTML) { stopAudio(); openVid = null; box.innerHTML = ""; ses = null; render(); return true; }
-  if (tab !== "home") { tab = "home"; render(); return true; }
+  if (tab !== "home") { tab = tab === "progress" ? "me" : tab === "map" ? "mushaf" : "home"; render(); window.scrollTo(0, 0); return true; }
   return false;
 };
 
