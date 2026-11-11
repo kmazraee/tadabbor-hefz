@@ -413,7 +413,7 @@ footer.note{font-size:12px;color:var(--muted);text-align:center}
 .lesson audio{width:100%}
 .vframe{position:relative;width:100%;max-width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000}
 .vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}}
+@media (prefers-reduced-motion:no-preference){.sheet:not(.still){animation:up .22s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}}
 
 .searchbar{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:10px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);color:var(--muted);font-size:14px;text-align:start;justify-content:flex-start}
 .searchbar svg{width:20px;height:20px;flex:none}
@@ -707,7 +707,7 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {}, dayGoal: 0,
+const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", tipOn: false, tipAt: "08:00", autoBackup: true, tips: {}, dayGoal: 0,
   tscale: 1, rate: 1, mpGap: 0, mpTo: 0, contrast: false, motion: false};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
@@ -729,7 +729,7 @@ let acct = load("tadabbor-account", null);                       // {token, id, 
 const syncMeta = Object.assign({localAt: 0, syncAt: 0, recId: null, remoteVer: "", cfgSig: "", sig: ""}, load("tadabbor-sync", {}));
 const syncSave = () => store("tadabbor-sync", syncMeta);
 // Settings that belong to one device (or are private) are not sent to the server
-const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "ui", "tscale", "phone", "seenIntro",
+const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "tipOn", "tipAt", "ui", "tscale", "phone", "seenIntro",
   "lastUpdateCheck", "qcfAsked", "transAsked"];
 const syncSettings = () => Object.fromEntries(Object.entries(cfg).filter(([k]) => !DEVICE_KEYS.includes(k)));
 let syncApplying = false, syncTimer = 0;
@@ -2424,6 +2424,8 @@ function sheet(html, onClose) {
   const oldBody = same && cur.querySelector(".body"), y = oldBody ? oldBody.scrollTop : 0;
   const fid = same && document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : "";
   box.innerHTML = html; sheet.last = html;
+  // Slide in only when a sheet opens over the page; a redraw or a step inside an open sheet must not flash or jump
+  if (cur) { const ns = box.querySelector(".sheet"); if (ns) ns.classList.add("still"); }
   if (same) {
     const nb = box.querySelector(".body"); if (nb && y) nb.scrollTop = y;
     if (fid) { const f = box.querySelector("#" + CSS.escape(fid)); if (f) try { f.focus({preventScroll: true}); } catch (e) {} }
@@ -3941,9 +3943,28 @@ function updateNative() {
   if (!IS_APP) return;
   const all = siyaqs(), md = all.filter(x => status(x.k) === "due").length, td = all.filter(x => tadDue(x.k)).length, L = currentLevel(), nx = nextToLearn();
   const line = [md ? FA(md) + " مرور حفظ" : "", td ? FA(td) + " مرور تدبر" : "", nx ? "قدم بعد: " + nx.s.name + " · سیاق " + FA(nx.q.n) : passed(L.id) ? "" : L.t].filter(Boolean).join(" · ") || "امروز کاری نمانده";
-  try { if (Android.setReminder) Android.setReminder(!!cfg.remind, +(cfg.remindAt || "20:00").split(":")[0], +(cfg.remindAt || "20:00").split(":")[1], (myName() ? myName() + "، " : "") + "وقت حفظ تدبری است", line); } catch (e) {}
+  try {
+    if (Android.setNotify) Android.setNotify(JSON.stringify(notifyCfg(all, nx)));
+    else if (Android.setReminder) Android.setReminder(!!cfg.remind, +(cfg.remindAt || "20:00").split(":")[0], +(cfg.remindAt || "20:00").split(":")[1], (myName() ? myName() + "، " : "") + "وقت حفظ تدبری است", line);
+  } catch (e) {}
   const [vs, va] = verseOfDay();
   loadText().then(() => { try { if (Android.setWidget) Android.setWidget((myName() ? "سلام " + myName() + " · " : "") + "حفظ تدبری", line, vplain(vs, va), (trans(vs, va) || "") + " (" + S[vs].name + " " + FA(va) + ")"); } catch (e) {} }).catch(() => {});
+}
+// Both daily notifications for the Android side. The due days travel with it, so the review count is worked out when the
+// notification fires (right even if the app was not opened for days). The tip uses today's assistant message if the app
+// already has it, otherwise the phone asks the AI server itself; offline it shows the app's own message.
+const hm = (v, d) => { const [h, m] = String(v || d).split(":").map(Number); return {h: h || 0, m: m || 0}; };
+function notifyCfg(all, nx) {
+  const r = hm(cfg.remindAt, "20:00"), t = hm(cfg.tipAt, "08:00"), name = myName() || "";
+  const mem = all.filter(x => isMem(x.k)).map(x => st.items[x.k].due).filter(d => typeof d === "number");
+  const tad = all.filter(x => { const n = st.notes[x.k]; return n && n.done && n.tdue; }).map(x => st.notes[x.k].tdue);
+  const c = load("tadabbor-ai-brief", null), cached = c && !c.local && c.text && String(c.k).startsWith(today() + ":") ? {day: today(), text: c.text} : null;
+  let ctx = null; try { ctx = Object.assign(aiContext(), {ctxDay: today()}); } catch (e) {}
+  return {
+    review: {on: !!cfg.remind, h: r.h, m: r.m, name, mem, tad, weak: weakOpen().length, active: st.lastActive === null ? -1 : st.lastActive,
+      next: nx ? nx.s.name + " · سیاق " + FA(nx.q.n) : ""},
+    tip: {on: !!cfg.tipOn, h: t.h, m: t.m, name, url: AI_URL, device: AI_ON() ? aiDevice() : "", ctx, cached, local: aiLocalBrief(dayPart(t.h))}
+  };
 }
 function autoBackupDaily() {
   if (!IS_APP || !cfg.autoBackup || !window.Android || !Android.autoBackup || cfg.lastAutoDay === today()) return;
@@ -4081,8 +4102,8 @@ function aiContext() {
   };
 }
 // Offline daily message: used when there is no server/sign-in, while the model answers, or if it fails
-function aiLocalBrief() {
-  const x = aiContext(), part = dayPart(), n = x.name ? " " + x.name : "";
+function aiLocalBrief(part = dayPart()) {
+  const x = aiContext(), n = x.name ? " " + x.name : "";
   const hi = {midnight: `نیمه‌شب بخیر${n}! چراغ شما هنوز روشن است؛ اگر بیدارید، چند آیه مرور از هر سریالی می‌ارزد.`,
     morning: `صبح بخیر${n}! روز تازه، فرصت تازه.`, noon: `ظهر بخیر${n}! قبل از اینکه ناهار خواب‌آلودتان کند، یک نگاه به کارهای امروز بیندازیم.`,
     afternoon: `عصر بخیر${n}! چای عصرانه با یک سیاق تدبر بیشتر می‌چسبد.`, night: `شب بخیر${n}! پیش از خواب، بهترین وقت برای مرور است.`}[part];
@@ -4597,9 +4618,14 @@ function openSettings() {
     <section class="card"><h3>تفسیرها</h3><div id="tf-mgr"><p class="small muted">…</p></div></section>
     <section class="card"><h3>معنای کلمه‌به‌کلمه</h3><p class="small">معنای فارسی هر کلمه و تلفظ آن (Quran.com). هر سوره بار اول که باز شود ذخیره می‌شود؛ برای استفاده کاملاً بدون اینترنت، همه را یکجا ذخیره کنید (حدود ۵ مگابایت).</p>
       <div class="row between"><span class="small muted" id="wbw-st">${wbwAll ? "در حال ذخیره…" : "…"}</span><button class="small" id="wbw-all" ${wbwAll ? "disabled" : ""}>ذخیره همه سوره‌ها</button></div></section>
-    <section class="card"><h3>یادآور روزانه</h3>
-      ${IS_APP ? `<label class="switch small"><span>هر روز یادآوری کن<br><span class="muted">با تعداد مرورهای امروز و قدم بعدی شما</span></span><input type="checkbox" id="rm-on" ${cfg.remind ? "checked" : ""}></label>
+    <section class="card" id="notify"><h3>یادآورها و اعلان‌ها</h3>
+      ${IS_APP ? `<label class="switch small"><span>یادآور مرور روزانه<br><span class="muted">تعداد مرورهای حفظ و تدبرِ سررسیده و قدم بعدی شما؛ اگر امروز کارتان را کرده باشید، مزاحم نمی‌شود</span></span><input type="checkbox" id="rm-on" ${cfg.remind ? "checked" : ""}></label>
       <div class="field"><label for="rm-at" class="small">ساعت</label><input type="time" id="rm-at" value="${esc(cfg.remindAt || "20:00")}" dir="ltr"></div>
+      <div class="row"><button class="small btn-ghost" data-ntest="review">🔔 نمونه این اعلان</button></div>
+      <label class="switch small"><span>پیام روز دستیار هوشمند<br><span class="muted">هر روز همان «پیام امروز» صفحه اصلی: احوال‌پرسی، وضعیت شما و یک قدم مشخص${AI_ON() ? "؛ بدون اینترنت، پیام ساده خود برنامه" : ""}</span></span><input type="checkbox" id="tip-on" ${cfg.tipOn ? "checked" : ""}></label>
+      <div class="field"><label for="tip-at" class="small">ساعت</label><input type="time" id="tip-at" value="${esc(cfg.tipAt || "08:00")}" dir="ltr"></div>
+      <div class="row"><button class="small btn-ghost" data-ntest="tip">🔔 نمونه این اعلان</button></div>
+      ${window.Android && Android.notifyAllowed && (cfg.remind || cfg.tipOn) && !Android.notifyAllowed() ? `<p class="small" style="color:var(--st-due)">اعلان‌های برنامه در تنظیمات گوشی خاموش است؛ برای دیدن یادآورها روشنش کنید.</p>` : ""}
       <p class="small muted">برای ویجت صفحه اصلی: صفحه اصلی گوشی را نگه دارید، «ابزارک‌ها» را بزنید و «حفظ تدبری» را بکشید.</p>` : `<p class="small muted">یادآور و ویجت فقط در برنامه اندروید است.</p>`}
     </section>
     <section class="card"><h3>روش حفظ</h3>
@@ -4673,6 +4699,12 @@ function openSettings() {
   box.querySelector("#wbw-all").addEventListener("click", e => { e.target.disabled = true; downloadAllWbw(); });
   const rmOn = box.querySelector("#rm-on"); if (rmOn) rmOn.addEventListener("change", e => { cfg.remind = e.target.checked; saveCfg(); updateNative(); toast(cfg.remind ? "یادآور روزانه روشن شد" : "یادآور خاموش شد"); });
   const rmAt = box.querySelector("#rm-at"); if (rmAt) rmAt.addEventListener("change", e => { cfg.remindAt = e.target.value || "20:00"; saveCfg(); updateNative(); });
+  const tpOn = box.querySelector("#tip-on"); if (tpOn) tpOn.addEventListener("change", e => { cfg.tipOn = e.target.checked; saveCfg(); updateNative(); toast(cfg.tipOn ? "پیام روز دستیار ساعت " + FA(cfg.tipAt || "08:00") + " می‌آید" : "پیام روز دستیار خاموش شد"); });
+  const tpAt = box.querySelector("#tip-at"); if (tpAt) tpAt.addEventListener("change", e => { cfg.tipAt = e.target.value || "08:00"; saveCfg(); updateNative(); });
+  box.querySelectorAll("[data-ntest]").forEach(b => b.addEventListener("click", () => {
+    if (!window.Android || !Android.testNotify) { toast("برای این کار برنامه را به‌روز کنید"); return; }
+    updateNative(); Android.testNotify(b.dataset.ntest); toast(b.dataset.ntest === "tip" ? "دستیار دارد پیام را می‌نویسد…" : "اعلان نمونه فرستاده شد");
+  }));
   const ab = box.querySelector("#ab-on"); if (ab) ab.addEventListener("change", e => { cfg.autoBackup = e.target.checked; saveCfg(); if (cfg.autoBackup) { cfg.lastAutoDay = null; autoBackupDaily(); openSettingsKeep(); } });
   box.querySelector("#freepath").addEventListener("change", e => set("freePath", e.target.checked));
   box.querySelector("#pf-name").addEventListener("change", e => { const v = e.target.value.trim(); if (v.length >= 2) { cfg.name = v; saveCfg(); toast("نام ذخیره شد"); } else { e.target.value = cfg.name; toast("نام دست‌کم دو حرف باشد"); } });

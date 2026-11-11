@@ -413,6 +413,33 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** Both daily notifications (review reminder and the assistant's message of the day) as one JSON from the page. */
+        @JavascriptInterface
+        public void setNotify(String json) {
+            try {
+                org.json.JSONObject j = new org.json.JSONObject(json);
+                boolean any = j.optJSONObject("review") != null && j.optJSONObject("review").optBoolean("on")
+                        || j.optJSONObject("tip") != null && j.optJSONObject("tip").optBoolean("on");
+                if (any && Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+                    runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 51));
+            } catch (Exception ignored) { }
+            Reminder.saveAll(MainActivity.this, json);
+        }
+
+        /** Show one of the two notifications now, so the reader can see what it looks like ("review" or "tip"). */
+        @JavascriptInterface
+        public void testNotify(String kind) {
+            if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 51));
+                return;
+            }
+            sendBroadcast(new Intent(MainActivity.this, Reminder.class).setAction("tip".equals(kind) ? Reminder.A_TIP : Reminder.A_REVIEW).putExtra("test", true));
+        }
+
+        /** True when Android lets the app show notifications (Android 13+ asks; older versions can turn them off in settings). */
+        @JavascriptInterface
+        public boolean notifyAllowed() { return androidx.core.app.NotificationManagerCompat.from(MainActivity.this).areNotificationsEnabled(); }
+
         /** Fill the home-screen widget. */
         @JavascriptInterface
         public void setWidget(String title, String line, String verse, String meaning) { Widget.save(MainActivity.this, title, line, verse, meaning); }
