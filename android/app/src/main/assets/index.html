@@ -307,6 +307,24 @@ body.has-dl .toast{bottom:128px}
 .plan-i{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:start;padding:10px 12px;width:100%}
 .plan-i small{color:var(--muted);white-space:nowrap}
 .resume .row{gap:8px}
+.dgoal{display:flex;align-items:center;gap:14px}
+.dgoal .ring{flex:none;width:76px;height:76px;position:relative}
+.dgoal .ring svg{width:76px;height:76px;transform:rotate(-90deg)}
+.dgoal .ring circle{fill:none;stroke-width:7;stroke:var(--tonal2,var(--line))}
+.dgoal .ring circle.v{stroke:var(--lapis);stroke-linecap:round;transition:stroke-dashoffset .4s}
+.dgoal .ring.ok circle.v{stroke:var(--gold)}
+.dgoal .ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:17px}
+.dgoal .txt{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.gdots{display:flex;gap:6px;align-items:flex-end}
+.gdots span{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--muted)}
+.gdots i{width:16px;height:16px;border-radius:50%;background:var(--tonal2,var(--line));display:block}
+.gdots i.on{background:var(--gold)} .gdots i.part{background:var(--lapis-soft)} .gdots .now i{outline:2px solid var(--lapis);outline-offset:1px}
+.srow{display:flex;flex-direction:column;gap:5px;width:100%;text-align:start;padding:10px 12px}
+.srow .bar{height:6px}
+.mst{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--tonal,var(--paper));white-space:nowrap;font-weight:500}
+.mst.m3{background:var(--lapis-soft)} .mst.m4,.mst.m5{background:var(--gold-soft)}
+.mlv{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px}
+.mlv .bar{height:8px}
 .badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .badge{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;padding:8px 4px;border-radius:12px;background:var(--paper);opacity:.35;filter:grayscale(1)}
 .badge.on{opacity:1;filter:none;background:var(--gold-soft)}
@@ -681,7 +699,7 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {}};
+const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {}, dayGoal: 0, aiNotify: false, aiNotifyAt: "07:30"};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 // One-time move of earlier installs to the new defaults: Parhizgar recitation and Safavi translation
@@ -702,7 +720,7 @@ let acct = load("tadabbor-account", null);                       // {token, id, 
 const syncMeta = Object.assign({localAt: 0, syncAt: 0, recId: null, remoteVer: "", cfgSig: "", sig: ""}, load("tadabbor-sync", {}));
 const syncSave = () => store("tadabbor-sync", syncMeta);
 // Settings that belong to one device (or are private) are not sent to the server
-const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "ui", "phone", "seenIntro",
+const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "aiNotify", "aiNotifyAt", "ui", "phone", "seenIntro",
   "lastUpdateCheck", "qcfAsked", "transAsked"];
 const syncSettings = () => Object.fromEntries(Object.entries(cfg).filter(([k]) => !DEVICE_KEYS.includes(k)));
 let syncApplying = false, syncTimer = 0;
@@ -712,9 +730,10 @@ function touchCfg() { if (syncApplying) return; const g = JSON.stringify(syncSet
 const today = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 864e5);
 function markActive() {
   const d = today(); if (st.lastActive === d) return;
-  st.streak = st.lastActive === d - 1 ? (st.streak || 0) + 1 : 1; st.lastActive = d; save();
+  st.streak = st.lastActive === d - 1 ? (st.streak || 0) + 1 : 1; st.lastActive = d; st.best = Math.max(st.best || 0, st.streak); save();
 }
 const streakNow = () => st.lastActive !== null && st.lastActive >= today() - 1 ? st.streak : 0;
+const streakBest = () => Math.max(st.best || 0, streakNow());
 
 function applySettings() {
   const r = document.documentElement;
@@ -1416,11 +1435,13 @@ function home() {
   ${tipCard("home")}
   ${journeyHero()}
   ${resumeCard()}
+  ${dayGoalCard(fresh)}
   ${todayCard(all, due, tdDue, weak, fresh)}
   ${weak.length ? `<section class="card"><div class="row between"><span class="small"><b class="num">${FA(weak.length)}</b> آیه نیازمند تثبیت در دفتر اشتباهات</span><span class="row" style="gap:6px"><button class="small" data-weak>دفتر اشتباهات</button><button class="small btn-main" data-drill>تمرین</button></span></div></section>` : ""}
-  ${fresh ? "" : `<button class="weekcard" data-goto="progress" aria-label="دیدن پیشرفت روزانه، ماهانه و سالانه"><span class="row between"><b>این هفته</b><span class="small muted">${FA(streakNow())} روز پیوسته · پیشرفت کامل ‹</span></span>
+  ${fresh ? "" : `<button class="weekcard" data-goto="progress" aria-label="دیدن پیشرفت روزانه، ماهانه و سالانه"><span class="row between"><b>این هفته</b><span class="small muted">${FA(streakNow())} روز پیوسته${streakBest() > streakNow() ? " · رکورد " + FA(streakBest()) : ""} · پیشرفت کامل ‹</span></span>
     <span class="wbars" aria-hidden="true">${wvals.map((v, i) => `<span class="${i === 6 ? "now" : ""}"><i style="height:${Math.max(6, v / wmax * 44)}px"></i><small>${WD[(wdays[i] + 5) % 7]}</small></span>`).join("")}</span>
     <span class="small muted num">${FA(wk.a)} آیه · ${FA(wk.t)} سیاق تدبر · ${FA(wk.r + wk.tr)} مرور · ${FA(solidAyat)} از ${FA(totalAyat)} آیه قرآن تثبیت شده</span></button>`}
+  ${surahsCard()}
   <section class="card fixsec" aria-label="مسیر یادگیری"><div class="row between"><h2>مسیر یادگیری</h2><button class="small btn-ghost" data-goto="path">همه قدم‌ها ‹</button></div>
     ${passed("intro") ? "" : `<span class="small muted">قدم‌ها به ترتیب باز می‌شوند.</span>`}${stepper()}</section>
   ${preCard()}
@@ -1434,7 +1455,7 @@ function home() {
   ${backupOld && !fresh ? `<section class="card"><div class="row between"><span class="small">${cfg.lastBackup ? "بیش از یک هفته از آخرین پشتیبان گذشته." : "هنوز از پیشرفت و تدبرهایتان پشتیبان نگرفته‌اید."}</span><button class="small" data-settings>پشتیبان‌گیری</button></div></section>` : ""}
   `;
 }
-const siyaqButton = (x, mode) => `<button class="siyaq-item" data-start="${x.k}" data-mode="${mode}" style="--c:${COLORS[status(x.k)]}"><span class="stripe"></span><span><b>${x.s.name}</b> · ${esc(title(x.s, x.q))}<br><span class="small muted">آیات ${FA(x.q.s)} تا ${FA(x.q.e)}</span></span><span class="small muted">${FA(ayahCount(x.q))} آیه</span></button>`;
+const siyaqButton = (x, mode) => `<button class="siyaq-item" data-start="${x.k}" data-mode="${mode}" style="--c:${COLORS[status(x.k)]}"><span class="stripe"></span><span><b>${x.s.name}</b> · ${esc(title(x.s, x.q))}<br><span class="small muted">آیات ${FA(x.q.s)} تا ${FA(x.q.e)}</span>${isMem(x.k) ? " " + masteryChip(x.k) : ""}</span><span class="small muted">${FA(ayahCount(x.q))} آیه</span></button>`;
 
 function map() {
   return `${topBar(`<h1>نقشه سیاق‌ها</h1>`)}${tipCard("map")}${legend()}${testNote.replace("مرز سیاق‌ها بر اساس", "مرز سیاق‌های سوره‌هایی که اسلاید مؤسسه ندارند بر اساس")}
@@ -1449,6 +1470,7 @@ function review() {
   const soon = all.filter(x => status(x.k) === "solid").sort((a, b) => st.items[a.k].due - st.items[b.k].due);
   return `${topBar(`<h1>مرور</h1>`)}${tipCard("review")}
   <p class="muted small">هر مرور با یادآوری معنا شروع می‌شود: اول عنوان و گام‌های سیاق را به خاطر بیاورید، بعد آیات را از حفظ بخوانید. اشتباه‌های هر آیه را ثبت کنید تا در «دفتر اشتباهات» بماند.</p>
+  ${masteryCard()}
   <section class="card"><h2>تمرین و آزمون</h2><p class="small muted">آزمون ۱۰ سؤالی از سیاق‌هایی که حفظ کرده‌اید.</p>
     <div class="row"><button class="small" data-quiz="next">آیه بعد چیست؟</button><button class="small" data-quiz="where">این آیه کجاست؟</button></div></section>
   <section class="card"><div class="row between"><h2>دفتر تدبر من</h2><button class="small" data-notebook>باز کن</button></div><p class="small muted">همه برداشت‌ها و پاسخ‌های تدبری شما، با جستجو و خروجی فایل.</p></section>
@@ -1459,7 +1481,7 @@ function review() {
   <section class="card"><h2>مرور حفظ امروز (${FA(due.length)})</h2>
   ${due.length ? due.map(x => siyaqButton(x, "review")).join("") : `<p class="muted small">چیزی برای مرور نمانده.</p>`}</section>
   <section class="card"><h2>مرورهای آینده</h2>
-  ${soon.map(x => `<div class="row between small"><span>${x.s.name} · ${esc(title(x.s, x.q))}</span><span class="muted num">${st.items[x.k].due - today() === 1 ? "فردا" : FA(st.items[x.k].due - today()) + " روز دیگر"}</span></div>`).join("")}</section>`;
+  ${soon.map(x => `<div class="row between small"><span>${x.s.name} · ${esc(title(x.s, x.q))} ${masteryChip(x.k)}</span><span class="muted num">${st.items[x.k].due - today() === 1 ? "فردا" : FA(st.items[x.k].due - today()) + " روز دیگر"}</span></div>`).join("")}</section>`;
 }
 
 // ---------- progress tab: daily, monthly, yearly + plan tracking ----------
@@ -2555,6 +2577,7 @@ function stepTadabbur() {
       b.querySelector("#back").addEventListener("click", () => { ses.sub = 1; drawSession(); });
       b.querySelector("#next").addEventListener("click", () => {
         if (cfg.gate && !n.title.trim() && !n.answers.some(a => a.trim())) { toast("دست‌کم به یک پرسش پاسخ دهید یا عنوانی بنویسید"); return; }
+        if (!n.done) logInc("ta", ayahCount(ses.q));
         markTadDone(n); markActive(); save(); advance();
       });
     }
@@ -2657,7 +2680,7 @@ function stepConnect() {
 function stepRate() {
   const it = st.items[ses.k] || {}, n = note(ses.k);
   const ivl = it.ivl || 1;
-  const opts = [["hard", "سخت", 1], ["good", "خوب", Math.max(2, Math.round(ivl * 2))], ["easy", "آسان", Math.max(4, Math.round(ivl * 3))]];
+  const opts = [["hard", "سخت", 1], ["good", "خوب", Math.min(365, Math.max(2, Math.round(ivl * 2)))], ["easy", "آسان", Math.min(365, Math.max(4, Math.round(ivl * 3)))]];
   return {body: `
     <div class="card"><h2>${esc(nameComma())}این سیاق را چطور خواندید؟</h2>
     <p class="small muted">پاسخ شما زمان مرور بعدی را تعیین می‌کند. «سخت» سیاق را به مرحله حفظ برمی‌گرداند.</p>
@@ -2670,10 +2693,11 @@ function stepRate() {
         const ins = b.querySelector("#insight").value.trim();
         if (ins) { n.extra = n.extra || []; n.extra.push({day: today(), text: ins}); }
         const item = st.items[ses.k] || (st.items[ses.k] = {});
-        if (ses.mode === "review") logInc("r"); else if (x.dataset.rate !== "hard" && (item.stage || 0) < 5) { logInc("m"); logInc("a", ayahCount(ses.q)); }
+        const lv0 = masteryOf(ses.k);
+        if (ses.mode === "review") { logInc("r"); logInc("ra", ayahCount(ses.q)); } else if (x.dataset.rate !== "hard" && (item.stage || 0) < 5) { logInc("m"); logInc("a", ayahCount(ses.q)); }
         item.hist = (item.hist || []).concat([[today(), x.dataset.rate, Object.keys(ses.errs || {}).length]]).slice(-20);
         if (x.dataset.rate === "hard") { item.stage = 2; delete item.due; item.lapses = (item.lapses || 0) + 1; toast("سیاق به مرحله حفظ برگشت"); }
-        else { item.stage = 5; item.ivl = +x.dataset.days; item.due = today() + item.ivl; toast("ثبت شد · مرور بعدی " + FA(item.ivl) + " روز دیگر"); }
+        else { item.stage = 5; item.ivl = +x.dataset.days; item.due = today() + item.ivl; const lv1 = masteryOf(ses.k); toast("ثبت شد · مرور بعدی " + FA(item.ivl) + " روز دیگر" + (lv0 && lv1 > lv0 ? " · سطح تسلط: " + MASTERY[lv1 - 1][0] : "")); }
         markActive(); save(); ses = null; document.getElementById("sheet").innerHTML = ""; render();
       }));
     }};
@@ -3155,7 +3179,7 @@ function openSimilar(vk) {
 }
 
 // ---------- activity log, for the weekly report and badges ----------
-function logInc(f, n) { st.log = st.log || {}; const d = today(), o = st.log[d] || (st.log[d] = {}); o[f] = (o[f] || 0) + (n || 1); }
+function logInc(f, n) { st.log = st.log || {}; const d = today(), o = st.log[d] || (st.log[d] = {}); o[f] = (o[f] || 0) + (n || 1); dayGoalCheck(true); }
 function weekSum(from, to) { const o = {m: 0, a: 0, t: 0, r: 0, tr: 0, w: 0, days: 0}; for (let d = from; d <= to; d++) { const x = (st.log || {})[d]; if (!x) continue; o.days++; for (const k in x) o[k] = (o[k] || 0) + x[k]; } return o; }
 function openWeekly() {
   lastDraw = openWeekly;
@@ -3186,6 +3210,7 @@ const BADGES = [
   ["l1", "⭐", "گذر از سطح ۱", () => passed("l1")],
   ["l3", "🌟", "گذر از سطح ۳", () => passed("l3")],
   ["l6", "👑", "گذر از هر شش سطح", () => passed("l6")],
+  ["streak3", "✨", "۳ روز پیوسته", () => streakBest() >= 3],
   ["streak7", "🔥", "۷ روز پیوسته", () => streakNow() >= 7],
   ["streak30", "💎", "۳۰ روز پیوسته", () => streakNow() >= 30],
   ["streak100", "🕌", "۱۰۰ روز پیوسته", () => streakNow() >= 100],
@@ -3194,7 +3219,11 @@ const BADGES = [
   ["tadfix10", "🧠", "۱۰ سیاق با تدبر تثبیت‌شده", () => siyaqs().filter(x => isTadFix(x.k)).length >= 10],
   ["fix10", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2-.5-.5-2z"/></svg>`, "۱۰ آیه تثبیت‌شده از دفتر اشتباهات", () => errList().filter(x => !x.open).length >= 10],
   ["vocab50", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h6"/></svg>`, "۵۰ کلمه در لغت‌نامه", () => Object.keys(st.vocab || {}).length >= 50],
-  ["juz30", "🌙", "حفظ کامل جزء ۳۰", () => range(78, 114).every(sn => surahAll(S[sn], isMem))]
+  ["juz30", "🌙", "حفظ کامل جزء ۳۰", () => range(78, 114).every(sn => surahAll(S[sn], isMem))],
+  ["goal1", "🎯", "اولین هدف روزانه", () => goalDays() >= 1],
+  ["goal7", "🏹", "۷ روز رسیدن به هدف روزانه", () => goalDays() >= 7],
+  ["rev50", "🔁", "۵۰ مرور حفظ", () => Object.values(st.log || {}).reduce((a, x) => a + (x.r || 0), 0) >= 50],
+  ["master1", "🎓", "اولین سیاق در سطح «مسلط»", () => siyaqs().some(x => masteryOf(x.k) >= 4 && !(st.items[x.k] || {}).pre)]
 ];
 function checkBadges() {
   st.badges = st.badges || {}; const fresh = [];
@@ -3203,6 +3232,7 @@ function checkBadges() {
 }
 const badgesCard = () => { const got = BADGES.filter(b => (st.badges || {})[b[0]]);
   return `<section class="card"><div class="row between"><h2>نشان‌ها</h2><span class="small muted num">${FA(got.length)} از ${FA(BADGES.length)}</span></div>
+    <p class="small muted num">🔥 ${FA(streakNow())} روز پیوسته · رکورد شما ${FA(streakBest())} روز${cfg.dayGoal ? " · " + FA(goalDays()) + " روز رسیدن به هدف روزانه" : ""}</p>
     <div class="badges">${BADGES.map(([id, ic, t]) => `<div class="badge${(st.badges || {})[id] ? " on" : ""}" title="${t}"><span>${ic}</span><small>${t}</small></div>`).join("")}</div></section>`; };
 
 // ---------- goals ----------
@@ -3264,6 +3294,67 @@ const planCard = () => {
   return `<section class="card"><div class="row between"><h2>برنامه امروز</h2><button class="small btn-ghost" data-planmin="0" aria-label="تغییر زمان روزانه">${FA(cfg.dailyMin)} دقیقه ✎</button></div>
     ${p.items.length ? p.items.join("") : `<p class="small ok">✓ کارهای امروز انجام شد. اگر وقت دارید، سیاق تازه‌ای شروع کنید یا در مصحف بخوانید.</p>`}</section>`;
 };
+
+// ---------- daily goal: ayat worked on today (new memorization, memorization review, tadabbur) ----------
+const DAY_GOALS = [5, 10, 20, 40];
+const dayParts = d => { const x = (st.log || {})[d] || {}; return {a: x.a || 0, ra: x.ra || 0, ta: x.ta || 0}; };
+const dayWork = d => { const x = dayParts(d); return x.a + x.ra + x.ta; };
+const goalDays = () => Object.values(st.log || {}).filter(x => x.g).length;
+// Marks today as a goal day the first time the goal is reached (st.log[day].g); the day stays marked if the goal changes later
+function dayGoalCheck(say) {
+  const g = cfg.dayGoal, d = today(), o = (st.log || {})[d];
+  if (!g || !o || o.g || dayWork(d) < g) return;
+  o.g = 1;
+  if (say) setTimeout(() => toast("🎯 هدف امروز کامل شد: " + FA(dayWork(d)) + " آیه"), 2800);
+}
+function dayGoalCard(fresh) {
+  if (fresh) return "";
+  const g = cfg.dayGoal, t0 = today();
+  if (!g) { const sug = st.goal ? goalStatus(st.goal) : null;
+    return `<section class="card fixsec" aria-label="هدف روزانه"><h2>هدف روزانه</h2>
+      <p class="small">هر روز با چند آیه کار می‌کنید؟ حفظ تازه، مرور حفظ و تدبر هر سه حساب می‌شوند.${sug && sug.done < sug.total ? ` برای هدف «${goalName(st.goal)}» روزی حدود ${FA(sug.perDay)} آیه حفظ لازم است.` : ""}</p>
+      <div class="seg">${DAY_GOALS.map(n => `<button data-daygoal="${n}">${FA(n)} آیه</button>`).join("")}</div></section>`; }
+  const x = dayParts(t0), done = x.a + x.ra + x.ta, p = Math.min(1, done / g), C = 2 * Math.PI * 31, ok = done >= g;
+  const days = range(t0 - 6, t0);
+  return `<section class="card fixsec" aria-label="هدف روزانه"><div class="row between"><h2>هدف روزانه</h2><button class="small btn-ghost" data-daygoal="0" aria-label="تغییر هدف روزانه">${FA(g)} آیه ✎</button></div>
+    <div class="dgoal"><div class="ring${ok ? " ok" : ""}" role="img" aria-label="${FA(done)} از ${FA(g)} آیه"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="31"/><circle class="v" cx="38" cy="38" r="31" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - p)).toFixed(1)}"/></svg><b class="num">${ok ? "✓" : FA(Math.round(p * 100)) + "٪"}</b></div>
+      <div class="txt"><b class="num">${FA(done)} از ${FA(g)} آیه${ok ? " · هدف امروز کامل شد" : ""}</b>
+        <span class="small muted num">حفظ تازه ${FA(x.a)} · مرور ${FA(x.ra)} · تدبر ${FA(x.ta)}</span>
+        <span class="small muted num">🔥 ${FA(streakNow())} روز پیوسته · رکورد ${FA(streakBest())}</span></div></div>
+    <div class="row between"><div class="gdots" aria-label="هفت روز گذشته">${days.map((d, i) => { const w = dayWork(d), o = (st.log || {})[d] || {}; return `<span class="${i === 6 ? "now" : ""}"><i class="${o.g || w >= g ? "on" : w ? "part" : ""}"></i>${WD[(d + 5) % 7]}</span>`; }).join("")}</div>
+      <button class="small btn-ghost" data-goto="path">${FA(Object.keys(st.badges || {}).length)} نشان ‹</button></div></section>`;
+}
+
+// ---------- progress of each surah in hand (home) ----------
+function surahsCard() {
+  const nx = nextToLearn(), cur = nx ? nx.s.n : 0;
+  const rows = DATA.surahs.map(s => ({s, p: surahProgress(s.n)})).filter(x => x.p.tad > 0 || x.p.mem > 0);
+  if (!rows.length) return "";
+  const open = rows.filter(x => x.p.mem < 1 || x.p.tad < 1).sort((a, b) => (b.s.n === cur) - (a.s.n === cur) || (b.p.tad + b.p.mem) - (a.p.tad + a.p.mem));
+  const full = rows.length - open.length, show = open.slice(0, 4);
+  return `<section class="card fixsec" aria-label="پیشرفت سوره‌ها"><div class="row between"><h2>پیشرفت سوره‌ها</h2><button class="small btn-ghost" data-goto="map">همه سوره‌ها ‹</button></div>
+    ${show.map(x => `<button class="srow" data-open="${x.s.n}"><span class="row between" style="flex-wrap:nowrap"><b>${x.s.name}${x.s.n === cur ? ` <span class="mst m3">سوره فعلی</span>` : ""}</b><span class="small muted num">تدبر ${pct(x.p.tad)} · حفظ ${pct(x.p.mem)}</span></span>${miniBar(x.p.tad, "var(--lapis)")}${miniBar(x.p.mem)}</button>`).join("")}
+    <span class="small muted num">${[open.length > show.length ? FA(open.length - show.length) + " سوره دیگر در دست" : "", full ? FA(full) + " سوره کامل (تدبر و حفظ)" : ""].filter(Boolean).join(" · ") || "نوار بالا تدبر و نوار پایین حفظ هر سوره است."}</span></section>`;
+}
+
+// ---------- mastery level of a memorized siyaq, from its current review interval (days) ----------
+const MASTERY = [["تازه‌حفظ", 0], ["در حال تثبیت", 4], ["تثبیت‌شده", 10], ["مسلط", 30], ["ملکه", 90]];
+function masteryOf(k) {
+  const it = st.items[k]; if (!it || !(it.stage >= 5)) return 0;
+  let l = 1; MASTERY.forEach(([, min], i) => { if ((it.ivl || 1) >= min) l = i + 1; });
+  return l;
+}
+const masteryChip = k => { const l = masteryOf(k); return l ? `<span class="mst m${l}">${MASTERY[l - 1][0]}</span>` : ""; };
+function masteryCard() {
+  const mem = siyaqs().filter(x => isMem(x.k)); if (!mem.length) return "";
+  const n = MASTERY.map(() => 0), ay = MASTERY.map(() => 0);
+  mem.forEach(x => { const l = masteryOf(x.k) - 1; n[l]++; ay[l] += ayahCount(x.q); });
+  const tot = ay.reduce((a, b) => a + b, 0) || 1;
+  return `<section class="card" aria-label="سطح تسلط"><h2>سطح تسلط حفظ</h2>
+    <p class="small muted">هر بار که سیاقی را در مرور «خوب» یا «آسان» بخوانید فاصله مرور بعدی‌اش بیشتر می‌شود و سطحش بالا می‌رود؛ با «سخت» به مرحله حفظ برمی‌گردد.</p>
+    <div class="mlv">${MASTERY.map(([t, min], i) => `<span class="mst m${i + 1}">${t}</span>${miniBar(ay[i] / tot, i >= 3 ? "var(--gold)" : i === 2 ? "var(--lapis)" : "var(--st-solid)")}<span class="small muted num">${FA(n[i])} سیاق · ${FA(ay[i])} آیه</span>`).join("")}</div>
+    <span class="small muted num">فاصله مرور بعدی: ${MASTERY.map(([t, min], i) => (i ? "از " + FA(min) + " روز " : "زیر " + FA(MASTERY[1][1]) + " روز ") + t).join("، ")}.</span></section>`;
+}
 
 // ---------- resume where you left off ----------
 function noteLast(part) { st.last = Object.assign(st.last || {}, part, {at: Date.now()}); }
@@ -3547,6 +3638,9 @@ function updateNative() {
   const all = siyaqs(), md = all.filter(x => status(x.k) === "due").length, td = all.filter(x => tadDue(x.k)).length, L = currentLevel(), nx = nextToLearn();
   const line = [md ? FA(md) + " مرور حفظ" : "", td ? FA(td) + " مرور تدبر" : "", nx ? "قدم بعد: " + nx.s.name + " · سیاق " + FA(nx.q.n) : passed(L.id) ? "" : L.t].filter(Boolean).join(" · ") || "امروز کاری نمانده";
   try { if (Android.setReminder) Android.setReminder(!!cfg.remind, +(cfg.remindAt || "20:00").split(":")[0], +(cfg.remindAt || "20:00").split(":")[1], (myName() ? myName() + "، " : "") + "وقت حفظ تدبری است", line); } catch (e) {}
+  // Daily message of the assistant as a notification: the phone asks the assistant at that hour with this snapshot, or shows the local summary
+  try { if (AI_NOTIFY_OK()) { const [h, m] = (cfg.aiNotifyAt || "07:30").split(":").map(Number);
+    Android.setAiNotify(!!cfg.aiNotify, h, m, AI_URL, aiDevice(), JSON.stringify({mode: "daily", ctx: aiContext()}), aiLocalBrief(dayPart(h)), (myName() ? myName() + "، " : "") + "پیام امروز حفظ تدبری"); } } catch (e) {}
   const [vs, va] = verseOfDay();
   loadText().then(() => { try { if (Android.setWidget) Android.setWidget((myName() ? "سلام " + myName() + " · " : "") + "حفظ تدبری", line, vplain(vs, va), (trans(vs, va) || "") + " (" + S[vs].name + " " + FA(va) + ")"); } catch (e) {} }).catch(() => {});
 }
@@ -3575,6 +3669,8 @@ const ACT = {
   "data-class": () => openClass(),
   "data-tip": v => { cfg.tips = cfg.tips || {}; cfg.tips[v] = true; saveCfg(); const c = document.querySelector(`[data-tip="${v}"]`); if (c) c.closest(".tip").remove(); },
   "data-planmin": v => { cfg.dailyMin = +v; saveCfg(); render(); },
+  "data-daygoal": v => { cfg.dayGoal = +v; saveCfg(); dayGoalCheck(false); save(); render(); if (+v) toast("هدف روزانه: " + FA(v) + " آیه"); },
+  "data-ainotify": () => { cfg.aiNotify = true; saveCfg(); updateNative(); paintAiCard(); toast("پیام امروز هر روز ساعت " + FA(cfg.aiNotifyAt || "07:30") + " اعلان می‌شود؛ ساعتش در تنظیمات است", 4200); },
   "data-gopage": v => { tab = "mushaf"; mushafPage = +v; render(); window.scrollTo(0, 0); },
   "data-listen": v => { const [sn, qn] = v.split(":").map(Number), q = S[sn].siyaqs[qn - 1]; tab = "mushaf"; mushafPage = pageOf(sn, q.s); cfg.mpEnd = "siyaq"; if (!cfg.mpTrans) cfg.mpTrans = "translations/Makarem_Kabiri_16Kbps"; saveCfg(); render(); mpStart(sn, q.s); },
   "data-rec": v => recStart(v), "data-recstop": () => recStop(), "data-recplay": v => recPlay(v),
@@ -3649,6 +3745,8 @@ document.querySelector(".tabs [data-menu]").addEventListener("click", openMenu);
 // build time (AI_API); its API key never reaches the app. Without it, the daily box still works from a local summary.
 const AI_URL = "https://ai.ganjineh-tadabbor.ir/api/ai".startsWith("http") ? "https://ai.ganjineh-tadabbor.ir/api/ai" : "";
 const AI_ON = () => !!AI_URL;
+// The app can show the daily message as a notification at a chosen hour (native side: AiNotify.java)
+const AI_NOTIFY_OK = () => IS_APP && typeof Android.setAiNotify === "function";
 const aiDevice = () => { let d = load("tadabbor-device", ""); if (!d) { d = Math.random().toString(36).slice(2) + Date.now().toString(36); store("tadabbor-device", d); } return d; };
 const ai = {busy: false, err: "", off: false, chat: load("tadabbor-ai-chat", []), chatBusy: false, chatErr: ""};
 const dayPart = (h = new Date().getHours()) => h < 4 ? "midnight" : h < 11 ? "morning" : h < 15 ? "noon" : h < 19 ? "afternoon" : "night";
@@ -3683,8 +3781,8 @@ function aiContext() {
   };
 }
 // Offline daily message: used when there is no server/sign-in, while the model answers, or if it fails
-function aiLocalBrief() {
-  const x = aiContext(), part = dayPart(), n = x.name ? " " + x.name : "";
+function aiLocalBrief(forPart) {
+  const x = aiContext(), part = forPart || dayPart(), n = x.name ? " " + x.name : "";
   const hi = {midnight: `نیمه‌شب بخیر${n}! چراغ شما هنوز روشن است؛ اگر بیدارید، چند آیه مرور از هر سریالی می‌ارزد.`,
     morning: `صبح بخیر${n}! روز تازه، فرصت تازه.`, noon: `ظهر بخیر${n}! قبل از اینکه ناهار خواب‌آلودتان کند، یک نگاه به کارهای امروز بیندازیم.`,
     afternoon: `عصر بخیر${n}! چای عصرانه با یک سیاق تدبر بیشتر می‌چسبد.`, night: `شب بخیر${n}! پیش از خواب، بهترین وقت برای مرور است.`}[part];
@@ -3712,7 +3810,7 @@ function aiCard() {
       ${AI_ON() ? `<button class="icon-btn btn-ghost" data-aibrief aria-label="پیام تازه"${ai.busy ? " disabled" : ""}>↻</button>` : ""}</div>
     <div class="ai-text" id="ai-brief">${ai.busy && !fresh ? `<span class="small muted">دستیار دارد وضعیت شما را می‌خواند…</span><br>` : ""}${aiFmt(text)}</div>
     ${ai.err ? `<span class="small muted">${esc(ai.err)}</span>` : ""}
-    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button></div></section>`;
+    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button>${AI_NOTIFY_OK() && !cfg.aiNotify ? `<button class="small" data-ainotify>🔔 هر روز اعلان کن</button>` : ""}</div></section>`;
 }
 // Safe formatting of the model's text: escape everything, then allow **bold**, line breaks and "- " lists
 function aiFmt(t) {
@@ -3933,6 +4031,7 @@ async function syncNow(manual) {
 function mergeProgress(a, b) {
   const out = Object.assign(EMPTY(), b, a);
   out.streak = Math.max(a.streak || 0, b.streak || 0);
+  out.best = Math.max(a.best || 0, b.best || 0, out.streak);
   out.lastActive = Math.max(a.lastActive || 0, b.lastActive || 0) || null;
   const bigger = (x, y) => JSON.stringify(x).length >= JSON.stringify(y).length ? x : y;
   for (const k of Object.keys(EMPTY())) {
@@ -4188,6 +4287,8 @@ function openSettings() {
     <section class="card"><h3>یادآور روزانه</h3>
       ${IS_APP ? `<label class="switch small"><span>هر روز یادآوری کن<br><span class="muted">با تعداد مرورهای امروز و قدم بعدی شما</span></span><input type="checkbox" id="rm-on" ${cfg.remind ? "checked" : ""}></label>
       <div class="field"><label for="rm-at" class="small">ساعت</label><input type="time" id="rm-at" value="${esc(cfg.remindAt || "20:00")}" dir="ltr"></div>
+      ${AI_NOTIFY_OK() ? `<label class="switch small"><span>پیام امروز دستیار را هر روز اعلان کن<br><span class="muted">${AI_ON() ? "همان پیام بالای صفحه اصلی؛ با اینترنت دستیار هوشمند می‌نویسد، بدون اینترنت خلاصه خود برنامه می‌آید" : "خلاصه وضعیت شما از خود برنامه"}</span></span><input type="checkbox" id="an-on" ${cfg.aiNotify ? "checked" : ""}></label>
+      <div class="field"><label for="an-at" class="small">ساعت پیام امروز</label><input type="time" id="an-at" value="${esc(cfg.aiNotifyAt || "07:30")}" dir="ltr"></div>` : ""}
       <p class="small muted">برای ویجت صفحه اصلی: صفحه اصلی گوشی را نگه دارید، «ابزارک‌ها» را بزنید و «حفظ تدبری» را بکشید.</p>` : `<p class="small muted">یادآور و ویجت فقط در برنامه اندروید است.</p>`}
     </section>
     <section class="card"><h3>روش حفظ</h3>
@@ -4255,6 +4356,8 @@ function openSettings() {
   IDB.keys("wbw:").then(k => { const el = box.querySelector("#wbw-st"); if (el && !wbwAll) el.textContent = `${FA(k.length)} از ۱۱۴ سوره روی دستگاه`; });
   box.querySelector("#wbw-all").addEventListener("click", e => { e.target.disabled = true; downloadAllWbw(); });
   const rmOn = box.querySelector("#rm-on"); if (rmOn) rmOn.addEventListener("change", e => { cfg.remind = e.target.checked; saveCfg(); updateNative(); toast(cfg.remind ? "یادآور روزانه روشن شد" : "یادآور خاموش شد"); });
+  const anOn = box.querySelector("#an-on"); if (anOn) anOn.addEventListener("change", e => { cfg.aiNotify = e.target.checked; saveCfg(); updateNative(); toast(cfg.aiNotify ? "اعلان پیام امروز روشن شد" : "اعلان پیام امروز خاموش شد"); });
+  const anAt = box.querySelector("#an-at"); if (anAt) anAt.addEventListener("change", e => { cfg.aiNotifyAt = e.target.value || "07:30"; saveCfg(); updateNative(); });
   const rmAt = box.querySelector("#rm-at"); if (rmAt) rmAt.addEventListener("change", e => { cfg.remindAt = e.target.value || "20:00"; saveCfg(); updateNative(); });
   const ab = box.querySelector("#ab-on"); if (ab) ab.addEventListener("change", e => { cfg.autoBackup = e.target.checked; saveCfg(); if (cfg.autoBackup) { cfg.lastAutoDay = null; autoBackupDaily(); openSettingsKeep(); } });
   box.querySelector("#freepath").addEventListener("change", e => set("freePath", e.target.checked));
@@ -4314,7 +4417,9 @@ function openGuide(section) {
       <li><b>حفظ گام‌به‌گام:</b> کلمات در چهار سطح محو می‌شوند (کامل، نیمه، سرنخ، معنا). اگر آیه‌ای مشابه داشته باشد، هشدار «⚠ آیه مشابه» می‌آید.</li>
       <li><b>اتصال:</b> کل سیاق را از حفظ بخوانید؛ روی هر آیه بزنید و بگویید درست خواندید یا نه. می‌توانید خواندن خودتان را ضبط و با قاری مقایسه کنید.</li>
       <li><b>ثبت:</b> «سخت» سیاق را به حفظ برمی‌گرداند؛ «خوب» و «آسان» مرور بعدی را دورتر می‌برند.</li>
-    </ol><p>هر مرور حفظ با یادآوری معنا شروع می‌شود. «مرور تدبر» جداست: پیام و گام‌های سیاق را به یاد می‌آورید و با برداشت خودتان و پیام استاد مقایسه می‌کنید.</p></div></details>
+    </ol><p>هر مرور حفظ با یادآوری معنا شروع می‌شود. «مرور تدبر» جداست: پیام و گام‌های سیاق را به یاد می‌آورید و با برداشت خودتان و پیام استاد مقایسه می‌کنید.</p>
+      <p><b>سطح تسلط:</b> هر سیاق حفظ‌شده یکی از پنج سطح را دارد: تازه‌حفظ، در حال تثبیت، تثبیت‌شده، مسلط و ملکه. با هر مرور «خوب» یا «آسان» فاصله مرور بعدی بیشتر می‌شود و سطح بالا می‌رود؛ جمع‌بندی سطح‌ها بالای صفحه «مرور» است.</p>
+      <p><b>هدف روزانه:</b> در صفحه اصلی تعداد آیه‌ای را که می‌خواهید هر روز با آن کار کنید انتخاب کنید (حفظ تازه، مرور حفظ و تدبر حساب می‌شوند). حلقه پیشرفت امروز، هفت روز گذشته، روزهای پیوسته و رکوردتان همان‌جاست.</p></div></details>
 
     <details ${open("weak")}><summary>دفتر اشتباهات و آیات مشابه</summary><div>
       <p>اشتباه هر آیه را با نوعش ثبت کنید (یادم نیامد، کلمه یا اعراب، قاطی با آیه مشابه، ترتیب) و اگر خواستید کلمه‌های اشتباه را بزنید. «دفتر اشتباهات» آیه‌های ضعیف را جمع می‌کند و «تمرین تثبیت» با آیه قبل به‌عنوان سرنخ، آن‌ها را تمرین می‌دهد؛ هر آیه با ${FA(2)} بار درست خواندن در روزهای بعد تثبیت می‌شود.</p>
@@ -4341,7 +4446,7 @@ function openGuide(section) {
       <p><b>کتاب‌ها:</b> کتاب‌های هر سطح و تدبر سوره‌ها، با پیوند خرید از انتشارات تدبر.</p></div></details>
 
     <details ${open("ai")}><summary>دستیار هوشمند</summary><div>
-      <p><b>پیام امروز:</b> کادر بالای صفحه «امروز» هر روز با توجه به ساعت به شما سلام می‌کند و مرورهای عقب‌مانده و قدم بعدی را می‌گوید.</p>
+      <p><b>پیام امروز:</b> کادر بالای صفحه «امروز» هر روز با توجه به ساعت به شما سلام می‌کند و مرورهای عقب‌مانده و قدم بعدی را می‌گوید. در برنامه اندروید می‌توانید با دکمه «🔔 هر روز اعلان کن» یا از تنظیمات ← «یادآور روزانه»، همین پیام را هر روز در ساعت دلخواه به‌صورت اعلان بگیرید.</p>
       <p><b>گفتگو:</b> از منو ← «دستیار هوشمند» درباره آیات، روش تدبر، برنامه حفظ و پیشرفت خودتان بپرسید.</p>
       <p>پاسخ‌ها را یک مدل هوش مصنوعی می‌نویسد و ممکن است خطا داشته باشد؛ فتوای شرعی نیست و جای تفسیر و استاد را نمی‌گیرد. اطلاعات شخصی در پرسش‌ها ننویسید. اگر اینترنت نباشد، پیام امروز از خلاصه‌ای که روی خود گوشی ساخته می‌شود نشان داده می‌شود.</p></div></details>
 
@@ -4351,7 +4456,7 @@ function openGuide(section) {
       <p>از چرخ‌دنده بالای هر صفحه: مشخصات شما، پوسته و رنگ، قلم مصحف، ترجمه (پیش‌فرض صفوی)، قاری، تفسیر پیش‌فرض، یادآور روزانه، «حفظ فقط بعد از تدبر» و «مسیر آزاد».</p>
       <p><b>بدون اینترنت:</b> متن، صفحه‌ها و چهار ترجمه داخل برنامه است. قلم عثمان طه و ترجمه‌های دیگر بعد از نصب ذخیره می‌شوند. ترتیل، تفسیرها، معنای کلمه‌به‌کلمه و درس‌ها را هم از تنظیمات یا همان صفحه روی گوشی ذخیره کنید.</p>
       <p><b>پشتیبان:</b> در برنامه اندروید هر روز خودکار یک پشتیبان در پوشه Download/HefzTadabbori نوشته می‌شود. برای ایمنی بیشتر، گاهی «ذخیره پشتیبان» را بزنید و Drive را انتخاب کنید؛ برای بازیابی «بازیابی از فایل».</p>
-      <p><b>یادآور و ویجت:</b> یادآور را در تنظیمات روشن کنید؛ ویجت را از «ابزارک‌های» صفحه اصلی گوشی اضافه کنید.</p></div></details>
+      <p><b>یادآور و ویجت:</b> یادآور و اعلان «پیام امروز» را در تنظیمات روشن کنید؛ ویجت را از «ابزارک‌های» صفحه اصلی گوشی اضافه کنید.</p></div></details>
 
     <details><summary>پرسش‌های رایج</summary><div>
       <p><b>داده‌هایم کجاست؟</b> روی همین دستگاه و در فایل‌های پشتیبان خودتان؛ اگر با حساب وارد شده باشید، روی سرور برنامه هم تا بین گوشی و سایت یکی بماند. دستیار هوشمند فقط خلاصه‌ای از وضعیت یادگیری و پرسش شما را می‌فرستد. جزئیات در «حریم خصوصی» در تنظیمات.</p>
