@@ -1431,7 +1431,7 @@ function review() {
   return `${topBar(`<h1>مرور</h1>`)}${tipCard("review")}
   <p class="muted small">هر مرور با یادآوری معنا شروع می‌شود: اول عنوان و گام‌های سیاق را به خاطر بیاورید، بعد آیات را از حفظ بخوانید. اشتباه‌های هر آیه را ثبت کنید تا در «دفتر اشتباهات» بماند.</p>
   <section class="card"><h2>تمرین و آزمون</h2><p class="small muted">آزمون ۱۰ سؤالی از سیاق‌هایی که حفظ کرده‌اید.</p>
-    <div class="row"><button class="small" data-quiz="next">آیه بعد چیست؟</button><button class="small" data-quiz="where">این آیه کجاست؟</button></div></section>
+    <div class="row"><button class="small btn-main" data-hq>آزمون حفظ</button><button class="small" data-quiz="next">آیه بعد چیست؟</button><button class="small" data-quiz="where">این آیه کجاست؟</button></div></section>
   <section class="card"><div class="row between"><h2>دفتر تدبر من</h2><button class="small" data-notebook>باز کن</button></div><p class="small muted">همه برداشت‌ها و پاسخ‌های تدبری شما، با جستجو و خروجی فایل.</p></section>
   <section class="card"><div class="row between"><h2>کارنامه هفته</h2><button class="small" data-weekly>ببین</button></div></section>
   <section class="card"><div class="row between"><h2>لغت‌نامه من</h2><button class="small" data-vocab>${Object.keys(st.vocab || {}).length ? "تمرین و فهرست" : "باز کن"}</button></div><p class="small muted">${Object.keys(st.vocab || {}).length ? FA(Object.keys(st.vocab).length) + " کلمه که در «فهم آیات» یا مصحف نشان کرده‌اید؛ با کارت تمرینشان کنید." : "کلمه‌هایی که معنایشان را نمی‌دانستید اینجا جمع می‌شوند."}</p></section>
@@ -3589,6 +3589,7 @@ function menuGroups() {
       {l: "لغت‌نامه من", d: "کلمه‌ها و تمرین کارتی", ic: MI(`<path d="M4 7h16M4 12h10M4 17h6"/>`), go: () => openVocab(), b: vocab}]},
     {t: "تمرین و برنامه", items: [
       {l: "آزمون", d: "«آیه بعد چیست؟» و «این آیه کجاست؟»", ic: MI(`<circle cx="12" cy="12" r="8"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.01"/>`), go: () => openQuiz("next")},
+      {l: "آزمون حفظ", d: "کلمه‌های پنهان، تکمیل آیه، آیه بعد · با نمودار پیشرفت", ic: MI(`<path d="M4 6h16M4 12h7M15 12h5M4 18h5M13 18h7"/>`), go: () => openHq()},
       {l: st.goal ? "هدف من" : "هدف بگذار", d: "هدف حفظ با تاریخ", ic: MI(`<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/>`), go: openGoal},
       {l: "کارنامه هفته", d: "فعالیت هفت روز اخیر", ic: MI(`<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>`), go: openWeekly},
       {l: "کلاس و استاد", d: "فرستادن کارنامه، کلاس من", ic: MI(`<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 11a3 3 0 1 0 0-6M21 20a6 6 0 0 0-4-5.6"/>`), go: openClass}]},
@@ -4305,6 +4306,7 @@ function openGuide(section) {
       <li><b>تفسیر:</b> المیزان (پیش‌فرض، متن عربی، در برنامه اندروید)، المختصر و سعدی به فارسی و ده‌ها تفسیر عربی؛ انتخاب از فهرست بالای صفحه تفسیر.</li>
       <li><b>ریشه کلمه:</b> همه آیه‌هایی که کلمه‌ای از همان ریشه دارند.</li>
       <li><b>لغت‌نامه من:</b> کلمه‌های نشان‌کرده، با تمرین کارتی (صفحه مرور).</li>
+      <li><b>آزمون حفظ:</b> «کلمه‌های پنهان»، «تکمیل آیه» و «آیه بعد» با امتیاز و نمودار پیشرفت (صفحه مرور یا منو).</li>
       <li><b>آزمون:</b> «آیه بعد چیست؟» و «این آیه کجاست؟» (صفحه مرور)؛ «تمرین ترتیب سیاق‌ها» (صفحه سوره).</li>
       <li><b>دفتر تدبر من:</b> برداشت‌ها و پاسخ‌ها با جستجو و خروجی فایل.</li>
       <li><b>هدف و کارنامه:</b> هدف حفظ با تاریخ پایان، کارنامه هفته، نشان‌ها (صفحه مسیر و مرور).</li>
@@ -4472,6 +4474,8 @@ window.__back = () => {
   if (tab !== "home") { tab = "home"; render(); return true; }
   return false;
 };
+
+/*HEFZQUIZ*/
 
 mushafPage = 1;
 if (window.__oldWebView) throw new Error("old webview");
