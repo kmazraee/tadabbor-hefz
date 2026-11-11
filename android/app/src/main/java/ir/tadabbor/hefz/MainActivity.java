@@ -390,18 +390,6 @@ public class MainActivity extends Activity {
             Reminder.save(MainActivity.this, on, hour, minute, title, text);
         }
 
-        /** The assistant's daily message as a notification at hour:minute (AiTip); asks for the notification permission on Android 13+. */
-        @JavascriptInterface
-        public void setAiTip(boolean on, int hour, int minute, String url, String device, String ctx, String text, double day, String title) {
-            if (on && Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
-                runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 52));
-            AiTip.save(MainActivity.this, on, hour, minute, url, device, ctx, text, (long) day, title);
-        }
-
-        /** Today's message if the notification fetched it while the app was closed: {"day","text","at"} or "". */
-        @JavascriptInterface
-        public String aiTipToday() { return AiTip.fetchedToday(MainActivity.this); }
-
         /** Whether the phone is in dark mode (the WebView does not pass this on to the page). */
         @JavascriptInterface
         public boolean isNight() {
