@@ -1,0 +1,12 @@
+# For deploying from the command line (npx wrangler deploy). Deploying from the Cloudflare dashboard needs no file.
+name = "hefz-ai"
+main = "ai-worker.js"
+compatibility_date = "2025-06-01"
+
+# At most 10 questions per minute for each device and each IP address.
+[[ratelimits]]
+name = "RATE"
+namespace_id = "1001"
+  [ratelimits.simple]
+  limit = 10
+  period = 60

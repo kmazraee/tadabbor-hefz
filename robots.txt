@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ganjineh-tadabbor.ir/sitemap.xml

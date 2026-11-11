@@ -147,6 +147,36 @@ public class MainActivity extends Activity {
 
     /** Methods the page can call through window.Android. */
     class Bridge {
+        /** POST JSON from native code (the assistant): used when the page's own fetch cannot reach the server. Answers through __nativePost(id, status, text). */
+        @JavascriptInterface
+        public void httpPost(final String id, final String url, final String device, final String body) {
+            new Thread(() -> {
+                int status = 0; String text = "";
+                try {
+                    HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                    c.setConnectTimeout(15000);
+                    c.setReadTimeout(40000);
+                    c.setRequestMethod("POST");
+                    c.setDoOutput(true);
+                    c.setRequestProperty("Content-Type", "application/json");
+                    c.setRequestProperty("X-Device", device);
+                    c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ") HefzTadabbori");
+                    try (OutputStream o = c.getOutputStream()) { o.write(body.getBytes(StandardCharsets.UTF_8)); }
+                    status = c.getResponseCode();
+                    InputStream in = status >= 400 ? c.getErrorStream() : c.getInputStream();
+                    if (in != null) {
+                        java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                        byte[] buf = new byte[8192]; int n;
+                        while ((n = in.read(buf)) > 0) bo.write(buf, 0, n);
+                        text = bo.toString("UTF-8");
+                    }
+                } catch (Exception e) {
+                    status = -1; text = e.getClass().getSimpleName() + ": " + String.valueOf(e.getMessage());
+                }
+                js("window.__nativePost && __nativePost(" + JSONObject.quote(id) + "," + status + "," + JSONObject.quote(text) + ")");
+            }).start();
+        }
+
         @JavascriptInterface
         public boolean qcfReady() { return qcfCount() == QCF_FILES.length; }
 
@@ -359,6 +389,56 @@ public class MainActivity extends Activity {
                 runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 51));
             Reminder.save(MainActivity.this, on, hour, minute, title, text);
         }
+
+        /** Whether the phone is in dark mode (the WebView does not pass this on to the page). */
+        @JavascriptInterface
+        public boolean isNight() {
+            return (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        }
+
+        /** Colour the status and navigation bars like the page (paper / accent), with light or dark bar icons. */
+        @JavascriptInterface
+        public void setBars(final String paper, final String accent, final boolean dark) {
+            runOnUiThread(() -> {
+                try {
+                    int bg = android.graphics.Color.parseColor(paper.trim());
+                    getWindow().setStatusBarColor(bg);
+                    getWindow().setNavigationBarColor(bg);
+                    View d = getWindow().getDecorView();
+                    int f = d.getSystemUiVisibility();
+                    if (Build.VERSION.SDK_INT >= 23) f = dark ? f & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : f | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    if (Build.VERSION.SDK_INT >= 26) f = dark ? f & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : f | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                    d.setSystemUiVisibility(f);
+                } catch (Exception ignored) { }
+            });
+        }
+
+        /** Both daily notifications (review reminder and the assistant's message of the day) as one JSON from the page. */
+        @JavascriptInterface
+        public void setNotify(String json) {
+            try {
+                org.json.JSONObject j = new org.json.JSONObject(json);
+                boolean any = j.optJSONObject("review") != null && j.optJSONObject("review").optBoolean("on")
+                        || j.optJSONObject("tip") != null && j.optJSONObject("tip").optBoolean("on");
+                if (any && Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+                    runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 51));
+            } catch (Exception ignored) { }
+            Reminder.saveAll(MainActivity.this, json);
+        }
+
+        /** Show one of the two notifications now, so the reader can see what it looks like ("review" or "tip"). */
+        @JavascriptInterface
+        public void testNotify(String kind) {
+            if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 51));
+                return;
+            }
+            sendBroadcast(new Intent(MainActivity.this, Reminder.class).setAction("tip".equals(kind) ? Reminder.A_TIP : Reminder.A_REVIEW).putExtra("test", true));
+        }
+
+        /** True when Android lets the app show notifications (Android 13+ asks; older versions can turn them off in settings). */
+        @JavascriptInterface
+        public boolean notifyAllowed() { return androidx.core.app.NotificationManagerCompat.from(MainActivity.this).areNotificationsEnabled(); }
 
         /** Fill the home-screen widget. */
         @JavascriptInterface

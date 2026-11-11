@@ -26,6 +26,7 @@ if OUT.exists():
 
 (OUT / "index.html").write_text(web.page("data/", True, True), encoding="utf-8")
 (OUT / "sw.js").write_text(web.service_worker(), encoding="utf-8")
+web.write_web_extras(OUT)
 shutil.copy(ROOT / "privacy.html", OUT / "privacy.html")
 shutil.copytree(ROOT / "android/app/src/main/assets/fonts", OUT / "fonts", ignore=shutil.ignore_patterns("LICENSE-*"))
 for sub in ("pages", "trans"):

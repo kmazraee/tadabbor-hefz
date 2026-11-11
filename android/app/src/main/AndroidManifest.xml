@@ -34,6 +34,7 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
                 <action android:name="ir.tadabbor.hefz.REMIND" />
+                <action android:name="ir.tadabbor.hefz.REMIND_TIP" />
             </intent-filter>
         </receiver>
 
