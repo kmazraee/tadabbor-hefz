@@ -390,6 +390,41 @@ public class MainActivity extends Activity {
             Reminder.save(MainActivity.this, on, hour, minute, title, text);
         }
 
+        /** The assistant's daily message as a notification at hour:minute (AiTip); asks for the notification permission on Android 13+. */
+        @JavascriptInterface
+        public void setAiTip(boolean on, int hour, int minute, String url, String device, String ctx, String text, double day, String title) {
+            if (on && Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+                runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 52));
+            AiTip.save(MainActivity.this, on, hour, minute, url, device, ctx, text, (long) day, title);
+        }
+
+        /** Today's message if the notification fetched it while the app was closed: {"day","text","at"} or "". */
+        @JavascriptInterface
+        public String aiTipToday() { return AiTip.fetchedToday(MainActivity.this); }
+
+        /** Whether the phone is in dark mode (the WebView does not pass this on to the page). */
+        @JavascriptInterface
+        public boolean isNight() {
+            return (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        }
+
+        /** Colour the status and navigation bars like the page (paper / accent), with light or dark bar icons. */
+        @JavascriptInterface
+        public void setBars(final String paper, final String accent, final boolean dark) {
+            runOnUiThread(() -> {
+                try {
+                    int bg = android.graphics.Color.parseColor(paper.trim());
+                    getWindow().setStatusBarColor(bg);
+                    getWindow().setNavigationBarColor(bg);
+                    View d = getWindow().getDecorView();
+                    int f = d.getSystemUiVisibility();
+                    if (Build.VERSION.SDK_INT >= 23) f = dark ? f & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : f | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    if (Build.VERSION.SDK_INT >= 26) f = dark ? f & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : f | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                    d.setSystemUiVisibility(f);
+                } catch (Exception ignored) { }
+            });
+        }
+
         /** Fill the home-screen widget. */
         @JavascriptInterface
         public void setWidget(String title, String line, String verse, String meaning) { Widget.save(MainActivity.this, title, line, verse, meaning); }

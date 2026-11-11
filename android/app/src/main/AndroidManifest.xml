@@ -37,6 +37,14 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".AiTip" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="ir.tadabbor.hefz.AITIP" />
+            </intent-filter>
+        </receiver>
+
         <receiver android:name=".Widget" android:exported="false" android:label="حفظ تدبری">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

@@ -31,6 +31,7 @@
   --f-ui:"Vazirmatn",Tahoma,"Segoe UI",sans-serif;
   --f-q:"Amiri Quran","Amiri","Scheherazade New",serif;
   --q-lh:1.9;
+  --t-scale:1;
   --r:14px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-theme="sepia"]){
@@ -70,13 +71,24 @@ a{color:var(--lapis)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .hero{background:var(--lapis);color:var(--on-lapis);border:none}
 .hero .muted{color:inherit;opacity:.8}
-.hero .q{font-family:"Amiri Quran",var(--f-q);font-size:22px;line-height:2}
+.hero .q{font-family:"Amiri Quran",var(--f-q);font-size:calc(22px * var(--t-scale));line-height:2}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .between{justify-content:space-between}
 button,select,input,textarea{font:inherit;color:var(--ink)}
 button{cursor:pointer;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:10px 14px}
 button:disabled{opacity:.5;cursor:default}
 button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+/* Accessibility: high contrast, reduced motion, screen-reader-only text, skip link */
+:root[data-contrast="high"]{--muted:var(--ink);--line:color-mix(in srgb,var(--ink) 45%,transparent);--page-edge:color-mix(in srgb,var(--ink) 45%,transparent)}
+:root[data-contrast="high"] .muted{opacity:1}
+:root[data-contrast="high"] button{border-width:2px}
+:root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip{position:absolute;inset-inline-start:8px;top:-60px;z-index:50;background:var(--gold);color:#fff;padding:8px 14px;border-radius:10px;font-weight:700;text-decoration:none}
+.skip:focus{top:8px}
+.pl-rate{min-width:52px;height:36px;padding:0 8px;border-radius:18px;font-size:13px;font-weight:700;flex:none}
+.ai-notify{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .btn-main{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:700}
 .hero .btn-main{background:var(--on-lapis);color:var(--lapis);border-color:var(--on-lapis)}
 .btn-ghost{background:transparent}
@@ -174,7 +186,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .fl-pre{padding-bottom:12px;margin-bottom:6px;border-bottom:1px dashed var(--line)}
 .fl-note{margin:2px 0 0;color:var(--muted,#777)}
 .fl-ay{font-size:12px;color:var(--lapis);font-weight:700}
-.fl-ar{font-family:var(--f-q);font-size:18px;line-height:1.9;direction:rtl}
+.fl-ar{font-family:var(--f-q);font-size:calc(18px * var(--t-scale));line-height:1.9;direction:rtl}
 .deck-dua{background:var(--lapis-soft)}
 .deck-dua p{font-size:16px;line-height:2}
 .meaning{background:var(--lapis-soft);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}
@@ -301,8 +313,8 @@ body.has-dl .toast{bottom:128px}
 .chips4{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .c4{font-size:11px;padding:1px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
 .c4.on{border-color:var(--c);color:var(--ink);background:color-mix(in srgb,var(--c) 18%,transparent)}
-.tafsir-body{line-height:2;font-size:15px}
-.tafsir-body.ar-text .tf-text{font-family:"Amiri Quran","Amiri",serif;font-size:19px;line-height:2.1}
+.tafsir-body{line-height:2;font-size:calc(15px * var(--t-scale))}
+.tafsir-body.ar-text .tf-text{font-family:"Amiri Quran","Amiri",serif;font-size:calc(19px * var(--t-scale));line-height:2.1}
 .tf-text{white-space:normal}
 .plan-i{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:start;padding:10px 12px;width:100%}
 .plan-i small{color:var(--muted);white-space:nowrap}
@@ -389,7 +401,7 @@ footer.note{font-size:12px;color:var(--muted);text-align:center}
 .wordbar{position:fixed;inset-inline:0;bottom:64px;max-width:480px;margin-inline:auto;padding:0 12px;z-index:6}
 .wordbar .card{box-shadow:0 6px 24px rgba(0,0,0,.18);gap:8px}
 /* lessons */
-.tr{margin:0;font-size:14.5px;line-height:1.9}
+.tr{margin:0;font-size:calc(14.5px * var(--t-scale));line-height:1.9}
 .lesson{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .lesson audio{width:100%}
 .vframe{position:relative;width:100%;max-width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000}
@@ -585,16 +597,17 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 <body>
 
 
+<a class="skip" href="#view">رفتن به محتوای اصلی</a>
 <div class="app">
-  <main id="view"></main>
+  <main id="view" tabindex="-1"></main>
   <nav class="tabs" aria-label="بخش‌ها">
-    <button data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>امروز</button>
-    <button data-tab="mushaf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/><path d="M12 6v14.5"/></svg>مصحف</button>
-    <button data-tab="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/></svg>نقشه</button>
-    <button data-tab="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>مرور</button>
-    <button data-tab="path"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4v-5h4v-5h4V5h4"/><circle cx="20" cy="5" r="1.5" fill="currentColor"/></svg>مسیر</button>
-    <button data-tab="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>پیشرفت</button>
-    <button data-menu aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>منو</button>
+    <button data-tab="home" aria-current="page"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>امروز</button>
+    <button data-tab="mushaf"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6z"/><path d="M12 6v14.5"/></svg>مصحف</button>
+    <button data-tab="map"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="4" rx="1.5"/><rect x="3" y="11" width="12" height="4" rx="1.5"/><rect x="3" y="17" width="15" height="4" rx="1.5"/></svg>نقشه</button>
+    <button data-tab="review"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>مرور</button>
+    <button data-tab="path"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4v-5h4v-5h4V5h4"/><circle cx="20" cy="5" r="1.5" fill="currentColor"/></svg>مسیر</button>
+    <button data-tab="progress"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>پیشرفت</button>
+    <button data-menu aria-haspopup="dialog"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>منو</button>
     <div class="navmore" id="navmore"></div>
   </nav>
 </div>
@@ -633,7 +646,7 @@ function jsonOf(url) {
   }
   return fetch(url).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
 }
-const VERSION = "0.13.2";
+const VERSION = "0.14.0";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
 if (!IS_APP) document.documentElement.classList.add("site");
 // The app downloads content from the configured site; a web copy reads it from the server it is served from
@@ -665,8 +678,17 @@ const reciterOptions = sel => RECITER_GROUPS.map(([g, gl]) => `<optgroup label="
 const QFONTS = [["qcf", "عثمان طه"], ["amiri", "امیری قرآن"], ["sch", "شهرزاد نو"]];
 const TEXTFONT = {amiri: '"Amiri Quran","Amiri",serif', sch: '"Scheherazade New","Amiri Quran",serif', qcf: '"Amiri Quran","Amiri",serif'};
 const ACCENTS = [["lapis", "لاجوردی", "#1F4E79"], ["green", "سبز", "#2F6B4F"], ["teal", "فیروزه‌ای", "#0F6E73"], ["maroon", "عنابی", "#7A2E3B"]];
-const THEMES = [["system", "خودکار"], ["light", "روشن"], ["dark", "تیره"], ["sepia", "کاغذی"]];
-const UISIZES = [[0.92, "کوچک"], [1, "معمولی"], [1.1, "بزرگ"]];
+const THEMES = [["system", "مثل گوشی"], ["night", "شب‌ها تیره"], ["light", "روشن"], ["dark", "تیره"], ["sepia", "کاغذی"]];
+// "night": dark from NIGHT_FROM to NIGHT_TO o'clock (local time), light otherwise
+const NIGHT_FROM = 19, NIGHT_TO = 6;
+const UISIZES = [[0.92, "کوچک"], [1, "معمولی"], [1.1, "بزرگ"], [1.25, "خیلی بزرگ"], [1.4, "درشت"]];
+// Size of translations, tafsir and verse text outside the mushaf pages (the pages always fit the screen width)
+const TSCALE_MIN = 0.85, TSCALE_MAX = 1.8;
+const RATES = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2];
+const rateName = r => r === 1 ? "عادی" : FA(String(r)) + "×";
+// Pause after each verse so the listener can repeat it: seconds, or -1 = as long as the verse itself
+const GAPS = [0, 1, 2, 3, 5, 8, -1];
+const gapName = g => g === -1 ? "هم‌اندازه آیه" : g ? FA(g) + " ثانیه" : "بدون مکث";
 const QUESTIONS = [
   "مخاطب این سیاق کیست و در چه حالی است؟",
   "سیاق از کجا شروع می‌کند و مخاطب را به کجا می‌رساند؟",
@@ -681,7 +703,8 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {}};
+const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {},
+  tscale: 1, rate: 1, mpGap: 0, mpTo: 0, contrast: false, motion: false, aiNotify: false, aiNotifyAt: "08:00"};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 // One-time move of earlier installs to the new defaults: Parhizgar recitation and Safavi translation
@@ -702,7 +725,7 @@ let acct = load("tadabbor-account", null);                       // {token, id, 
 const syncMeta = Object.assign({localAt: 0, syncAt: 0, recId: null, remoteVer: "", cfgSig: "", sig: ""}, load("tadabbor-sync", {}));
 const syncSave = () => store("tadabbor-sync", syncMeta);
 // Settings that belong to one device (or are private) are not sent to the server
-const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "ui", "phone", "seenIntro",
+const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "aiNotify", "aiNotifyAt", "ui", "tscale", "phone", "seenIntro",
   "lastUpdateCheck", "qcfAsked", "transAsked"];
 const syncSettings = () => Object.fromEntries(Object.entries(cfg).filter(([k]) => !DEVICE_KEYS.includes(k)));
 let syncApplying = false, syncTimer = 0;
@@ -718,12 +741,35 @@ const streakNow = () => st.lastActive !== null && st.lastActive >= today() - 1 ?
 
 function applySettings() {
   const r = document.documentElement;
-  if (cfg.theme === "system") r.removeAttribute("data-theme"); else r.setAttribute("data-theme", cfg.theme);
+  const th = themeNow();
+  if (th === "system") r.removeAttribute("data-theme"); else r.setAttribute("data-theme", th);
   r.setAttribute("data-accent", cfg.accent);
+  if (cfg.contrast) r.setAttribute("data-contrast", "high"); else r.removeAttribute("data-contrast");
+  if (cfg.motion) r.setAttribute("data-motion", "reduce"); else r.removeAttribute("data-motion");
+  r.style.setProperty("--t-scale", cfg.tscale || 1);
+  applySettings.dark = isDarkNow(th);
+  try { if (IS_APP && Android.setBars) { const cs = getComputedStyle(r); Android.setBars(cs.getPropertyValue("--paper").trim(), cs.getPropertyValue("--lapis").trim(), applySettings.dark); } } catch (e) {}
   r.style.setProperty("--f-q", TEXTFONT[cfg.qfont]);
   r.style.setProperty("--q-lh", cfg.qlh);
   document.body.style.zoom = cfg.ui;
 }
+
+// The theme in force now: "night" and "system" resolve here ("system" asks the phone inside the app,
+// whose WebView does not report the phone's dark mode to CSS)
+function themeNow() {
+  if (cfg.theme === "night") { const h = new Date().getHours(); return h >= NIGHT_FROM || h < NIGHT_TO ? "dark" : "light"; }
+  if (cfg.theme === "system" && IS_APP && window.Android && Android.isNight) { try { return Android.isNight() ? "dark" : "light"; } catch (e) {} }
+  return cfg.theme;
+}
+const isDarkNow = th => th === "dark" || (th === "system" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+// Re-check every minute so "شب‌ها تیره" switches by itself at dusk and dawn
+setInterval(() => { if ((cfg.theme === "night" || cfg.theme === "system") && document.documentElement.getAttribute("data-theme") !== (themeNow() === "system" ? null : themeNow())) applySettings(); }, 60000);
+function toggleDark() {
+  cfg.theme = applySettings.dark ? "light" : "dark"; saveCfg(); applySettings();
+  toast(cfg.theme === "dark" ? "حالت شب روشن شد" : "حالت روز روشن شد"); lastDraw();
+}
+const ICON_MOON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>`;
+const ICON_SUN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`;
 
 // ---------- helpers ----------
 function status(k) {
@@ -760,7 +806,7 @@ function stepsOf(s, q) {
 
 function toast(msg, ms = 2600) {
   document.querySelectorAll(".toast").forEach(t => t.remove());
-  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status"); t.setAttribute("aria-live", "polite"); t.setAttribute("aria-atomic", "true");
   document.body.appendChild(t); setTimeout(() => t.remove(), ms);
 }
 const qName = q => "سیاق " + FA(q.n);
@@ -1183,7 +1229,7 @@ function openReciters() {
   on("[data-recdl]", b => { auReciter = b.dataset.recdl; auFrom = "reciters"; openAudio(); });
   on("[data-recplay]", b => { const id = b.dataset.recplay; stopAudio();
     if (recSample === id) { recSample = null; return openReciters(); }
-    recSample = id; audio = new Audio(audioHave(id, 1) >= 7 ? Android.fileBase() + localAudio(id, 1, 1) : remoteAudio(id, 1, 1));
+    recSample = id; audio = mkAudio(audioHave(id, 1) >= 7 ? Android.fileBase() + localAudio(id, 1, 1) : remoteAudio(id, 1, 1));
     audio.onended = () => { recSample = null; if (lastDraw === openReciters) openReciters(); };
     audio.play().catch(() => { recSample = null; toast("پخش نمونه ممکن نشد؛ اینترنت را بررسی کنید"); openReciters(); }); openReciters(); });
 }
@@ -1245,6 +1291,19 @@ let auConfirm = false, auFrom = "";
 
 // ---------- audio ----------
 let audio, queue = [], playingVk = null;
+// Every recitation goes through here so the chosen speed applies everywhere, keeping the reciter's pitch
+function mkAudio(url) {
+  const a = new Audio(url);
+  const r = cfg.rate || 1;
+  try { a.preservesPitch = true; a.mozPreservesPitch = true; a.webkitPreservesPitch = true; } catch (e) {}
+  a.defaultPlaybackRate = r; a.playbackRate = r;
+  a.addEventListener("loadedmetadata", () => { a.playbackRate = cfg.rate || 1; });
+  return a;
+}
+function setRate(r) {
+  cfg.rate = r; saveCfg();
+  try { if (audio) audio.playbackRate = r; } catch (e) {}
+}
 // Plays the copy on the phone when it has been downloaded, otherwise streams it
 const audioUrl = (sn, i) => fileExists(localAudio(cfg.reciter, sn, i)) ? Android.fileBase() + localAudio(cfg.reciter, sn, i) : remoteAudio(cfg.reciter, sn, i);
 function setPlaying(vk) {
@@ -1260,7 +1319,7 @@ function playQueue(list) {
   const next = () => {
     const it = queue.shift(); if (!it) { setPlaying(null); return; }
     setPlaying(key(it[0], it[1]));
-    audio = new Audio(audioUrl(it[0], it[1]));
+    audio = mkAudio(audioUrl(it[0], it[1]));
     audio.onended = next;
     audio.play().catch(() => { queue = []; setPlaying(null); toast("پخش صوت ممکن نشد؛ اینترنت را بررسی کنید"); });
   };
@@ -1306,6 +1365,7 @@ function render() {
   v.querySelectorAll("[data-lessons]").forEach(el => el.addEventListener("click", () => openLessons(+el.dataset.lessons)));
   v.querySelectorAll("[data-level]").forEach(el => el.addEventListener("click", () => openLevel(el.dataset.level)));
   v.querySelectorAll("[data-search]").forEach(el => el.addEventListener("click", openSearch));
+  v.querySelectorAll("[data-darktoggle]").forEach(el => el.addEventListener("click", toggleDark));
   v.querySelectorAll("[data-books]").forEach(el => el.addEventListener("click", openBooks));
   v.querySelectorAll("[data-weak]").forEach(el => el.addEventListener("click", openWeak));
   wireAi(v);
@@ -1331,7 +1391,7 @@ function nextToLearn() {
   if (unlocked(L)) for (const sn of L.surahs) { const s = S[sn], q = s.siyaqs.find(q2 => status(key(sn, q2.n)) === "new"); if (q) return {s, q, k: key(sn, q.n)}; }
   return cfg.freePath || passed("l6") ? all.find(x => status(x.k) === "new") : null;
 }
-const topBar = h => { const c = surahCounts(); return `<div class="topbar"><div class="row between" style="flex-wrap:nowrap"><div style="flex:1;min-width:0">${h}</div><div class="row" style="gap:4px;flex-wrap:nowrap"><button class="icon-btn btn-ghost" data-search aria-label="جستجو در قرآن">${ICON_SEARCH}</button><button class="icon-btn btn-ghost" data-guide="" aria-label="راهنما">${ICON_HELP}</button><button class="icon-btn btn-ghost" data-settings aria-label="تنظیمات">${ICON_GEAR}</button></div></div>
+const topBar = h => { const c = surahCounts(); return `<div class="topbar"><div class="row between" style="flex-wrap:nowrap"><div style="flex:1;min-width:0">${h}</div><div class="row" style="gap:4px;flex-wrap:nowrap"><button class="icon-btn btn-ghost" data-darktoggle aria-label="${applySettings.dark ? "حالت روز" : "حالت شب"}" aria-pressed="${!!applySettings.dark}">${applySettings.dark ? ICON_SUN : ICON_MOON}</button><button class="icon-btn btn-ghost" data-search aria-label="جستجو در قرآن">${ICON_SEARCH}</button><button class="icon-btn btn-ghost" data-guide="" aria-label="راهنما">${ICON_HELP}</button><button class="icon-btn btn-ghost" data-settings aria-label="تنظیمات">${ICON_GEAR}</button></div></div>
   <div class="counters" aria-label="پیشرفت شما از ۱۱۴ سوره"><span class="chip mem">حفظ <b class="num">${FA(c.m)}</b> سوره</span><span class="chip tad">تدبر <b class="num">${FA(c.t)}</b> سوره</span><span class="small muted">از ۱۱۴</span></div></div>`; };
 
 // The one thing to do next on the journey: foundations, a siyaq of the current level, or passing the level
@@ -1618,7 +1678,7 @@ function openWordbar(vk, wi) {
 function closeWordbar() { selVk = null; document.getElementById("wordbar").innerHTML = ""; document.querySelectorAll(".sel").forEach(e => e.classList.remove("sel")); }
 
 // ---------- mushaf player: play on from a verse to the end of the page, siyaq, fasl, surah or the whole Quran ----------
-const MP_ENDS = [["page", "صفحه"], ["siyaq", "سیاق"], ["fasl", "فصل"], ["surah", "سوره"], ["quran", "قرآن"]];
+const MP_ENDS = [["ayah", "همین آیه"], ["to", "تا آیه…"], ["page", "صفحه"], ["siyaq", "سیاق"], ["fasl", "فصل"], ["surah", "سوره"], ["quran", "قرآن"]];
 const MP_REPS = [1, 2, 3, 4, 5, 7, 10, 20, 0];     // 0 = endless
 const repName = n => n ? FA(n) + " بار" : "بی‌نهایت";
 const nextV = (sn, ay) => ay < S[sn].total ? [sn, ay + 1] : sn < 114 ? [sn + 1, 1] : null;
@@ -1626,6 +1686,8 @@ const prevV = (sn, ay) => ay > 1 ? [sn, ay - 1] : sn > 1 ? [sn - 1, S[sn - 1].to
 const pageOf = (sn, ay) => S[sn].vp[ay - 1];
 function mpEnd(sn, ay, mode) {
   const s = S[sn];
+  if (mode === "ayah") return [sn, ay];
+  if (mode === "to") return [sn, Math.max(ay, Math.min(cfg.mpTo || ay, s.total))];
   if (mode === "page") { let c = [sn, ay], n; const p = pageOf(sn, ay); while ((n = nextV(...c)) && pageOf(...n) === p) c = n; return c; }
   if (mode === "siyaq") return [sn, siyaqOf(sn, ay).e];
   if (mode === "fasl") { const f = faslOf(s, siyaqOf(sn, ay)); return [sn, f ? f.e : s.total]; }
@@ -1646,8 +1708,16 @@ function mpPlay() {
   if (tab === "mushaf" && pageOf(sn, ay) !== mushafPage && !document.getElementById("sheet").innerHTML) { mushafPage = pageOf(sn, ay); closeWordbar(); render(); }
   setPlaying(key(sn, ay)); mpRefresh();
   const r = mp.phase === "tr" && cfg.mpTrans ? cfg.mpTrans : cfg.reciter;
-  const a = audio = new Audio(fileExists(localAudio(r, sn, ay)) ? Android.fileBase() + localAudio(r, sn, ay) : remoteAudio(r, sn, ay));
-  a.onended = () => { if (audio === a && mp.playing) mpNext(); };
+  const a = audio = mkAudio(fileExists(localAudio(r, sn, ay)) ? Android.fileBase() + localAudio(r, sn, ay) : remoteAudio(r, sn, ay));
+  const tok = mp.tok = (mp.tok || 0) + 1;
+  // Pause after the Arabic verse (not after the spoken translation) so the listener can repeat it
+  a.onended = () => {
+    if (audio !== a || !mp.playing) return;
+    const g = mp.phase === "tr" ? 0 : cfg.mpGap === -1 ? (a.duration || 0) * 1000 / (cfg.rate || 1) : (cfg.mpGap || 0) * 1000;
+    if (!g) return mpNext();
+    mp.waiting = true; mpRefresh();
+    setTimeout(() => { if (mp.tok !== tok || !mp.playing) return; mp.waiting = false; mpNext(); }, Math.min(g, 60000));
+  };
   a.play().catch(() => { if (audio !== a) return; mp.playing = false; setPlaying(null); mpRefresh(); toast("پخش صوت ممکن نشد؛ اینترنت را بررسی کنید"); });
 }
 function mpNext() {
@@ -1666,7 +1736,7 @@ function mpNext() {
   const n = nextV(...mp.cur); if (!n) return mpStop(true);
   mp.cur = n; mpPlay();
 }
-function mpStop(done) { mp.playing = false; try { if (audio) audio.pause(); } catch (e) {} setPlaying(null); if (done) { mp.cur = null; toast("پخش تمام شد"); } mpRefresh(); }
+function mpStop(done) { mp.playing = false; mp.waiting = false; mp.tok = (mp.tok || 0) + 1; try { if (audio) audio.pause(); } catch (e) {} setPlaying(null); if (done) { mp.cur = null; toast("پخش تمام شد"); } mpRefresh(); }
 function mpToggle() {
   if (mp.playing) return mpStop(false);
   if (mp.cur && audio && audio.src && !audio.ended && playingVk === null && audio.currentTime > 0) { mp.playing = true; setPlaying(key(...mp.cur)); audio.play().catch(() => mpPlay()); return mpRefresh(); }
@@ -1680,7 +1750,8 @@ function mpSkip(d) {
   mp.cur = n; mp.k = 0; mp.phase = "ar"; mpPlay();
 }
 function mpBar() {
-  const c = mp.cur, endName = (MP_ENDS.find(x => x[0] === cfg.mpEnd) || MP_ENDS[3])[1];
+  const c = mp.cur, endName = cfg.mpEnd === "to" ? "آیه " + FA(cfg.mpTo || (c || [0, 0])[1]) : (MP_ENDS.find(x => x[0] === cfg.mpEnd) || MP_ENDS[5])[1];
+  const base = c || (selVk ? parseVk(selVk) : firstOnPage(mushafPage));
   const where = c ? `سوره ${S[c[0]].name} · آیه ${FA(c[1])}` : selVk ? `از آیه ${FA(parseVk(selVk)[1])} سوره ${S[parseVk(selVk)[0]].name}` : "از ابتدای همین صفحه";
   const noFasl = cfg.mpEnd === "fasl" && !(S[(c || firstOnPage(mushafPage))[0]].fasls || []).length;
   return `<div class="player" id="player" role="region" aria-label="پخش ترتیل">
@@ -1688,11 +1759,17 @@ function mpBar() {
       <button class="pl-btn" id="mp-prev" aria-label="آیه قبل"><svg viewBox="0 0 24 24"><path d="M7 6v12M18 6l-9 6 9 6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
       <button class="pl-btn pl-play" id="mp-play" aria-label="${mp.playing ? "توقف" : "پخش"}">${mp.playing ? `<svg viewBox="0 0 24 24"><rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor"/></svg>` : `<svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>`}</button>
       <button class="pl-btn" id="mp-next" aria-label="آیه بعد"><svg viewBox="0 0 24 24"><path d="M17 6v12M6 6l9 6-9 6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
-      <div class="pl-info"><b class="small">${where}</b><span class="small muted">تا آخر ${noFasl ? "سوره (بی‌فصل)" : endName} · تکرار ${repName(cfg.mpRep)}${cfg.mpRangeRep !== 1 ? " · بازه " + repName(cfg.mpRangeRep) : ""}</span></div>
+      <div class="pl-info"><b class="small">${where}</b><span class="small muted">${cfg.mpEnd === "ayah" ? "فقط همین آیه" : "تا " + (cfg.mpEnd === "to" ? "" : "آخر ") + (noFasl ? "سوره (بی‌فصل)" : endName)} · تکرار ${repName(cfg.mpRep)}${cfg.mpRangeRep !== 1 ? " · بازه " + repName(cfg.mpRangeRep) : ""}${cfg.mpGap ? " · مکث " + gapName(cfg.mpGap) : ""}</span>${mp.waiting ? `<span class="small" aria-live="polite">مکث برای تکرار…</span>` : ""}</div>
+      <button class="pl-rate" id="mp-rate" aria-label="سرعت پخش: ${rateName(cfg.rate || 1)}. برای تغییر بزنید">${(cfg.rate || 1) === 1 ? "۱×" : FA(String(cfg.rate)) + "×"}</button>
       <button class="pl-btn" id="mp-set" aria-label="تنظیمات پخش" aria-expanded="${mp.open}">${ICON_GEAR}</button>
     </div>
     ${mp.open ? `<div class="pl-set">
-      <div class="field"><span class="small">پخش تا آخر</span><div class="seg">${MP_ENDS.map(([v, l]) => `<button data-mpend="${v}" aria-pressed="${cfg.mpEnd === v}">${l}</button>`).join("")}</div></div>
+      <div class="field"><span class="small">پخش تا</span><div class="seg">${MP_ENDS.map(([v, l]) => `<button data-mpend="${v}" aria-pressed="${cfg.mpEnd === v}">${l}</button>`).join("")}</div></div>
+      ${cfg.mpEnd === "to" ? `<div class="field"><label class="small" for="mp-to">تا آیه (سوره ${S[base[0]].name})</label><select id="mp-to">${range(base[1], S[base[0]].total).map(n => `<option value="${n}" ${(cfg.mpTo || base[1]) === n ? "selected" : ""}>${FA(n)}</option>`).join("")}</select></div>` : ""}
+      <div class="pl-two">
+        <div class="field"><label class="small" for="mp-speed">سرعت پخش</label><select id="mp-speed">${RATES.map(r => `<option value="${r}" ${(cfg.rate || 1) === r ? "selected" : ""}>${rateName(r)}</option>`).join("")}</select></div>
+        <div class="field"><label class="small" for="mp-gap">مکث بعد از هر آیه</label><select id="mp-gap">${GAPS.map(g => `<option value="${g}" ${(cfg.mpGap || 0) === g ? "selected" : ""}>${gapName(g)}</option>`).join("")}</select></div>
+      </div>
       <div class="pl-two">
         <div class="field"><label class="small" for="mp-rep">تکرار هر آیه</label><select id="mp-rep">${MP_REPS.map(n => `<option value="${n}" ${cfg.mpRep === n ? "selected" : ""}>${repName(n)}</option>`).join("")}</select></div>
         <div class="field"><label class="small" for="mp-rr">تکرار کل بازه</label><select id="mp-rr">${MP_REPS.map(n => `<option value="${n}" ${cfg.mpRangeRep === n ? "selected" : ""}>${repName(n)}</option>`).join("")}</select></div>
@@ -1708,8 +1785,15 @@ function wirePlayer(root) {
   on("#mp-prev", "click", () => mpSkip(-1));
   on("#mp-next", "click", () => mpSkip(1));
   on("#mp-set", "click", () => { mp.open = !mp.open; mpRefresh(); });
-  root.querySelectorAll("[data-mpend]").forEach(b => b.addEventListener("click", () => { cfg.mpEnd = b.dataset.mpend; saveCfg(); if (mp.start) mp.end = mpEnd(...mp.start, cfg.mpEnd); mpRefresh(); }));
+  root.querySelectorAll("[data-mpend]").forEach(b => b.addEventListener("click", () => { cfg.mpEnd = b.dataset.mpend;
+    if (cfg.mpEnd === "to") { const f = mp.start || (selVk ? parseVk(selVk) : firstOnPage(mushafPage)); if (!cfg.mpTo || cfg.mpTo < f[1] || cfg.mpTo > S[f[0]].total) cfg.mpTo = siyaqOf(f[0], f[1]).e; }
+    saveCfg(); if (mp.start) mp.end = mpEnd(...mp.start, cfg.mpEnd); mpRefresh(); }));
   on("#mp-rep", "change", e => { cfg.mpRep = +e.target.value; saveCfg(); mpRefresh(); });
+  on("#mp-to", "change", e => { cfg.mpTo = +e.target.value; saveCfg(); if (mp.start) mp.end = mpEnd(...mp.start, cfg.mpEnd); mpRefresh(); });
+  on("#mp-speed", "change", e => { setRate(+e.target.value); mpRefresh(); });
+  on("#mp-gap", "change", e => { cfg.mpGap = +e.target.value; saveCfg(); mpRefresh(); });
+  // The chip on the bar steps through the speeds
+  on("#mp-rate", "click", () => { const i = RATES.indexOf(cfg.rate || 1); setRate(RATES[(i + 1) % RATES.length]); toast("سرعت پخش: " + rateName(cfg.rate)); mpRefresh(); const b = document.getElementById("mp-rate"); if (b) b.focus(); });
   on("#mp-rr", "change", e => { cfg.mpRangeRep = +e.target.value; saveCfg(); mpRefresh(); });
   on("#mp-tr", "change", e => { cfg.mpTrans = e.target.value; saveCfg(); mpRefresh(); });
   on("#mp-reciter", "change", e => { cfg.reciter = e.target.value; saveCfg(); if (mp.playing) mpPlay(); else mpRefresh(); });
@@ -3547,8 +3631,34 @@ function updateNative() {
   const all = siyaqs(), md = all.filter(x => status(x.k) === "due").length, td = all.filter(x => tadDue(x.k)).length, L = currentLevel(), nx = nextToLearn();
   const line = [md ? FA(md) + " مرور حفظ" : "", td ? FA(td) + " مرور تدبر" : "", nx ? "قدم بعد: " + nx.s.name + " · سیاق " + FA(nx.q.n) : passed(L.id) ? "" : L.t].filter(Boolean).join(" · ") || "امروز کاری نمانده";
   try { if (Android.setReminder) Android.setReminder(!!cfg.remind, +(cfg.remindAt || "20:00").split(":")[0], +(cfg.remindAt || "20:00").split(":")[1], (myName() ? myName() + "، " : "") + "وقت حفظ تدبری است", line); } catch (e) {}
+  updateAiNotify();
   const [vs, va] = verseOfDay();
   loadText().then(() => { try { if (Android.setWidget) Android.setWidget((myName() ? "سلام " + myName() + " · " : "") + "حفظ تدبری", line, vplain(vs, va), (trans(vs, va) || "") + " (" + S[vs].name + " " + FA(va) + ")"); } catch (e) {} }).catch(() => {});
+}
+// ---------- the assistant's daily message as a phone notification (Android) ----------
+// At the chosen time the app's alarm (AiTip.java) shows today's message if the app already has it; otherwise it asks the same
+// assistant server for one with the status summary below (the same summary the home box sends), and falls back to a short line.
+const aiNotifyAvail = () => IS_APP && AI_ON() && !!(window.Android && Android.setAiTip);
+function updateAiNotify() {
+  if (!aiNotifyAvail()) return;
+  const [h, m] = (cfg.aiNotifyAt || "08:00").split(":").map(Number);
+  const c = load("tadabbor-ai-brief", null), fresh = c && !c.local && String(c.k).split(":")[0] === String(today());
+  let ctx = "{}"; try { ctx = JSON.stringify(aiContext()); } catch (e) {}
+  try { Android.setAiTip(!!cfg.aiNotify, h || 0, m || 0, AI_URL, aiDevice(), ctx, fresh ? c.text : "", fresh ? today() : -1,
+    (myName() ? myName() + "، " : "") + "پیام امروز دستیار"); } catch (e) {}
+}
+function setAiNotify(on) {
+  cfg.aiNotify = on; saveCfg(); updateNative();
+  toast(on ? "پیام روزانه دستیار هر روز ساعت " + FA(cfg.aiNotifyAt || "08:00") + " می‌آید" : "پیام روزانه دستیار خاموش شد");
+}
+// A message the notification fetched while the app was closed is shown in the home box too (no second request)
+function aiTakeNotified() {
+  if (!aiNotifyAvail() || !Android.aiTipToday) return;
+  try {
+    const j = JSON.parse(Android.aiTipToday() || "null"); if (!j || j.day !== today() || !j.text) return;
+    const k = aiBriefKey(), c = load("tadabbor-ai-brief", null);
+    if (!c || c.k !== k || c.local) store("tadabbor-ai-brief", {k, text: j.text, at: j.at || Date.now()});
+  } catch (e) {}
 }
 function autoBackupDaily() {
   if (!IS_APP || !cfg.autoBackup || !window.Android || !Android.autoBackup || cfg.lastAutoDay === today()) return;
@@ -3712,7 +3822,7 @@ function aiCard() {
       ${AI_ON() ? `<button class="icon-btn btn-ghost" data-aibrief aria-label="پیام تازه"${ai.busy ? " disabled" : ""}>↻</button>` : ""}</div>
     <div class="ai-text" id="ai-brief">${ai.busy && !fresh ? `<span class="small muted">دستیار دارد وضعیت شما را می‌خواند…</span><br>` : ""}${aiFmt(text)}</div>
     ${ai.err ? `<span class="small muted">${esc(ai.err)}</span>` : ""}
-    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button></div></section>`;
+    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button>${aiNotifyAvail() && !cfg.aiNotify ? `<button class="small" data-ainotify aria-label="هر روز پیام دستیار را با اعلان گوشی بفرست">🔔 هر روز با اعلان</button>` : ""}</div></section>`;
 }
 // Safe formatting of the model's text: escape everything, then allow **bold**, line breaks and "- " lists
 function aiFmt(t) {
@@ -3775,6 +3885,7 @@ function paintAiCard() {
 function wireAi(root) {
   root.querySelectorAll("[data-aichat]").forEach(el => el.addEventListener("click", () => openAiChat()));
   root.querySelectorAll("[data-aibrief]").forEach(el => el.addEventListener("click", () => aiBrief(true)));
+  root.querySelectorAll("[data-ainotify]").forEach(el => el.addEventListener("click", () => { setAiNotify(true); paintAiCard(); }));
 }
 const AI_SUGGEST = ["امروز از کجا شروع کنم؟", "مرورهای عقب‌افتاده‌ام را چطور جبران کنم؟", "سیاق بعدی من درباره چیست؟", "پیام اصلی سوره‌ای که می‌خوانم چیست؟", "چطور تدبر را با حفظ هماهنگ کنم؟"];
 function openAiChat(q) {
@@ -4160,7 +4271,15 @@ function openSettings() {
     <section class="card"><h3>ظاهر</h3>
       <div class="field"><span class="small">پوسته</span><div class="seg" data-group="theme">${THEMES.map(([v, l]) => `<button data-v="${v}" aria-pressed="${cfg.theme === v}">${l}</button>`).join("")}</div></div>
       <div class="field"><span class="small">رنگ اصلی</span><div class="swatches">${ACCENTS.map(([v, l, c]) => `<button class="swatch" data-accent="${v}" aria-pressed="${cfg.accent === v}" aria-label="${l}" title="${l}" style="background:${c}"></button>`).join("")}</div></div>
+      ${cfg.theme === "night" ? `<p class="small muted">از ساعت ${FA(NIGHT_FROM)} تا ${FA(NIGHT_TO)} صبح تیره و بقیه روز روشن است. دکمه ماه بالای صفحه هم هر وقت بخواهید روز و شب را عوض می‌کند.</p>` : `<p class="small muted">دکمه ماه/خورشید بالای صفحه، روز و شب را با یک لمس عوض می‌کند.</p>`}
       <div class="field"><span class="small">اندازه متن برنامه</span><div class="seg" data-group="ui">${UISIZES.map(([v, l]) => `<button data-v="${v}" aria-pressed="${cfg.ui === v}">${l}</button>`).join("")}</div></div>
+      <div class="field"><label for="tscale">اندازه ترجمه، تفسیر و متن آیه‌ها: <span class="num" id="tscale-v">${FA(Math.round((cfg.tscale || 1) * 100))}٪</span></label><input type="range" id="tscale" min="${TSCALE_MIN}" max="${TSCALE_MAX}" step="0.05" value="${cfg.tscale || 1}" aria-describedby="tscale-ex">
+        <p class="tr" id="tscale-ex">به نام خداوند بخشنده مهربان</p></div>
+    </section>
+    <section class="card"><h3>دسترس‌پذیری</h3>
+      <label class="switch small"><span>کنتراست بالا<br><span class="muted">متن‌های کم‌رنگ پررنگ و مرزها واضح‌تر می‌شوند.</span></span><input type="checkbox" id="a11y-contrast" ${cfg.contrast ? "checked" : ""}></label>
+      <label class="switch small"><span>بدون جلوه حرکتی<br><span class="muted">باز و بسته شدن صفحه‌ها بدون انیمیشن.</span></span><input type="checkbox" id="a11y-motion" ${cfg.motion ? "checked" : ""}></label>
+      <p class="small muted">برای متن درشت‌تر «اندازه متن برنامه» را بالاتر ببرید. همه دکمه‌ها برای صفحه‌خوان (TalkBack) نام دارند.</p>
     </section>
     <section class="card"><h3>مصحف</h3>
       <div class="field"><span class="small">قلم</span><div class="seg" data-group="qfont">${QFONTS.map(([v, l]) => `<button data-v="${v}" aria-pressed="${cfg.qfont === v}">${l}</button>`).join("")}</div>
@@ -4179,6 +4298,11 @@ function openSettings() {
       <button id="au-open2">⬇ دانلود ترتیل: انتخاب سوره‌ها، جزء یا کل قرآن</button>
       <button data-reciters>🎙 فهرست قاری‌ها و وضعیت دانلود هر کدام</button>
       <button data-dls>📥 وضعیت دانلودها${dlAll().filter(jobActive2).length ? ` <span class="num">(${FA(dlAll().filter(jobActive2).length)} در جریان)</span>` : ""}</button>
+      <div class="pl-two">
+        <div class="field"><label class="small" for="st-rate">سرعت پخش ترتیل</label><select id="st-rate">${RATES.map(r => `<option value="${r}" ${(cfg.rate || 1) === r ? "selected" : ""}>${rateName(r)}</option>`).join("")}</select></div>
+        <div class="field"><label class="small" for="st-gap">مکث بعد از هر آیه</label><select id="st-gap">${GAPS.map(g => `<option value="${g}" ${(cfg.mpGap || 0) === g ? "selected" : ""}>${gapName(g)}</option>`).join("")}</select></div>
+      </div>
+      <p class="small muted">مکث به شما فرصت می‌دهد آیه را بعد از قاری تکرار کنید؛ «هم‌اندازه آیه» به اندازه خود آیه صبر می‌کند.</p>
       <div class="field"><span class="small">تکرار پیش‌فرض هر آیه</span><div class="seg" data-group="reps">${[1, 3, 5].map(v => `<button data-v="${v}" aria-pressed="${cfg.reps === v}">${FA(v)} بار</button>`).join("")}</div></div>
       <p class="small muted">ترتیل‌هایی که دانلود نشده‌اند هنگام پخش از اینترنت خوانده می‌شوند.</p>
     </section>
@@ -4188,6 +4312,8 @@ function openSettings() {
     <section class="card"><h3>یادآور روزانه</h3>
       ${IS_APP ? `<label class="switch small"><span>هر روز یادآوری کن<br><span class="muted">با تعداد مرورهای امروز و قدم بعدی شما</span></span><input type="checkbox" id="rm-on" ${cfg.remind ? "checked" : ""}></label>
       <div class="field"><label for="rm-at" class="small">ساعت</label><input type="time" id="rm-at" value="${esc(cfg.remindAt || "20:00")}" dir="ltr"></div>
+      ${aiNotifyAvail() ? `<label class="switch small"><span>پیام روزانه دستیار هوشمند<br><span class="muted">هر روز پیام تازه دستیار، به‌اندازه وضعیت شما، در اعلان‌های گوشی</span></span><input type="checkbox" id="ain-on" ${cfg.aiNotify ? "checked" : ""}></label>
+      <div class="field"><label for="ain-at" class="small">ساعت پیام دستیار</label><input type="time" id="ain-at" value="${esc(cfg.aiNotifyAt || "08:00")}" dir="ltr"></div>` : ""}
       <p class="small muted">برای ویجت صفحه اصلی: صفحه اصلی گوشی را نگه دارید، «ابزارک‌ها» را بزنید و «حفظ تدبری» را بکشید.</p>` : `<p class="small muted">یادآور و ویجت فقط در برنامه اندروید است.</p>`}
     </section>
     <section class="card"><h3>روش حفظ</h3>
@@ -4243,6 +4369,13 @@ function openSettings() {
   box.querySelectorAll("[data-accent]").forEach(btn => btn.addEventListener("click", () => { set("accent", btn.dataset.accent); openSettingsKeep(); }));
   const ql = box.querySelector("#qlh"); ql.addEventListener("input", () => { set("qlh", +ql.value); box.querySelector("#qlh-v").textContent = FA((+ql.value).toFixed(2)); });
   box.querySelector("#reciter").addEventListener("change", e => set("reciter", e.target.value));
+  const ts = box.querySelector("#tscale"); ts.addEventListener("input", () => { set("tscale", +ts.value); box.querySelector("#tscale-v").textContent = FA(Math.round(+ts.value * 100)) + "٪"; });
+  box.querySelector("#a11y-contrast").addEventListener("change", e => set("contrast", e.target.checked));
+  box.querySelector("#a11y-motion").addEventListener("change", e => set("motion", e.target.checked));
+  box.querySelector("#st-rate").addEventListener("change", e => setRate(+e.target.value));
+  box.querySelector("#st-gap").addEventListener("change", e => { cfg.mpGap = +e.target.value; saveCfg(); });
+  const ainOn = box.querySelector("#ain-on"); if (ainOn) ainOn.addEventListener("change", e => setAiNotify(e.target.checked));
+  const ainAt = box.querySelector("#ain-at"); if (ainAt) ainAt.addEventListener("change", e => { cfg.aiNotifyAt = e.target.value || "08:00"; saveCfg(); updateNative(); });
   box.querySelector("#trans").addEventListener("change", e => { set("trans", e.target.value); if (IS_APP && e.target.value !== "none" && !transBundled(e.target.value) && !transLocal(e.target.value)) { downloadTrans(e.target.value); toast("ترجمه روی گوشی ذخیره می‌شود"); } });
   wireAcct(box);
   wireOffline(box);
@@ -4335,6 +4468,7 @@ function openGuide(section) {
     <details ${open("mushaf")}><summary>مصحف، پخش و درس‌ها</summary><div>
       <p><b>مصحف:</b> صفحه‌های مصحف به خط عثمان طه. با کشیدن صفحه ورق بزنید. روی هر کلمه بزنید تا معنا، ریشه، تفسیر، آیات مشابه و ترتیل را ببینید، آیه را به اشتراک بگذارید یا با ☆ به علاقه‌مندی‌ها (★ بالای مصحف) اضافه کنید.</p>
       <p><b>پخش‌کننده:</b> از آیه انتخاب‌شده تا آخر صفحه، سیاق، فصل، سوره یا قرآن؛ تکرار هر آیه و کل بازه از ۱ تا بی‌نهایت؛ ترجمه گویا بعد از هر آیه؛ صفحه‌ها خودکار ورق می‌خورند. دکمه 🎧 در داشبورد سیاق امروز را با ترجمه گویا پخش می‌کند.</p>
+      <p><b>سرعت، مکث و تکرار:</b> دکمه «۱×» روی پخش‌کننده سرعت را از نیم تا دو برابر عوض می‌کند (صدای قاری زیر و بم نمی‌شود). در چرخ‌دنده پخش‌کننده «همین آیه» یک آیه را پشت‌سرهم تکرار می‌کند، «تا آیه…» بازه دلخواه می‌سازد، و «مکث بعد از هر آیه» فرصت می‌دهد آیه را بعد از قاری تکرار کنید.</p>
       <p><b>ترتیل:</b> ${FA(RECITERS.filter(r => r[3] !== "fa").length)} قاری (پیش‌فرض شهریار پرهیزگار)؛ «⬇ دانلود ترتیل» برای انتخاب سوره‌ها، جزء یا کل قرآن.</p>
       <p><b>درس‌ها:</b> فیلم و صوت جلسه‌های استاد صبوحی برای سوره‌های سطح ۱ تا ۶ (حمد و محمد تا ناس) و برای هر سطح؛ در برنامه اندروید با «⬇ ذخیره صوت/فیلم» روی گوشی می‌مانند و از منو ← «درس‌های آفلاین» در دسترس‌اند.</p>
       <p><b>ثبت‌نام در دوره:</b> در صفحه سوره‌هایی که دوره دارند، کارت «🎓 ثبت‌نام در دوره تدبر این سوره» شما را به صفحه همان دوره در سایت تدبرآموز (مؤسسه تدبر در کلام وحی) می‌برد؛ ثبت‌نام و پرداخت در همان سایت است.</p>
@@ -4343,6 +4477,7 @@ function openGuide(section) {
     <details ${open("ai")}><summary>دستیار هوشمند</summary><div>
       <p><b>پیام امروز:</b> کادر بالای صفحه «امروز» هر روز با توجه به ساعت به شما سلام می‌کند و مرورهای عقب‌مانده و قدم بعدی را می‌گوید.</p>
       <p><b>گفتگو:</b> از منو ← «دستیار هوشمند» درباره آیات، روش تدبر، برنامه حفظ و پیشرفت خودتان بپرسید.</p>
+      <p><b>اعلان روزانه:</b> در برنامه اندروید، دکمه «🔔 هر روز با اعلان» زیر پیام امروز (یا تنظیمات ← یادآور روزانه) پیام دستیار را هر روز در ساعتی که بخواهید (پیش‌فرض ۸ صبح) به اعلان‌های گوشی می‌فرستد. اگر آن روز برنامه را باز نکرده باشید، همان خلاصه وضعیتی که کادر پیام امروز می‌فرستد برای دستیار فرستاده می‌شود؛ بدون اینترنت یک یادآوری کوتاه می‌آید.</p>
       <p>پاسخ‌ها را یک مدل هوش مصنوعی می‌نویسد و ممکن است خطا داشته باشد؛ فتوای شرعی نیست و جای تفسیر و استاد را نمی‌گیرد. اطلاعات شخصی در پرسش‌ها ننویسید. اگر اینترنت نباشد، پیام امروز از خلاصه‌ای که روی خود گوشی ساخته می‌شود نشان داده می‌شود.</p></div></details>
 
     <details><summary>معنی رنگ‌ها</summary><div>${legend()}<p>رنگ هر نوار وضعیت حفظ آن سیاق است و طولش به اندازه تعداد آیه‌ها.</p></div></details>
@@ -4352,6 +4487,8 @@ function openGuide(section) {
       <p><b>بدون اینترنت:</b> متن، صفحه‌ها و چهار ترجمه داخل برنامه است. قلم عثمان طه و ترجمه‌های دیگر بعد از نصب ذخیره می‌شوند. ترتیل، تفسیرها، معنای کلمه‌به‌کلمه و درس‌ها را هم از تنظیمات یا همان صفحه روی گوشی ذخیره کنید.</p>
       <p><b>پشتیبان:</b> در برنامه اندروید هر روز خودکار یک پشتیبان در پوشه Download/HefzTadabbori نوشته می‌شود. برای ایمنی بیشتر، گاهی «ذخیره پشتیبان» را بزنید و Drive را انتخاب کنید؛ برای بازیابی «بازیابی از فایل».</p>
       <p><b>یادآور و ویجت:</b> یادآور را در تنظیمات روشن کنید؛ ویجت را از «ابزارک‌های» صفحه اصلی گوشی اضافه کنید.</p></div></details>
+      <p><b>اندازه متن و حالت شب:</b> «اندازه متن برنامه» همه صفحه‌ها را تا ۱.۴ برابر درشت می‌کند و نوار «اندازه ترجمه، تفسیر و متن آیه‌ها» فقط متن خواندنی را. صفحه مصحف همیشه به پهنای صفحه جا می‌شود؛ برای مصحف درشت‌تر گوشی را افقی بگیرید. پوسته «شب‌ها تیره» از ساعت ۷ عصر تا ۶ صبح خودبه‌خود تیره می‌شود و دکمه ماه بالای هر صفحه روز و شب را با یک لمس عوض می‌کند.</p>
+      <p><b>دسترس‌پذیری:</b> کنتراست بالا و حذف جلوه‌های حرکتی در تنظیمات ← دسترس‌پذیری است. دکمه‌ها برای صفحه‌خوان TalkBack نام دارند و با صفحه‌کلید هم پیمایش می‌شوند.</p>
 
     <details><summary>پرسش‌های رایج</summary><div>
       <p><b>داده‌هایم کجاست؟</b> روی همین دستگاه و در فایل‌های پشتیبان خودتان؛ اگر با حساب وارد شده باشید، روی سرور برنامه هم تا بین گوشی و سایت یکی بماند. دستیار هوشمند فقط خلاصه‌ای از وضعیت یادگیری و پرسش شما را می‌فرستد. جزئیات در «حریم خصوصی» در تنظیمات.</p>
@@ -4496,7 +4633,10 @@ mushafPage = 1;
 if (window.__oldWebView) throw new Error("old webview");
 applySettings();
 purgeNoMedia();
+aiTakeNotified();
 render();
+// Back in the app: the phone's dark mode or the hour may have changed, and a notification may have brought today's message
+document.addEventListener("visibilitychange", () => { if (document.hidden) return; applySettings(); const had = load("tadabbor-ai-brief", null); aiTakeNotified(); if (JSON.stringify(had) !== JSON.stringify(load("tadabbor-ai-brief", null))) paintAiCard(); });
 setTimeout(autoBackupDaily, 3000);
 const startFlow = () => { if (!profileDone()) showWelcome(); else if (!cfg.seenIntro) showIntro(); };
 if (ACCT_ON && !acct) showLogin(); else startFlow();
