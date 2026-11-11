@@ -1,0 +1,21 @@
+{
+ "name": "حفظ تدبری قرآن",
+ "short_name": "حفظ تدبری",
+ "lang": "fa",
+ "dir": "rtl",
+ "description": "حفظ قرآن با تدبر، بر پایه سیاق‌ها",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#F7F4EC",
+ "theme_color": "#2F6B4F",
+ "icons": [
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
