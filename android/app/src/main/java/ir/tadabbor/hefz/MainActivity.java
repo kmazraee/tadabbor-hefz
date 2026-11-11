@@ -390,6 +390,29 @@ public class MainActivity extends Activity {
             Reminder.save(MainActivity.this, on, hour, minute, title, text);
         }
 
+        /** Whether the phone is in dark mode (the WebView does not pass this on to the page). */
+        @JavascriptInterface
+        public boolean isNight() {
+            return (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        }
+
+        /** Colour the status and navigation bars like the page (paper / accent), with light or dark bar icons. */
+        @JavascriptInterface
+        public void setBars(final String paper, final String accent, final boolean dark) {
+            runOnUiThread(() -> {
+                try {
+                    int bg = android.graphics.Color.parseColor(paper.trim());
+                    getWindow().setStatusBarColor(bg);
+                    getWindow().setNavigationBarColor(bg);
+                    View d = getWindow().getDecorView();
+                    int f = d.getSystemUiVisibility();
+                    if (Build.VERSION.SDK_INT >= 23) f = dark ? f & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : f | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    if (Build.VERSION.SDK_INT >= 26) f = dark ? f & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : f | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                    d.setSystemUiVisibility(f);
+                } catch (Exception ignored) { }
+            });
+        }
+
         /** Both daily notifications (review reminder and the assistant's message of the day) as one JSON from the page. */
         @JavascriptInterface
         public void setNotify(String json) {
