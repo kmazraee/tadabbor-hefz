@@ -6,14 +6,16 @@
 Run from the repo root after scripts/build_quran.py:  python3 scripts/build_web.py
 The app downloads translations and content updates from SITE_BASE (set it to your own server's address
 to move the app off GitHub Pages):  SITE_BASE=https://example.com/ python3 scripts/build_web.py
-Accounts (optional sign-in and sync through PocketBase on that server): add ACCOUNT_API=1 for the Android app;
+Accounts (sign-in and sync): ACCOUNT_URL=https://your-worker.workers.dev/ turns them on in the GitHub Pages copy and the Android app (Cloudflare Worker, deploy/cloudflare-accounts);
+or, with PocketBase on your own server, add ACCOUNT_API=1 for the Android app;
 scripts/build_server.py always includes them in the web copy it builds. See deploy/pocketbase/README.md.
 A web copy always reads from the server it is served from. For your own server see scripts/build_server.py.
 """
 import hashlib, json, os, pathlib, re, shutil
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-ACCOUNT_API = os.environ.get("ACCOUNT_API") == "1"
+ACCOUNT_URL = os.environ.get("ACCOUNT_URL", "").strip()          # account server on another address, e.g. the Cloudflare Worker
+ACCOUNT_API = os.environ.get("ACCOUNT_API") == "1" or bool(ACCOUNT_URL)
 # Address of the AI assistant Worker (deploy/cloudflare/README.md). Empty: the app shows only its local daily summary.
 AI_API = os.environ.get("AI_API", (ROOT / "deploy/cloudflare/AI_API").read_text().strip() if (ROOT / "deploy/cloudflare/AI_API").exists() else "")
 SITE_BASE = os.environ.get("SITE_BASE", "https://ganjineh-tadabbor.ir/").rstrip("/") + "/"
@@ -81,7 +83,7 @@ meta = json.dumps(_m, ensure_ascii=False, separators=(",", ":"))
 (ROOT / "data/meta.json").write_text(meta, encoding="utf-8")
 # Feature modules kept in their own files and inlined into the page script
 tpl = tpl.replace("/*HEFZQUIZ*/", (ROOT / "scripts/quiz_hefz.js").read_text(encoding="utf-8"))
-for ph in ("/*DATA*/", "/*DATABASE*/", "/*SITEBASE*/"):
+for ph in ("/*DATA*/", "/*DATABASE*/", "/*SITEBASE*/", "/*ACCOUNTURL*/"):
     assert ph in tpl, ph
 
 HEAD = ('<!doctype html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="utf-8">\n'
@@ -95,7 +97,7 @@ def page(pagebase, local_fonts, account=False, web=True):
     """account=True adds the optional sign-in and sync section (needs PocketBase behind /api/ on the same server).
     web=True links the web app manifest, so the site can be installed as an app (PWA)."""
     body = tpl.replace("/*DATA*/", meta).replace("/*DATABASE*/", pagebase).replace("/*SITEBASE*/", SITE_BASE)
-    body = body.replace("/*ACCOUNTAPI*/", "1" if account else "").replace("/*AIAPI*/", AI_API)
+    body = body.replace("/*ACCOUNTAPI*/", "1" if account else "").replace("/*ACCOUNTURL*/", ACCOUNT_URL if account else "").replace("/*AIAPI*/", AI_API)
     head_part, rest = body.split("</style>", 1)
     head_part += "</style>\n"
     if local_fonts:
@@ -128,7 +130,7 @@ quran = [[" ".join(verses[f"{s['n']}:{a}"]) for a in range(1, s["total"] + 1)] f
 assert sum(map(len, quran)) == 6236 and len(verses) == 6236, "verse text incomplete"
 (ROOT / "data/quran.json").write_text(json.dumps(quran, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
-(ROOT / "prototype/index.html").write_text(page("../data/", False), encoding="utf-8")
+(ROOT / "prototype/index.html").write_text(page("../data/", False, bool(ACCOUNT_URL)), encoding="utf-8")   # the GitHub Pages copy has accounts only when ACCOUNT_URL is set
 
 # Web app manifest: lets the site be installed on the phone or desktop and opened like an app (with sw.js, also offline)
 MANIFEST = json.dumps({

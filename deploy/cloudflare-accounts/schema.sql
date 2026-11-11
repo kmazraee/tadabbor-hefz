@@ -1,0 +1,20 @@
+-- Cloudflare D1: users and one sync record per user
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  salt TEXT NOT NULL,
+  hash TEXT NOT NULL,
+  created TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS hefz_sync (
+  id TEXT PRIMARY KEY,
+  user TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  progress TEXT NOT NULL DEFAULT '{}',
+  settings TEXT NOT NULL DEFAULT '{}',
+  updated TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS attempts (
+  k TEXT PRIMARY KEY,
+  n INTEGER NOT NULL,
+  t INTEGER NOT NULL
+);
