@@ -45,7 +45,7 @@ public class Reminder extends BroadcastReceiver {
     @Override
     public void onReceive(Context c, Intent intent) {
         String a = intent.getAction();
-        if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a)) { schedule(c); AiNotify.schedule(c); return; }
+        if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a)) { schedule(c); return; }
         SharedPreferences p = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         if (!p.getBoolean("on", false)) return;
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);

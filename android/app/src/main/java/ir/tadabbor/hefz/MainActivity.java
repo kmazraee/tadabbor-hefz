@@ -390,14 +390,6 @@ public class MainActivity extends Activity {
             Reminder.save(MainActivity.this, on, hour, minute, title, text);
         }
 
-        /** Daily message of the assistant as a notification at hour:minute (see AiNotify). */
-        @JavascriptInterface
-        public void setAiNotify(boolean on, int hour, int minute, String url, String device, String body, String fallback, String title) {
-            if (on && Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
-                runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 52));
-            AiNotify.save(MainActivity.this, on, hour, minute, url, device, body, fallback, title);
-        }
-
         /** Fill the home-screen widget. */
         @JavascriptInterface
         public void setWidget(String title, String line, String verse, String meaning) { Widget.save(MainActivity.this, title, line, verse, meaning); }

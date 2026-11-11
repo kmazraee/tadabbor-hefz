@@ -37,12 +37,6 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".AiNotify" android:exported="false">
-            <intent-filter>
-                <action android:name="ir.tadabbor.hefz.AI_NOTIFY" />
-            </intent-filter>
-        </receiver>
-
         <receiver android:name=".Widget" android:exported="false" android:label="حفظ تدبری">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

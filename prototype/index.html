@@ -690,7 +690,7 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {}, dayGoal: 0, aiNotify: false, aiNotifyAt: "07:30"};
+const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {}, dayGoal: 0};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 // One-time move of earlier installs to the new defaults: Parhizgar recitation and Safavi translation
@@ -711,7 +711,7 @@ let acct = load("tadabbor-account", null);                       // {token, id, 
 const syncMeta = Object.assign({localAt: 0, syncAt: 0, recId: null, remoteVer: "", cfgSig: "", sig: ""}, load("tadabbor-sync", {}));
 const syncSave = () => store("tadabbor-sync", syncMeta);
 // Settings that belong to one device (or are private) are not sent to the server
-const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "aiNotify", "aiNotifyAt", "ui", "phone", "seenIntro",
+const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "ui", "phone", "seenIntro",
   "lastUpdateCheck", "qcfAsked", "transAsked"];
 const syncSettings = () => Object.fromEntries(Object.entries(cfg).filter(([k]) => !DEVICE_KEYS.includes(k)));
 let syncApplying = false, syncTimer = 0;
@@ -3629,9 +3629,6 @@ function updateNative() {
   const all = siyaqs(), md = all.filter(x => status(x.k) === "due").length, td = all.filter(x => tadDue(x.k)).length, L = currentLevel(), nx = nextToLearn();
   const line = [md ? FA(md) + " مرور حفظ" : "", td ? FA(td) + " مرور تدبر" : "", nx ? "قدم بعد: " + nx.s.name + " · سیاق " + FA(nx.q.n) : passed(L.id) ? "" : L.t].filter(Boolean).join(" · ") || "امروز کاری نمانده";
   try { if (Android.setReminder) Android.setReminder(!!cfg.remind, +(cfg.remindAt || "20:00").split(":")[0], +(cfg.remindAt || "20:00").split(":")[1], (myName() ? myName() + "، " : "") + "وقت حفظ تدبری است", line); } catch (e) {}
-  // Daily message of the assistant as a notification: the phone asks the assistant at that hour with this snapshot, or shows the local summary
-  try { if (AI_NOTIFY_OK()) { const [h, m] = (cfg.aiNotifyAt || "07:30").split(":").map(Number);
-    Android.setAiNotify(!!cfg.aiNotify, h, m, AI_URL, aiDevice(), JSON.stringify({mode: "daily", ctx: aiContext()}), aiLocalBrief(dayPart(h)), (myName() ? myName() + "، " : "") + "پیام امروز حفظ تدبری"); } } catch (e) {}
   const [vs, va] = verseOfDay();
   loadText().then(() => { try { if (Android.setWidget) Android.setWidget((myName() ? "سلام " + myName() + " · " : "") + "حفظ تدبری", line, vplain(vs, va), (trans(vs, va) || "") + " (" + S[vs].name + " " + FA(va) + ")"); } catch (e) {} }).catch(() => {});
 }
@@ -3661,7 +3658,6 @@ const ACT = {
   "data-tip": v => { cfg.tips = cfg.tips || {}; cfg.tips[v] = true; saveCfg(); const c = document.querySelector(`[data-tip="${v}"]`); if (c) c.closest(".tip").remove(); },
   "data-planmin": v => { cfg.dailyMin = +v; saveCfg(); render(); },
   "data-daygoal": v => { cfg.dayGoal = +v; saveCfg(); dayGoalCheck(false); save(); render(); if (+v) toast("هدف روزانه: " + FA(v) + " آیه"); },
-  "data-ainotify": () => { cfg.aiNotify = true; saveCfg(); updateNative(); paintAiCard(); toast("پیام امروز هر روز ساعت " + FA(cfg.aiNotifyAt || "07:30") + " اعلان می‌شود؛ ساعتش در تنظیمات است", 4200); },
   "data-gopage": v => { tab = "mushaf"; mushafPage = +v; render(); window.scrollTo(0, 0); },
   "data-listen": v => { const [sn, qn] = v.split(":").map(Number), q = S[sn].siyaqs[qn - 1]; tab = "mushaf"; mushafPage = pageOf(sn, q.s); cfg.mpEnd = "siyaq"; if (!cfg.mpTrans) cfg.mpTrans = "translations/Makarem_Kabiri_16Kbps"; saveCfg(); render(); mpStart(sn, q.s); },
   "data-rec": v => recStart(v), "data-recstop": () => recStop(), "data-recplay": v => recPlay(v),
@@ -3736,8 +3732,6 @@ document.querySelector(".tabs [data-menu]").addEventListener("click", openMenu);
 // build time (AI_API); its API key never reaches the app. Without it, the daily box still works from a local summary.
 const AI_URL = "https://ai.ganjineh-tadabbor.ir/api/ai".startsWith("http") ? "https://ai.ganjineh-tadabbor.ir/api/ai" : "";
 const AI_ON = () => !!AI_URL;
-// The app can show the daily message as a notification at a chosen hour (native side: AiNotify.java)
-const AI_NOTIFY_OK = () => IS_APP && typeof Android.setAiNotify === "function";
 const aiDevice = () => { let d = load("tadabbor-device", ""); if (!d) { d = Math.random().toString(36).slice(2) + Date.now().toString(36); store("tadabbor-device", d); } return d; };
 const ai = {busy: false, err: "", off: false, chat: load("tadabbor-ai-chat", []), chatBusy: false, chatErr: ""};
 const dayPart = (h = new Date().getHours()) => h < 4 ? "midnight" : h < 11 ? "morning" : h < 15 ? "noon" : h < 19 ? "afternoon" : "night";
@@ -3772,8 +3766,8 @@ function aiContext() {
   };
 }
 // Offline daily message: used when there is no server/sign-in, while the model answers, or if it fails
-function aiLocalBrief(forPart) {
-  const x = aiContext(), part = forPart || dayPart(), n = x.name ? " " + x.name : "";
+function aiLocalBrief() {
+  const x = aiContext(), part = dayPart(), n = x.name ? " " + x.name : "";
   const hi = {midnight: `نیمه‌شب بخیر${n}! چراغ شما هنوز روشن است؛ اگر بیدارید، چند آیه مرور از هر سریالی می‌ارزد.`,
     morning: `صبح بخیر${n}! روز تازه، فرصت تازه.`, noon: `ظهر بخیر${n}! قبل از اینکه ناهار خواب‌آلودتان کند، یک نگاه به کارهای امروز بیندازیم.`,
     afternoon: `عصر بخیر${n}! چای عصرانه با یک سیاق تدبر بیشتر می‌چسبد.`, night: `شب بخیر${n}! پیش از خواب، بهترین وقت برای مرور است.`}[part];
@@ -3801,7 +3795,7 @@ function aiCard() {
       ${AI_ON() ? `<button class="icon-btn btn-ghost" data-aibrief aria-label="پیام تازه"${ai.busy ? " disabled" : ""}>↻</button>` : ""}</div>
     <div class="ai-text" id="ai-brief">${ai.busy && !fresh ? `<span class="small muted">دستیار دارد وضعیت شما را می‌خواند…</span><br>` : ""}${aiFmt(text)}</div>
     ${ai.err ? `<span class="small muted">${esc(ai.err)}</span>` : ""}
-    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button>${AI_NOTIFY_OK() && !cfg.aiNotify ? `<button class="small" data-ainotify>🔔 هر روز اعلان کن</button>` : ""}</div></section>`;
+    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button></div></section>`;
 }
 // Safe formatting of the model's text: escape everything, then allow **bold**, line breaks and "- " lists
 function aiFmt(t) {
@@ -4278,8 +4272,6 @@ function openSettings() {
     <section class="card"><h3>یادآور روزانه</h3>
       ${IS_APP ? `<label class="switch small"><span>هر روز یادآوری کن<br><span class="muted">با تعداد مرورهای امروز و قدم بعدی شما</span></span><input type="checkbox" id="rm-on" ${cfg.remind ? "checked" : ""}></label>
       <div class="field"><label for="rm-at" class="small">ساعت</label><input type="time" id="rm-at" value="${esc(cfg.remindAt || "20:00")}" dir="ltr"></div>
-      ${AI_NOTIFY_OK() ? `<label class="switch small"><span>پیام امروز دستیار را هر روز اعلان کن<br><span class="muted">${AI_ON() ? "همان پیام بالای صفحه اصلی؛ با اینترنت دستیار هوشمند می‌نویسد، بدون اینترنت خلاصه خود برنامه می‌آید" : "خلاصه وضعیت شما از خود برنامه"}</span></span><input type="checkbox" id="an-on" ${cfg.aiNotify ? "checked" : ""}></label>
-      <div class="field"><label for="an-at" class="small">ساعت پیام امروز</label><input type="time" id="an-at" value="${esc(cfg.aiNotifyAt || "07:30")}" dir="ltr"></div>` : ""}
       <p class="small muted">برای ویجت صفحه اصلی: صفحه اصلی گوشی را نگه دارید، «ابزارک‌ها» را بزنید و «حفظ تدبری» را بکشید.</p>` : `<p class="small muted">یادآور و ویجت فقط در برنامه اندروید است.</p>`}
     </section>
     <section class="card"><h3>روش حفظ</h3>
@@ -4347,8 +4339,6 @@ function openSettings() {
   IDB.keys("wbw:").then(k => { const el = box.querySelector("#wbw-st"); if (el && !wbwAll) el.textContent = `${FA(k.length)} از ۱۱۴ سوره روی دستگاه`; });
   box.querySelector("#wbw-all").addEventListener("click", e => { e.target.disabled = true; downloadAllWbw(); });
   const rmOn = box.querySelector("#rm-on"); if (rmOn) rmOn.addEventListener("change", e => { cfg.remind = e.target.checked; saveCfg(); updateNative(); toast(cfg.remind ? "یادآور روزانه روشن شد" : "یادآور خاموش شد"); });
-  const anOn = box.querySelector("#an-on"); if (anOn) anOn.addEventListener("change", e => { cfg.aiNotify = e.target.checked; saveCfg(); updateNative(); toast(cfg.aiNotify ? "اعلان پیام امروز روشن شد" : "اعلان پیام امروز خاموش شد"); });
-  const anAt = box.querySelector("#an-at"); if (anAt) anAt.addEventListener("change", e => { cfg.aiNotifyAt = e.target.value || "07:30"; saveCfg(); updateNative(); });
   const rmAt = box.querySelector("#rm-at"); if (rmAt) rmAt.addEventListener("change", e => { cfg.remindAt = e.target.value || "20:00"; saveCfg(); updateNative(); });
   const ab = box.querySelector("#ab-on"); if (ab) ab.addEventListener("change", e => { cfg.autoBackup = e.target.checked; saveCfg(); if (cfg.autoBackup) { cfg.lastAutoDay = null; autoBackupDaily(); openSettingsKeep(); } });
   box.querySelector("#freepath").addEventListener("change", e => set("freePath", e.target.checked));
@@ -4437,7 +4427,7 @@ function openGuide(section) {
       <p><b>کتاب‌ها:</b> کتاب‌های هر سطح و تدبر سوره‌ها، با پیوند خرید از انتشارات تدبر.</p></div></details>
 
     <details ${open("ai")}><summary>دستیار هوشمند</summary><div>
-      <p><b>پیام امروز:</b> کادر بالای صفحه «امروز» هر روز با توجه به ساعت به شما سلام می‌کند و مرورهای عقب‌مانده و قدم بعدی را می‌گوید. در برنامه اندروید می‌توانید با دکمه «🔔 هر روز اعلان کن» یا از تنظیمات ← «یادآور روزانه»، همین پیام را هر روز در ساعت دلخواه به‌صورت اعلان بگیرید.</p>
+      <p><b>پیام امروز:</b> کادر بالای صفحه «امروز» هر روز با توجه به ساعت به شما سلام می‌کند و مرورهای عقب‌مانده و قدم بعدی را می‌گوید.</p>
       <p><b>گفتگو:</b> از منو ← «دستیار هوشمند» درباره آیات، روش تدبر، برنامه حفظ و پیشرفت خودتان بپرسید.</p>
       <p>پاسخ‌ها را یک مدل هوش مصنوعی می‌نویسد و ممکن است خطا داشته باشد؛ فتوای شرعی نیست و جای تفسیر و استاد را نمی‌گیرد. اطلاعات شخصی در پرسش‌ها ننویسید. اگر اینترنت نباشد، پیام امروز از خلاصه‌ای که روی خود گوشی ساخته می‌شود نشان داده می‌شود.</p></div></details>
 
@@ -4447,7 +4437,7 @@ function openGuide(section) {
       <p>از چرخ‌دنده بالای هر صفحه: مشخصات شما، پوسته و رنگ، قلم مصحف، ترجمه (پیش‌فرض صفوی)، قاری، تفسیر پیش‌فرض، یادآور روزانه، «حفظ فقط بعد از تدبر» و «مسیر آزاد».</p>
       <p><b>بدون اینترنت:</b> متن، صفحه‌ها و چهار ترجمه داخل برنامه است. قلم عثمان طه و ترجمه‌های دیگر بعد از نصب ذخیره می‌شوند. ترتیل، تفسیرها، معنای کلمه‌به‌کلمه و درس‌ها را هم از تنظیمات یا همان صفحه روی گوشی ذخیره کنید.</p>
       <p><b>پشتیبان:</b> در برنامه اندروید هر روز خودکار یک پشتیبان در پوشه Download/HefzTadabbori نوشته می‌شود. برای ایمنی بیشتر، گاهی «ذخیره پشتیبان» را بزنید و Drive را انتخاب کنید؛ برای بازیابی «بازیابی از فایل».</p>
-      <p><b>یادآور و ویجت:</b> یادآور و اعلان «پیام امروز» را در تنظیمات روشن کنید؛ ویجت را از «ابزارک‌های» صفحه اصلی گوشی اضافه کنید.</p></div></details>
+      <p><b>یادآور و ویجت:</b> یادآور را در تنظیمات روشن کنید؛ ویجت را از «ابزارک‌های» صفحه اصلی گوشی اضافه کنید.</p></div></details>
 
     <details><summary>پرسش‌های رایج</summary><div>
       <p><b>داده‌هایم کجاست؟</b> روی همین دستگاه و در فایل‌های پشتیبان خودتان؛ اگر با حساب وارد شده باشید، روی سرور برنامه هم تا بین گوشی و سایت یکی بماند. دستیار هوشمند فقط خلاصه‌ای از وضعیت یادگیری و پرسش شما را می‌فرستد. جزئیات در «حریم خصوصی» در تنظیمات.</p>
