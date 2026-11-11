@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2F6B4F">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzBGM0QzQSIvPgogIDwhLS0gbmVzdGVkIGFyY3M6IGxheWVycyBvZiBtZWFuaW5nICh3b3JkLCB2ZXJzZSwgc2l5YXEpIHJpc2luZyBmcm9tIGFuIG9wZW4gYm9vayAtLT4KICA8ZyBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiPgogICAgPHBhdGggZD0iTTEzNiAzMDBhMTIwIDEyMCAwIDAgMSAyNDAgMCIgc3Ryb2tlPSIjRTNCNjVDIiBzdHJva2Utd2lkdGg9IjIyIi8+CiAgICA8cGF0aCBkPSJNMTc2IDMwMGE4MCA4MCAwIDAgMSAxNjAgMCIgc3Ryb2tlPSIjRjJEOUEwIiBzdHJva2Utd2lkdGg9IjIyIi8+CiAgICA8cGF0aCBkPSJNMjE2IDMwMGE0MCA0MCAwIDAgMSA4MCAwIiBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS13aWR0aD0iMjIiLz4KICA8L2c+CiAgPHBhdGggZD0iTTI1NiAzMzBjLTQwLTI0LTkwLTMwLTE0MC0yMnY2MmM1MC04IDEwMC0yIDE0MCAyMnoiIGZpbGw9IiNGRkZGRkYiLz4KICA8cGF0aCBkPSJNMjU2IDMzMGM0MC0yNCA5MC0zMCAxNDAtMjJ2NjJjLTUwLTgtMTAwLTItMTQwIDIyeiIgZmlsbD0iI0RDRUJFOCIvPgo8L3N2Zz4K">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>حفظ تدبری</title>
 <meta name="description" content="اپلیکیشن حفظ تدبری قرآن: اول تدبر، بعد حفظ سیاق‌به‌سیاق">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -263,6 +266,12 @@ body.has-dl .toast{bottom:128px}
 .pl-set .seg{display:grid;grid-template-columns:repeat(5,1fr)}
 .pl-set .seg button{padding:7px 2px;font-size:13px}
 .me.fav{color:var(--gold)!important;text-shadow:0 0 1px var(--gold)}
+.me.bm{color:var(--bm)!important;text-shadow:0 0 1px var(--bm)}
+.me.hasnote{position:relative}.me.hasnote::after{content:"";position:absolute;top:-2px;inset-inline-end:-2px;width:7px;height:7px;border-radius:50%;background:var(--lapis,#3B6EA8)}
+.bm-chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:2px 10px;border-radius:999px;background:color-mix(in srgb,var(--bm) 14%,transparent);color:var(--bm);font-weight:700}
+.vnote-text{white-space:pre-wrap;border-inline-start:3px solid var(--lapis,#3B6EA8);padding-inline-start:10px;margin:0}
+.bm-pick{display:flex;flex-wrap:wrap;gap:6px}.bm-pick button{border-color:var(--bm);color:var(--bm)}.bm-pick button[aria-pressed="true"]{background:var(--bm);color:#fff}
+mark.hl{background:var(--gold-soft,#f4e3b5);color:inherit;border-radius:3px;padding:0 2px}
 .fav-star{color:var(--gold);font-size:18px}
 .uv{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .uv.got{border-color:var(--st-solid)}
@@ -624,7 +633,7 @@ function jsonOf(url) {
   }
   return fetch(url).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
 }
-const VERSION = "0.13.2";
+const VERSION = "0.14.0";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
 if (!IS_APP) document.documentElement.classList.add("site");
 // The app downloads content from the configured site; a web copy reads it from the server it is served from
@@ -672,7 +681,7 @@ const siteName = n => SITE_NAME[n] || S[n].name;
 // ---------- storage ----------
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", autoBackup: true, tips: {}};
+const DEFAULTS = {theme: "light", accent: "green", qfont: "qcf", qlh: 1.9, ui: 1, reciter: "Parhizgar_48kbps", reps: 3, gate: true, trans: "safavi", seenIntro: false, lastBackup: null, qcfAsked: false, freePath: false, showWeak: true, name: "", phone: "", mpEnd: "surah", mpRep: 1, mpRangeRep: 1, mpTrans: "", tafsir: "mizan", dailyMin: 0, remind: false, remindAt: "20:00", aiTip: false, aiTipAt: "08:00", autoBackup: true, tips: {}};
 let cfg = Object.assign({}, DEFAULTS, load("tadabbor-settings", {}));
 if (!RECITERS.some(r => r[0] === cfg.reciter)) cfg.reciter = DEFAULTS.reciter;
 // One-time move of earlier installs to the new defaults: Parhizgar recitation and Safavi translation
@@ -683,7 +692,7 @@ if (!QFONTS.some(f => f[0] === cfg.qfont)) cfg.qfont = "qcf";
 const saveCfg = () => { store("tadabbor-settings", cfg); touchCfg(); };
 
 // Progress lives only on this device and in the user's own backups.
-const EMPTY = () => ({streak: 0, lastActive: null, notes: {}, items: {}, watched: {}, passed: {}, found: {}, err: {}});
+const EMPTY = () => ({streak: 0, lastActive: null, notes: {}, items: {}, watched: {}, passed: {}, found: {}, err: {}, fav: {}, vnote: {}, bm: {}});
 let st = Object.assign(EMPTY(), load("tadabbor-progress", {}));
 const save = () => { store("tadabbor-progress", st); touch(); };
 // ---------- optional account (own server, PocketBase): state used by save()/saveCfg() ----------
@@ -693,7 +702,7 @@ let acct = load("tadabbor-account", null);                       // {token, id, 
 const syncMeta = Object.assign({localAt: 0, syncAt: 0, recId: null, remoteVer: "", cfgSig: "", sig: ""}, load("tadabbor-sync", {}));
 const syncSave = () => store("tadabbor-sync", syncMeta);
 // Settings that belong to one device (or are private) are not sent to the server
-const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "ui", "phone", "seenIntro",
+const DEVICE_KEYS = ["lastBackup", "lastAutoPath", "lastAutoDay", "autoBackup", "remind", "remindAt", "aiTip", "aiTipAt", "ui", "phone", "seenIntro",
   "lastUpdateCheck", "qcfAsked", "transAsked"];
 const syncSettings = () => Object.fromEntries(Object.entries(cfg).filter(([k]) => !DEVICE_KEYS.includes(k)));
 let syncApplying = false, syncTimer = 0;
@@ -895,11 +904,15 @@ function renderPages(pnums, opt = {}) {
         if (t === "w" && (s8 === "mask" || (opt.wordMask && opt.wordMask(vk, pos[vk])))) cls += " mask";
         if (t === "e" && opt.cut && opt.cut.has(vk)) cls += " cut";
         if (t === "e" && opt.marks && (st.fav || {})[vk]) cls += " fav";
+        if (t === "e" && opt.marks && bmOf(vk)) cls += " bm";
+        if (t === "e" && opt.marks && vnoteOf(vk)) cls += " hasnote";
         if (opt.weak && t === "w" && !cls.includes("mask")) { const er = errOf(vk); if (er && errOpen(vk)) cls += " weak"; if (er && er.w[pos[vk]] > 0) cls += " errw"; }
         if (playingVk === vk) cls += " playing";
         const glyph = qcf ? ch : (t === "e" ? `﴿${AR(parseVk(vk)[1])}﴾` : esc(text));
         const style = qcf ? ` style="font-family:'${font}'"` : "";
-        return `<span class="${cls}" data-vk="${vk}" data-t="${t}"${t === "w" ? ` data-i="${pos[vk]}"` : ""}${style}>${glyph}</span>`;
+        const bmSt = t === "e" && cls.includes(" bm") ? `--bm:${bmKind(bmOf(vk).k)[2]};` : "";
+        const style2 = bmSt ? (style ? style.replace(' style="', ` style="${bmSt}`) : ` style="${bmSt}"`) : style;
+        return `<span class="${cls}" data-vk="${vk}" data-t="${t}"${t === "w" ? ` data-i="${pos[vk]}"` : ""}${style2}>${glyph}</span>`;
       }).join("");
       const center = ln.length === 1 && (ln[0][0] === "h" || ln[0][0] === "b");
       const sy = opt.marks ? [...new Set(vks.map(v => { const [a, b] = parseVk(v); const q = siyaqOf(a, b); return q ? key(a, q.n) : null; }).filter(Boolean))] : [];
@@ -1111,13 +1124,13 @@ function deleteAudio(r, sn) { try { Android.deletePath(`audio/${r}/${P3(sn)}`); 
 const transPending = () => TRANSLATIONS.filter(x => x[0] !== "none" && !x[3] && !transLocal(x[0])).map(x => x[0]);
 function downloadAllTrans() { transPending().filter(id => !jobActive("tr-" + id)).forEach(downloadTrans); }
 function offlineBox() {
-  if (!IS_APP) return `<p class="small muted">در نسخه وب همه‌چیز از اینترنت خوانده می‌شود. ذخیره متن، ترجمه و ترتیل روی گوشی فقط در برنامه اندروید است.</p>`;
+  if (!IS_APP) return webOfflineBox();
   const rest = TRANSLATIONS.filter(x => x[0] !== "none" && !x[3]);
   const pend = transPending(), pendMB = rest.filter(x => pend.includes(x[0])).reduce((a, x) => a + x[2], 0);
   const r = cfg.reciter, rname = reciterName(r);
   const haveS = DATA.surahs.filter(s => audioHave(r, s.n) >= s.total).length;
   return `<div class="upd">
-    <p class="small">متن و ۶۰۴ صفحه قرآن و چهار ترجمه داخل خود برنامه است.</p>
+    <p class="small">متن و ۶۰۴ صفحه قرآن و چهار ترجمه داخل خود برنامه است. برای ذخیره یکجای ترتیل، معنای کلمه‌ها و تفسیر یک سوره، در صفحه هر سوره «⬇ ذخیره سوره» را بزنید.</p>
     <h3 style="font-size:14px">مصحف عثمان طه</h3>${qcfCard(true)}
     <div class="row between"><h3 style="font-size:14px">ترجمه‌ها</h3>${pend.length ? `<button class="small btn-main" id="tr-all">دریافت همه (${FA(pendMB.toFixed(0))} مگابایت)</button>` : `<span class="small ok">همه روی گوشی است</span>`}</div>
     <div>${rest.map(([id, nm, mb]) => `<div class="dlrow"><span class="small">${nm} <span class="muted num">· ${FA(mb)} مگابایت</span></span>${jobActive("tr-" + id) ? "" : transLocal(id) ? `<span class="row" style="gap:6px"><span class="small ok">✓</span><button class="small btn-ghost" data-trdel="${id}">حذف</button></span>` : `<button class="small" data-trget="${id}">دریافت</button>`}${jobActive("tr-" + id) ? jobBar("tr-" + id) : ""}</div>`).join("")}</div>
@@ -1127,6 +1140,8 @@ function offlineBox() {
     <button data-dls>📥 وضعیت دانلودها</button></div>`;
 }
 function wireOffline(root) {
+  if (!IS_APP) { wireWebOffline(root); return; }
+  wireOffCard(root);
   const a = root.querySelector("#tr-all"); if (a) a.addEventListener("click", downloadAllTrans);
   root.querySelectorAll("[data-trget]").forEach(b => b.addEventListener("click", () => downloadTrans(b.dataset.trget)));
   root.querySelectorAll("[data-trdel]").forEach(b => b.addEventListener("click", () => { try { Android.deletePath("trans/" + b.dataset.trdel + ".json"); } catch (e) {} delete TR[b.dataset.trdel]; TR_LOADING[b.dataset.trdel] = null; refresh(); }));
@@ -1143,6 +1158,101 @@ function stopAllDownloads() {
   toast("دانلودها متوقف شد"); refresh();
 }
 // Recitation manager: pick surahs (one by one, by juz, my surahs, current level or the whole Quran) and download them for one reciter
+// ---------- one surah for use without internet: text, fonts, translation, word meanings, tafsir and recitation ----------
+// Web: files go into the «hefz-keep» cache, which sw.js reads when there is no connection (and never clears on an update).
+// Android: text and pages are already inside the app; the recitation goes through the normal downloads, the rest into IndexedDB.
+const KEEP = "hefz-keep";
+const OFF_KEY = "tadabbor-offline";
+const offSaved = () => load(OFF_KEY, {});
+const OFFJOB = {};   // sn -> {step, done, total, fail}
+const canKeep = () => !IS_APP && "caches" in window && /^https?:/.test(location.protocol);
+async function keepUrls(urls, job, opts) {
+  const c = await caches.open(KEEP);
+  for (const u of urls) {
+    if (job.stop) return;
+    try {
+      if (!(await c.match(u))) { const r = await fetch(u, opts); if (r.ok || r.type === "opaque") await c.put(u, r); else job.fail++; }
+    } catch (e) { job.fail++; }
+    job.done++; offPaint(job.sn);
+  }
+}
+const offTafsirId = () => !IS_APP && tafsirOf(cfg.tafsir)[3] !== "api" ? "fa-mokhtasar" : cfg.tafsir;   // Al-Mizan opens only inside the app
+async function saveSurahOffline(sn) {
+  if (OFFJOB[sn] && !OFFJOB[sn].end) return;
+  const s = S[sn], job = OFFJOB[sn] = {sn, step: "آماده‌سازی", done: 0, total: 0, fail: 0};
+  offPaint(sn);
+  if (canKeep() && navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  const step = (t, total) => { job.step = t; job.done = 0; job.total = total; offPaint(sn); };
+  try {
+    if (canKeep()) {
+      const pages = pagesFor(sn, 1, s.total);
+      step("صفحه‌های مصحف", pages.length);
+      await keepUrls(pages.map(p => new URL(PAGE_BASE + P3(p) + ".json", location.href).href), job);
+      const fonts = new Set();
+      for (const p of pages) { try { const pg = PAGE_CACHE[p] || await jsonOf(PAGE_BASE + P3(p) + ".json"); pageFonts(pg).forEach(f => fonts.add(f)); } catch (e) {} }
+      if (cfg.qfont === "qcf" && fonts.size) { step("قلم مصحف", fonts.size); await keepUrls([...fonts].map(fontFile), job); }
+      const base = [new URL(DATA_BASE + "quran.json", location.href).href];
+      if (cfg.trans && cfg.trans !== "none") base.push(new URL(transUrl(cfg.trans), location.href).href);
+      step("متن و ترجمه", base.length); await keepUrls(base, job);
+    }
+    step("معنای کلمه‌به‌کلمه", 1);
+    try { await loadWbw(sn); } catch (e) { job.fail++; } job.done = 1; offPaint(sn);
+    const tid = offTafsirId(), t = tafsirOf(tid);
+    if (t[3] === "api") { step("تفسیر: " + t[1], 1); try { if (!(await IDB.get(tfKey(tid, sn)))) await IDB.set(tfKey(tid, sn), await fetchTafsirSurah(t, sn)); } catch (e) { job.fail++; } job.done = 1; }
+    else { step("تفسیر: " + t[1], s.total);
+      for (let a = 1; a <= s.total && !job.stop; a++) { try { if ((await IDB.get(tfKey(tid, sn, a))) === undefined) await IDB.set(tfKey(tid, sn, a), await fetchAltafsir(t[4], sn, a)); } catch (e) { job.fail++; } job.done = a; offPaint(sn); } }
+    const r = cfg.reciter;
+    if (IS_APP) { if (audioHave(r, sn) < s.total && !jobActive(audioJobId(r, sn))) downloadAudio(r, sn); }
+    else if (canKeep()) { step("ترتیل " + reciterName(r), s.total); await keepUrls(range(1, s.total).map(i => remoteAudio(r, sn, i)), job, {mode: "no-cors"}); }
+    if (job.stop) { toast("ذخیره سوره " + s.name + " متوقف شد"); return; }
+    const all = offSaved(); all[sn] = {at: Date.now(), r, tf: tid, fail: job.fail}; store(OFF_KEY, all);
+    toast(`سوره ${s.name} برای استفاده بدون اینترنت ذخیره شد${job.fail ? ` (${FA(job.fail)} فایل دریافت نشد؛ دوباره بزنید)` : ""}${IS_APP ? "؛ ترتیل در «دانلودها» ادامه دارد" : ""}`, 5000);
+  } finally { job.end = true; offPaint(sn); refresh(); }
+}
+async function deleteSurahOffline(sn) {
+  const all = offSaved(), rec = all[sn]; delete all[sn]; store(OFF_KEY, all);
+  if (canKeep() && rec) { try { const c = await caches.open(KEEP); await Promise.all(range(1, S[sn].total).map(i => c.delete(remoteAudio(rec.r, sn, i)))); } catch (e) {} }
+  if (IS_APP && rec) deleteAudio(rec.r, sn);
+  toast("نسخه بدون اینترنت سوره " + S[sn].name + " پاک شد"); refresh();
+}
+const offLine = sn => { const j = OFFJOB[sn]; if (j && !j.end) return `${esc(j.step)}${j.total > 1 ? " · " + FA(j.done) + " از " + FA(j.total) : ""}…`;
+  const r = offSaved()[sn]; return r ? `✓ ذخیره شده (${reciterName(r.r)}، تفسیر ${esc(tafsirOf(r.tf)[1].split("،")[0].replace(/\s*\(.*\)/, ""))})` : ""; };
+function offPaint(sn) { document.querySelectorAll(`[data-offst="${sn}"]`).forEach(e => e.innerHTML = offLine(sn)); }
+const offCard = sn => { const busy = OFFJOB[sn] && !OFFJOB[sn].end, have = !!offSaved()[sn];
+  return `<div class="card"><div class="row between"><span class="small"><b>بدون اینترنت</b><br><span class="muted" data-offst="${sn}">${offLine(sn) || (IS_APP ? "ترتیل، معنای کلمه‌ها و تفسیر این سوره" : "مصحف، ترجمه، معنای کلمه‌ها، تفسیر و ترتیل این سوره")}</span></span>
+    ${busy ? `<button class="small btn-ghost" data-offstop="${sn}">توقف</button>` : `<span class="row" style="gap:6px"><button class="small${have ? "" : " btn-main"}" data-offsave="${sn}">${have ? "به‌روزرسانی" : "⬇ ذخیره سوره"}</button>${have ? `<button class="small btn-ghost" data-offdel="${sn}">پاک کردن</button>` : ""}</span>`}</div></div>`; };
+function wireOffCard(root) {
+  root.querySelectorAll("[data-offsave]").forEach(b => b.addEventListener("click", () => { saveSurahOffline(+b.dataset.offsave); refresh(); }));
+  root.querySelectorAll("[data-offdel]").forEach(b => b.addEventListener("click", () => deleteSurahOffline(+b.dataset.offdel)));
+  root.querySelectorAll("[data-offstop]").forEach(b => b.addEventListener("click", () => { const j = OFFJOB[+b.dataset.offstop]; if (j) j.stop = true; }));
+}
+// Several surahs one after another (the current level, for instance)
+async function saveSurahsOffline(list) { for (const sn of list) { if (!offSaved()[sn]) await saveSurahOffline(sn); } }
+// Install the web copy as an app (Chrome/Edge on Android and desktop), and say when the connection drops
+let installEvt = null;
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; refresh(); });
+addEventListener("appinstalled", () => { installEvt = null; toast("«حفظ تدبری» روی دستگاه نصب شد"); refresh(); });
+addEventListener("offline", () => toast("اینترنت قطع شد؛ مصحف و سوره‌های ذخیره‌شده همچنان کار می‌کنند", 4000));
+addEventListener("online", () => toast("اینترنت وصل شد"));
+function webOfflineBox() {
+  const saved = Object.entries(offSaved()).filter(([sn]) => S[sn]).sort((a, b) => a[0] - b[0]), L = myLevel();
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent), standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  return `<div class="upd">
+    <p class="small">صفحه‌هایی از مصحف که یک بار باز شده‌اند، متن قرآن برای جستجو و ترجمه‌ها روی همین مرورگر می‌مانند و بدون اینترنت هم باز می‌شوند. برای اینکه یک سوره کامل (همراه با ترتیل، معنای کلمه‌ها و تفسیر) بدون اینترنت در دسترس باشد، آن را ذخیره کنید.</p>
+    ${standalone ? `<span class="small ok">✓ به‌صورت برنامه نصب شده است</span>` : installEvt ? `<button class="btn-main" id="pwa-install">📲 نصب «حفظ تدبری» روی این دستگاه</button>` : ios ? `<p class="small muted">برای نصب روی آیفون: در سافاری دکمه اشتراک ⬆ و سپس «Add to Home Screen» را بزنید.</p>` : ""}
+    ${L.surahs.length ? `<button id="off-level">⬇ ذخیره سوره‌های ${esc(L.t)} (${FA(L.surahs.length)} سوره)</button>` : ""}
+    <h3 style="font-size:14px">سوره‌های ذخیره‌شده (${FA(saved.length)})</h3>
+    ${saved.length ? saved.map(([sn]) => `<div class="dlrow"><span class="small">سوره ${S[sn].name} <span class="muted" data-offst="${sn}">${offLine(+sn)}</span></span><span class="row" style="gap:6px"><button class="small" data-offsave="${sn}">به‌روزرسانی</button><button class="small btn-ghost" data-offdel="${sn}">پاک کردن</button></span></div>`).join("")
+      : `<p class="small muted">هنوز سوره‌ای ذخیره نکرده‌اید. در صفحه هر سوره «⬇ ذخیره سوره» را بزنید.</p>`}
+    <p class="small muted" id="off-usage"></p></div>`;
+}
+function wireWebOffline(root) {
+  wireOffCard(root);
+  const i = root.querySelector("#pwa-install"); if (i) i.addEventListener("click", () => { if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; refresh(); }); } });
+  const lv = root.querySelector("#off-level"); if (lv) lv.addEventListener("click", () => { toast("ذخیره سوره‌های " + myLevel().t + " شروع شد"); saveSurahsOffline(myLevel().surahs); });
+  const u = root.querySelector("#off-usage");
+  if (u && navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(e => { u.textContent = `فضای استفاده‌شده در این مرورگر: ${fmtMB(e.usage || 0)} مگابایت`; }).catch(() => {});
+}
 // ---------- reciters list: every reciter, and what of each is on the phone ----------
 let recFilter = "all", recSample = null;
 function audioSummary() { try { return IS_APP && Android.audioSummary ? JSON.parse(Android.audioSummary()) : {}; } catch (e) { return {}; } }
@@ -1554,7 +1664,8 @@ function mushaf() {
   return `${topBar(`<h1>مصحف</h1>`)}${tipCard("mushaf")}
   <div class="row" style="flex-wrap:nowrap"><select id="mushaf-surah" aria-label="رفتن به سوره">${DATA.surahs.map(x => `<option value="${x.n}" ${cur === x.n ? "selected" : ""}>${FA(x.n)}. ${x.name}</option>`).join("")}</select>
   <select id="mushaf-juz" aria-label="رفتن به جزء" style="max-width:110px">${range(1, 30).map(j => `<option value="${j}" ${juz === j ? "selected" : ""}>جزء ${FA(j)}</option>`).join("")}</select>
-  <button class="icon-btn" id="mu-favs" aria-label="آیه‌های علاقه‌مندی" style="flex:none;color:var(--gold)">★</button></div>
+  <button class="icon-btn" id="mu-favs" aria-label="یادداشت‌ها، نشانک‌ها و علاقه‌مندی‌ها" style="flex:none;color:var(--gold)">🔖</button></div>
+  ${(() => { const r = readMark(); return r && S[r[0]].vp[r[1] - 1] !== mushafPage ? `<button class="small" id="mu-readmark" style="align-self:flex-start">🔖 ادامه خواندن: سوره ${S[r[0]].name} · آیه ${FA(r[1])}</button>` : ""; })()}
   <div class="mnav"><button id="pg-next" aria-label="صفحه بعد" ${mushafPage >= 604 ? "disabled" : ""}>صفحه بعد</button><span class="pg num">صفحه ${FA(mushafPage)} از ۶۰۴</span><button id="pg-prev" aria-label="صفحه قبل" ${mushafPage <= 1 ? "disabled" : ""}>صفحه قبل</button></div>
   <div id="mushaf-page">${renderPages([mushafPage], {marks: true, weak: cfg.showWeak})}</div>
   ${mpBar()}
@@ -1575,7 +1686,8 @@ function wireMushaf(v) {
   box.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 60) go(dx > 0 ? 1 : -1); });
   box.addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (w) openWordbar(w.dataset.vk, w.dataset.t === "w" ? +w.dataset.i : 0); });
   v.querySelector("#mu-audio").addEventListener("click", () => openAudio());
-  v.querySelector("#mu-favs").addEventListener("click", openFavs);
+  v.querySelector("#mu-favs").addEventListener("click", () => openMyVerses("all"));
+  { const rm = v.querySelector("#mu-readmark"); if (rm) rm.addEventListener("click", () => { const r = readMark(); if (r) goVerse(r[0], r[1]); }); }
   wirePlayer(v);
   const sw = v.querySelector("#showweak"); if (sw) sw.addEventListener("change", () => { cfg.showWeak = sw.checked; saveCfg(); render(); });
   if (selVk) markSel(selVk);
@@ -1592,8 +1704,9 @@ function openWordbar(vk, wi) {
     ${wm ? `<div class="wsel"><span class="ar">${esc(wm[0])}</span><b>${esc(wm[1])}</b><span class="row" style="gap:6px">${wm[2] ? `<button class="small" id="wb-say">🔊</button>` : ""}<button class="small" id="wb-vocab">${inVocab(vocabKey(sn, ay, wi)) ? "✓ در لغت‌نامه" : "+ لغت‌نامه من"}</button>${rootButton(sn, ay, wi)}</span></div>` : ""}
     <span class="small muted">سیاق ${FA(q.n)}: ${esc(title(s, q))} · ${LABELS[status(k)]}</span>
     ${trans(sn, ay) ? `<p class="tr" style="font-size:14px">${esc(trans(sn, ay))}</p>` : ""}
+    ${vnoteOf(vk) ? `<p class="small vnote-text">${esc(vnoteOf(vk).slice(0, 220))}${vnoteOf(vk).length > 220 ? "…" : ""}</p>` : ""}
     ${errOf(vk) ? `<span class="small" style="color:var(--st-due)">${FA(errOf(vk).n)} بار اشتباه · ${errOpen(vk) ? "نیاز به تثبیت" : "تثبیت‌شده"}</span>` : ""}
-    <div class="row"><button id="wb-from" class="small btn-main">▶ پخش از این آیه</button><button id="wb-play" class="small">فقط این آیه</button><button id="wb-fav" class="small" aria-pressed="${isFav(vk)}">${isFav(vk) ? "★ علاقه‌مندی" : "☆ علاقه‌مندی"}</button><button id="wb-share" class="small">اشتراک</button><button class="small" data-tafsir="${vk}">📖 تفسیر</button>${similarOf(vk).length ? `<button class="small" data-similar="${vk}">≈ ${FA(similarOf(vk).length)} آیه مشابه</button>` : ""}</div>
+    <div class="row"><button id="wb-from" class="small btn-main">▶ پخش از این آیه</button><button id="wb-play" class="small">فقط این آیه</button><button id="wb-fav" class="small" aria-pressed="${isFav(vk)}">${isFav(vk) ? "★ علاقه‌مندی" : "☆ علاقه‌مندی"}</button><button id="wb-note" class="small">${vnoteOf(vk) ? "✎ یادداشت من" : "✎ یادداشت"}</button><button id="wb-bm" class="small"${bmOf(vk) ? ` style="--bm:${bmKind(bmOf(vk).k)[2]};color:var(--bm);border-color:var(--bm)"` : ""}>${bmOf(vk) ? "🔖 " + bmKind(bmOf(vk).k)[1] : "🔖 نشانک"}</button><button id="wb-share" class="small">اشتراک</button><button class="small" data-tafsir="${vk}">📖 تفسیر</button>${similarOf(vk).length ? `<button class="small" data-similar="${vk}">≈ ${FA(similarOf(vk).length)} آیه مشابه</button>` : ""}</div>
     <div class="row">${errOpen(vk) ? `<button id="wb-drill" class="small">تمرین تثبیت</button>` : ""}<button id="wb-open" class="small">باز کردن سیاق</button>${hasMedia(sn) ? `<button id="wb-les" class="small">درس‌های سوره</button>` : ""}</div></div></div>`;
   box.querySelector("#wb-x").addEventListener("click", closeWordbar);
   box.querySelector("#wb-play").addEventListener("click", () => play(sn, ay));
@@ -1602,6 +1715,8 @@ function openWordbar(vk, wi) {
   box.querySelector("#wb-from").addEventListener("click", () => { closeWordbar(); mpStart(sn, ay); });
   box.querySelector("#wb-fav").addEventListener("click", () => { toggleFav(vk); openWordbar(vk, wi); document.querySelectorAll(`#mushaf-page .me[data-vk="${vk}"]`).forEach(e => e.classList.toggle("fav", isFav(vk))); });
   box.querySelector("#wb-share").addEventListener("click", () => shareVerse(sn, ay));
+  box.querySelector("#wb-note").addEventListener("click", () => openVnote(vk, () => openWordbar(vk, wi)));
+  box.querySelector("#wb-bm").addEventListener("click", () => openVnote(vk, () => openWordbar(vk, wi)));
   const wd = box.querySelector("#wb-drill"); if (wd) wd.addEventListener("click", () => { closeWordbar(); openDrill([vk], 0); });
   box.querySelector("#wb-open").addEventListener("click", () => { closeWordbar(); startSession(k, status(k) === "solid" || status(k) === "due" ? "review" : "learn"); });
   { const wl = box.querySelector("#wb-les"); if (wl) wl.addEventListener("click", () => { closeWordbar(); openLessons(sn); }); }
@@ -1749,23 +1864,99 @@ function shareVerse(sn, ay) {
   if (navigator.share) { navigator.share({text}).catch(() => {}); return; }
   (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast("متن آیه کپی شد")).catch(() => toast("اشتراک‌گذاری در این دستگاه ممکن نشد"));
 }
-function openFavs() {
-  lastDraw = openFavs;
-  const list = Object.entries(st.fav || {}).sort((a, b) => b[1] - a[1]).map(([vk]) => parseVk(vk));
-  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="آیه‌های علاقه‌مندی">
-    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>آیه‌های علاقه‌مندی</h2></header>
-    <div class="body">${list.length ? list.map(([sn, ay]) => { const vk = key(sn, ay), tr = trans(sn, ay);
-      return `<div class="sres"><div class="row between"><b>سوره ${S[sn].name} · آیه ${FA(ay)}</b><span class="fav-star" aria-hidden="true">★</span></div>
-        <div class="ar">${arHtml(sn, ay)}</div>${tr ? `<p class="small">${esc(tr)}</p>` : ""}
-        <div class="row"><button class="small" data-fgo="${vk}">در مصحف</button><button class="small" data-fplay="${vk}" aria-label="پخش از این آیه">▶ پخش</button><button class="small" data-fshare="${vk}">اشتراک</button><button class="small btn-ghost" data-fdel="${vk}">برداشتن</button></div></div>`; }).join("")
-      : `<div class="card"><p class="small">هنوز آیه‌ای نشان نکرده‌اید. در مصحف روی هر آیه بزنید و «☆ علاقه‌مندی» را انتخاب کنید.</p></div>`}</div></div>`);
-  const on = (sel, f) => box.querySelectorAll(sel).forEach(b => b.addEventListener("click", () => f(parseVk(b.dataset[Object.keys(b.dataset)[0]]), b)));
-  on("[data-fgo]", ([sn, ay]) => goVerse(sn, ay));
-  on("[data-fplay]", ([sn, ay]) => { goVerse(sn, ay); setTimeout(() => mpStart(sn, ay), 120); });
-  on("[data-fshare]", ([sn, ay]) => shareVerse(sn, ay));
-  on("[data-fdel]", ([sn, ay]) => { toggleFav(key(sn, ay)); openFavs(); });
-  if (!QTEXT) loadText().then(() => { if (lastDraw === openFavs) openFavs(); }).catch(() => {});
+// ---------- my verses: a note on any verse, bookmarks by purpose, and favourites ----------
+// All three live in the progress (st.vnote, st.bm, st.fav), so they go into backups and travel with the account sync;
+// on a sync conflict they are merged entry by entry (see mergeProgress).
+const BM_KINDS = [["read", "ادامه خواندن", "#2F6B4F"], ["tad", "برای تدبر", "#3B6EA8"], ["hefz", "برای حفظ", "#B07A1E"], ["ask", "پرسش دارم", "#A4473E"]];
+const bmKind = id => BM_KINDS.find(x => x[0] === id) || BM_KINDS[0];
+const bmOf = vk => (st.bm || {})[vk] || null;
+const vnoteOf = vk => ((st.vnote || {})[vk] || {}).t || "";
+function setVnote(vk, text) {
+  st.vnote = st.vnote || {}; text = String(text || "").trim();
+  if (text) st.vnote[vk] = {t: text.slice(0, 5000), at: Date.now()}; else delete st.vnote[vk];
+  save();
 }
+function setBm(vk, kind) {
+  st.bm = st.bm || {};
+  if (!kind) delete st.bm[vk];
+  else {
+    // «ادامه خواندن» is a single place: setting it moves it from the verse that had it
+    if (kind === "read") Object.keys(st.bm).forEach(k => { if (st.bm[k].k === "read") delete st.bm[k]; });
+    st.bm[vk] = {k: kind, at: Date.now()};
+  }
+  save();
+}
+const repaintMarks = vk => document.querySelectorAll(`#mushaf-page .me[data-vk="${vk}"]`).forEach(e => {
+  const b = bmOf(vk); e.classList.toggle("bm", !!b); e.classList.toggle("hasnote", !!vnoteOf(vk)); if (b) e.style.setProperty("--bm", bmKind(b.k)[2]); });
+// Editor of one verse's note and bookmark
+function openVnote(vk, back) {
+  const [sn, ay] = parseVk(vk), tr = trans(sn, ay), cur = bmOf(vk), q = siyaqOf(sn, ay);
+  const close = () => { document.getElementById("sheet").innerHTML = ""; if (back) back(); else if (lastDraw) lastDraw(); };
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="یادداشت آیه">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>یادداشت · ${S[sn].name} · آیه ${FA(ay)}</h2></header>
+    <div class="body">
+      <div class="card"><div class="ar">${esc(vplain(sn, ay) || vtext(sn, ay))}</div>${tr ? `<p class="small">${esc(tr)}</p>` : ""}${q ? `<span class="small muted">سیاق ${FA(q.n)}: ${esc(title(S[sn], q))}</span>` : ""}</div>
+      <div class="field"><label for="vn-text" class="small">یادداشت من</label>
+        <textarea id="vn-text" rows="6" placeholder="برداشت، پرسش، نکته‌ای از درس یا تفسیر…">${esc(vnoteOf(vk))}</textarea></div>
+      <div class="field"><span class="small">نشانک</span><div class="bm-pick" role="group" aria-label="نوع نشانک">
+        ${BM_KINDS.map(([id, l, c]) => `<button class="small" data-bmk="${id}" style="--bm:${c}" aria-pressed="${!!cur && cur.k === id}">🔖 ${l}</button>`).join("")}
+        ${cur ? `<button class="small btn-ghost" data-bmk="">برداشتن نشانک</button>` : ""}</div></div>
+      <div class="row"><button class="btn-main" id="vn-save">ذخیره</button>${vnoteOf(vk) ? `<button class="btn-ghost" id="vn-del">پاک کردن یادداشت</button>` : ""}</div>
+      <p class="small muted">${ACCT_ON && acct ? "یادداشت‌ها و نشانک‌ها با حساب شما همگام می‌شوند." : "یادداشت‌ها و نشانک‌ها روی همین دستگاه و در پشتیبان ذخیره می‌شوند" + (ACCT_ON ? "؛ با ورود به حساب، بین دستگاه‌ها هم همگام می‌شوند." : ".")}</p>
+    </div></div>`, back);
+  const ta = box.querySelector("#vn-text");
+  box.querySelectorAll("[data-bmk]").forEach(b => b.addEventListener("click", () => {
+    const k = b.dataset.bmk; if (ta.value.trim() !== vnoteOf(vk)) setVnote(vk, ta.value);
+    setBm(vk, k && !(cur && cur.k === k) ? k : ""); repaintMarks(vk);
+    toast(k && !(cur && cur.k === k) ? "نشانک «" + bmKind(k)[1] + "» گذاشته شد" : "نشانک برداشته شد"); openVnote(vk, back);
+  }));
+  box.querySelector("#vn-save").addEventListener("click", () => { setVnote(vk, ta.value); repaintMarks(vk); markActive(); toast(ta.value.trim() ? "یادداشت ذخیره شد" : "یادداشت پاک شد"); close(); });
+  const del = box.querySelector("#vn-del"); if (del) del.addEventListener("click", () => { setVnote(vk, ""); repaintMarks(vk); toast("یادداشت پاک شد"); close(); });
+  if (!vnoteOf(vk)) setTimeout(() => ta.focus(), 60);
+  if (!QTEXT) loadText().then(() => { const a = box.querySelector(".ar"); if (a && document.body.contains(a)) a.textContent = vplain(sn, ay); }).catch(() => {});
+}
+let mvFilter = "all";
+function myVerseList(filter) {
+  const all = new Set([...Object.keys(st.vnote || {}), ...Object.keys(st.bm || {}), ...Object.keys(st.fav || {})]);
+  const at = vk => Math.max(((st.vnote || {})[vk] || {}).at || 0, (bmOf(vk) || {}).at || 0, +((st.fav || {})[vk]) || 0);
+  return [...all].filter(vk => filter === "all" ? true : filter === "note" ? !!vnoteOf(vk) : filter === "fav" ? isFav(vk) : (bmOf(vk) || {}).k === filter)
+    .filter(vk => S[parseVk(vk)[0]]).sort((a, b) => at(b) - at(a));
+}
+function openMyVerses(filter) {
+  mvFilter = filter || mvFilter;
+  lastDraw = () => openMyVerses(mvFilter);
+  const list = myVerseList(mvFilter), count = f => myVerseList(f).length;
+  const tabs = [["all", "همه"], ["note", "یادداشت‌ها"], ...BM_KINDS.map(([id, l]) => [id, "🔖 " + l]), ["fav", "★ علاقه‌مندی"]];
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="یادداشت‌ها و نشانک‌ها">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>یادداشت‌ها و نشانک‌ها</h2></header>
+    <div class="body">
+      <div class="chips" role="group" aria-label="نمایش" style="display:flex;flex-wrap:wrap;gap:6px">${tabs.map(([v, l]) => `<button class="small" data-mvf="${v}" aria-pressed="${mvFilter === v}">${l} <span class="num muted">${FA(count(v))}</span></button>`).join("")}</div>
+      ${list.length ? list.map(vk => { const [sn, ay] = parseVk(vk), tr = trans(sn, ay), b = bmOf(vk), n = vnoteOf(vk);
+        return `<div class="sres"><div class="row between"><b>سوره ${S[sn].name} · آیه ${FA(ay)}</b><span class="row" style="gap:6px">${b ? `<span class="bm-chip" style="--bm:${bmKind(b.k)[2]}">🔖 ${bmKind(b.k)[1]}</span>` : ""}${isFav(vk) ? `<span class="fav-star" aria-label="علاقه‌مندی">★</span>` : ""}</span></div>
+          <div class="ar">${arHtml(sn, ay)}</div>${tr ? `<p class="small">${esc(tr)}</p>` : ""}
+          ${n ? `<p class="small vnote-text">${esc(n)}</p>` : ""}
+          <div class="row"><button class="small" data-mvgo="${vk}">در مصحف</button><button class="small" data-mvplay="${vk}" aria-label="پخش از این آیه">▶ پخش</button><button class="small" data-mvedit="${vk}">✎ ${n ? "ویرایش" : "یادداشت"}</button><button class="small" data-mvshare="${vk}">اشتراک</button>${isFav(vk) ? `<button class="small btn-ghost" data-mvunfav="${vk}">برداشتن از علاقه‌مندی</button>` : ""}</div></div>`; }).join("")
+      : `<div class="card"><p class="small">${mvFilter === "fav" ? "هنوز آیه‌ای به علاقه‌مندی‌ها اضافه نکرده‌اید." : "چیزی اینجا نیست."} در مصحف روی هر آیه بزنید و «✎ یادداشت»، «🔖 نشانک» یا «☆ علاقه‌مندی» را انتخاب کنید.</p></div>`}
+      ${list.length ? `<button class="small" id="mv-export">⬇ خروجی متنی همه یادداشت‌ها</button>` : ""}
+    </div></div>`);
+  const on = (attr, f) => box.querySelectorAll(`[data-${attr}]`).forEach(b => b.addEventListener("click", () => f(b.getAttribute("data-" + attr))));
+  on("mvf", v => openMyVerses(v));
+  on("mvgo", vk => { const [sn, ay] = parseVk(vk); goVerse(sn, ay); });
+  on("mvplay", vk => { const [sn, ay] = parseVk(vk); goVerse(sn, ay); setTimeout(() => mpStart(sn, ay), 120); });
+  on("mvedit", vk => openVnote(vk, () => openMyVerses(mvFilter)));
+  on("mvshare", vk => { const [sn, ay] = parseVk(vk); shareVerse(sn, ay); });
+  on("mvunfav", vk => { toggleFav(vk); openMyVerses(mvFilter); });
+  const ex = box.querySelector("#mv-export"); if (ex) ex.addEventListener("click", () => {
+    const txt = myVerseList("all").map(vk => { const [sn, ay] = parseVk(vk), b = bmOf(vk);
+      return `سوره ${S[sn].name}، آیه ${FA(ay)}${b ? " · نشانک: " + bmKind(b.k)[1] : ""}${isFav(vk) ? " · ★" : ""}\n${vplain(sn, ay)}${vnoteOf(vk) ? "\n" + vnoteOf(vk) : ""}`; }).join("\n\n———\n\n");
+    if (window.Android && Android.shareFile) Android.shareFile("yaddasht-ayat.txt", txt);
+    else { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], {type: "text/plain;charset=utf-8"})); a.download = "yaddasht-ayat.txt"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+  });
+  if (!QTEXT) loadText().then(() => { if (document.querySelector('#sheet .sheet[aria-label="یادداشت‌ها و نشانک‌ها"]')) openMyVerses(mvFilter); }).catch(() => {});
+}
+const openFavs = () => openMyVerses("fav");
+// The «ادامه خواندن» bookmark, if any: [sn, ay]
+const readMark = () => { const e = Object.entries(st.bm || {}).find(([, b]) => b.k === "read"); return e ? parseVk(e[0]) : null; };
 
 // ---------- learning path (levels of Ali Sabouhi's tadabbur courses) ----------
 // The journey is ordered: foundations first, then levels 1 to 6; each step opens only after the one before it is passed.
@@ -2164,6 +2355,7 @@ function openSurah(n) {
   ${hasMedia(n) ? `<button id="les">🎬 فیلم و صوت درس‌های تدبر این سوره</button>` : ""}
   <div class="row"><button class="small" data-tafsir="${key(n, 1)}">📖 تفسیر سوره</button>${s.siyaqs.length >= 3 ? `<button class="small" data-order="${n}">🧩 تمرین ترتیب سیاق‌ها</button>` : ""}</div>
   ${booksCard(booksForSurah(n), "📚 کتاب‌های تدبر این سوره")}
+  ${offCard(n)}
   ${IS_APP ? (() => { const r = cfg.reciter, h = audioHave(r, s.n), id = audioJobId(r, s.n), rn = reciterName(r);
     return `<div class="card"><div class="row between"><span class="small">ترتیل ${rn}</span>${jobActive(id) ? "" : h >= s.total ? `<span class="small ok">✓ روی گوشی</span>` : `<button class="small" id="au-this">${h ? "ادامه دانلود" : "دانلود"} (${FA(audioMB(r, s.n).toFixed(1))} مگابایت)</button>`}</div>${jobActive(id) ? jobBar(id) : ""}</div>`; })() : ""}
   <div class="card"><label class="switch small"><span><b>از قبل حفظ هستم</b><br><span class="muted">همه سیاق‌های سوره حفظ‌شده ثبت می‌شوند و در برنامه مرور قرار می‌گیرند.</span></span><input type="checkbox" id="pre-mem" ${surahAll(s, isMem) ? "checked" : ""}></label>
@@ -2175,6 +2367,7 @@ function openSurah(n) {
     <button class="${(stt === "new" && surahOpen(n)) || stt === "learn" ? "btn-main" : ""} small" ${stt === "new" && !surahOpen(n) ? `aria-label="قفل"` : ""} data-start="${k}" data-mode="${stt === "new" || stt === "learn" ? "learn" : "review"}">${lbl}</button></div>`; }).join("")}
   </div></div>`);
   const les = box.querySelector("#les"); if (les) les.addEventListener("click", () => openLessons(n));
+  wireOffCard(box);
   const gc = box.querySelector("#go-cur"); if (gc) gc.addEventListener("click", () => openLevel(currentLevel().id));
   const at = box.querySelector("#au-this"); if (at) at.addEventListener("click", () => downloadAudio(cfg.reciter, n));
   box.querySelector("#pre-mem").addEventListener("change", e => {
@@ -2771,35 +2964,76 @@ function arHtml(sn, ay, opt = {}) {
     if (e && e.w[i + 1] > 0) return `<span class="errw">${esc(w)}</span>`;
     return toks.some(t => nw.includes(t) || (t.length > 2 && t.includes(nw) && nw.length > 2)) ? `<mark>${esc(w)}</mark>` : esc(w); }).join(" ");
 }
-let searchState = {q: "", scope: "all", more: 0};
+let searchState = {q: "", scope: "all", lv: "", more: 0};
+// Level filter: the surahs of one step of the learning path (or the reader's current step); null = the whole Quran
+const SEARCH_LEVELS = () => [["", "همه قرآن"], ["mine", "سطح فعلی من"], ...PATH.filter(L => L.surahs.length).map(L => [L.id, L.t])];
+// The reader's current step that has surahs (during «مبانی تدبر», that is level 1)
+const myLevel = () => { const L = currentLevel(); return L.surahs.length ? L : lvl("l1"); };
+const lvSurahs = () => { const v = searchState.lv; if (!v) return null; const L = v === "mine" ? myLevel() : lvl(v); return L && L.surahs.length ? new Set(L.surahs) : null; };
+const inLv = sn => { const set = lvSurahs(); return !set || set.has(sn); };
+// Tadabbur content to search: surah direction and course, institute slide map, fasls, siyaq messages and steps
+function tadIndex() {
+  if (tadIndex.c) return tadIndex.c;
+  const out = [], seen = new Set();
+  const add = x => { const k = x.sn + "|" + x.text; if (!x.text || seen.has(k)) return; seen.add(k); x.n = normFa(x.text); out.push(x); };
+  DATA.surahs.forEach(s => {
+    if (s.dir) add({sn: s.n, kind: "جهت هدایتی سوره", text: s.dir});
+    if (s.deck && s.deck.dir) add({sn: s.n, kind: "جهت هدایتی سوره", text: s.deck.dir});
+    (s.points || []).forEach(t => add({sn: s.n, kind: "سیر هدایتی سوره", text: t}));
+    ((s.deck || {}).flow || []).forEach(x => add({sn: s.n, s: x.s, e: x.e, kind: "نقشه تدبر سوره", text: x.t}));
+    (s.fasls || []).forEach(f => add({sn: s.n, s: f.s, e: f.e, kind: "فصل " + FA(f.n), text: [f.t, ...(f.d || [])].filter(Boolean).join(" ")}));
+    s.siyaqs.forEach(q => {
+      (q.sum || []).forEach(t => add({sn: s.n, q: q.n, s: q.s, e: q.e, kind: "پیام سیاق " + FA(q.n), text: t}));
+      (q.steps || []).forEach(x => add({sn: s.n, q: q.n, s: x.s, e: x.e, kind: "گام سیاق " + FA(q.n), text: x.t}));
+    });
+  });
+  return tadIndex.c = out;
+}
+// A short piece of a long text around the match, with the match marked when it can be placed exactly
+function snippet(text, q, len = 150) {
+  const t = String(text || ""), n = normFa(t), i = n.indexOf(q), exact = n.length === t.length && i >= 0;
+  if (!exact) return esc(t.length > len ? t.slice(0, len) + "…" : t);
+  const a = Math.max(0, i - Math.floor((len - q.length) / 2)), b = Math.min(t.length, a + len);
+  return (a ? "…" : "") + esc(t.slice(a, i)) + `<mark class="hl">${esc(t.slice(i, i + q.length))}</mark>` + esc(t.slice(i + q.length, b)) + (b < t.length ? "…" : "");
+}
 function openSearch() {
   lastDraw = () => {};
   const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="جستجو در قرآن">
-    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>جستجو در قرآن</h2></header>
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>جستجو</h2></header>
     <div class="body">
-      <input type="search" id="sq" value="${esc(searchState.q)}" placeholder="آیه، سوره، سیاق، دفتر تدبر یا لغت‌نامه؛ مثل «بقره ۲۵۵»" aria-label="عبارت جستجو" autocomplete="off">
-      <div class="seg" role="group" aria-label="جستجو در">${[["all", "متن و ترجمه"], ["ar", "متن عربی"], ["tr", "ترجمه"]].map(([v, l]) => `<button data-scope="${v}" aria-pressed="${searchState.scope === v}">${l}</button>`).join("")}</div>
+      <input type="search" id="sq" value="${esc(searchState.q)}" placeholder="آیه، ترجمه، پیام سیاق، یادداشت؛ مثل «بقره ۲۵۵» یا «تقوا»" aria-label="عبارت جستجو" autocomplete="off">
+      <div class="seg" role="group" aria-label="جستجو در">${[["all", "همه"], ["ar", "متن عربی"], ["tr", "ترجمه"], ["tad", "تدبر و یادداشت"]].map(([v, l]) => `<button data-scope="${v}" aria-pressed="${searchState.scope === v}">${l}</button>`).join("")}</div>
+      <div class="field"><label for="sq-lv" class="small">محدوده</label><select id="sq-lv">${SEARCH_LEVELS().map(([v, l]) => `<option value="${v}" ${searchState.lv === v ? "selected" : ""}>${l}${v === "mine" ? " (" + esc(myLevel().t) + ")" : ""}</option>`).join("")}</select></div>
       <div id="sres"></div>
     </div></div>`);
   const input = box.querySelector("#sq");
   const run = () => drawResults(box);
   input.addEventListener("input", () => { searchState.q = input.value; searchState.more = 0; clearTimeout(run.t); run.t = setTimeout(run, 250); });
   box.querySelectorAll("[data-scope]").forEach(b => b.addEventListener("click", () => { searchState.scope = b.dataset.scope; searchState.more = 0; box.querySelectorAll("[data-scope]").forEach(x => x.setAttribute("aria-pressed", x === b)); run(); }));
+  box.querySelector("#sq-lv").addEventListener("change", e => { searchState.lv = e.target.value; searchState.more = 0; run(); });
   loadText().then(run).catch(() => { box.querySelector("#sres").innerHTML = `<p class="small">بارگیری متن قرآن ممکن نشد.</p>`; });
   if (cfg.trans !== "none") trans(1, 1);      // starts loading the chosen translation
   run(); setTimeout(() => input.focus(), 50);
 }
 function searchGroups(raw) {
   const q = normFa(faNum(raw)).trim(); if (q.length < 1) return "";
-  const out = [], sOk = s => normFa(s.name).includes(q.replace(/^سوره\s+/, "")) || String(s.n) === q;
-  const surahs = DATA.surahs.filter(s => q.length >= 2 || /^\d+$/.test(q) ? sOk(s) : false).slice(0, 5);
-  if (surahs.length) out.push(`<div class="sres-group"><h3>سوره‌ها</h3>${surahs.map(s => `<button data-sopen="${s.n}">${FA(s.n)}. سوره ${s.name} <span class="small muted">· ${FA(s.total)} آیه</span></button>`).join("")}</div>`);
+  const out = [], sc = searchState.scope, sOk = s => normFa(s.name).includes(q.replace(/^سوره\s+/, "")) || String(s.n) === q;
+  if (sc !== "tad") {
+    const surahs = DATA.surahs.filter(s => inLv(s.n) && (q.length >= 2 || /^\d+$/.test(q) ? sOk(s) : false)).slice(0, 5);
+    if (surahs.length) out.push(`<div class="sres-group"><h3>سوره‌ها</h3>${surahs.map(s => `<button data-sopen="${s.n}">${FA(s.n)}. سوره ${s.name} <span class="small muted">· ${FA(s.total)} آیه</span></button>`).join("")}</div>`);
+  }
   if (q.length >= 2) {
-    const sq = siyaqs().filter(x => normFa(title(x.s, x.q)).includes(q)).slice(0, 8);
-    if (sq.length) out.push(`<div class="sres-group"><h3>سیاق‌ها</h3>${sq.map(x => `<button data-ssiyaq="${x.k}">${x.s.name} · ${esc(title(x.s, x.q))} <span class="small muted">· ${LABELS[status(x.k)]}</span></button>`).join("")}</div>`);
-    const nb = notebookEntries().filter(e => normFa(e.text).includes(q)).slice(0, 5);
-    if (nb.length) out.push(`<div class="sres-group"><h3>دفتر تدبر من</h3>${nb.map(e => `<button data-snote="${esc(raw.trim())}">${e.s.name} · سیاق ${FA(e.qn)}: <span class="small muted">${esc((e.n.title || e.text).slice(0, 60))}</span></button>`).join("")}</div>`);
-    const vc = Object.entries(st.vocab || {}).filter(([, v]) => normFa(v.fa || "").includes(q) || arNorm(v.ar || "").includes(arNorm(raw.trim()))).slice(0, 5);
+    const sq = siyaqs().filter(x => inLv(x.s.n) && normFa(title(x.s, x.q)).includes(q)).slice(0, 8);
+    if (sq.length) out.push(`<div class="sres-group"><h3>سیاق‌ها</h3>${sq.map(x => `<button data-ssiyaq="${x.k}">${x.s.name} · ${snippet(title(x.s, x.q), q, 90)} <span class="small muted">· ${LABELS[status(x.k)]}</span></button>`).join("")}</div>`);
+    if (sc === "all" || sc === "tad") {
+      const vn = Object.entries(st.vnote || {}).filter(([vk, n]) => S[parseVk(vk)[0]] && inLv(parseVk(vk)[0]) && normFa(n.t).includes(q)).sort((a, b) => b[1].at - a[1].at).slice(0, 8);
+      if (vn.length) out.push(`<div class="sres-group"><h3>یادداشت آیه‌ها</h3>${vn.map(([vk, n]) => { const [sn, ay] = parseVk(vk); return `<button data-svnote="${vk}">${S[sn].name} ${FA(ay)}: <span class="small">${snippet(n.t, q, 110)}</span></button>`; }).join("")}</div>`);
+      const nb = notebookEntries().filter(e => inLv(e.s.n) && normFa(e.text).includes(q)).slice(0, 6);
+      if (nb.length) out.push(`<div class="sres-group"><h3>دفتر تدبر من</h3>${nb.map(e => `<button data-snote="${esc(raw.trim())}">${e.s.name} · سیاق ${FA(e.qn)}: <span class="small">${snippet(e.n.title && normFa(e.n.title).includes(q) ? e.n.title : e.text, q, 110)}</span></button>`).join("")}</div>`);
+      const td = tadIndex().filter(x => inLv(x.sn) && x.n.includes(q)), lim = sc === "tad" ? 30 : 8;
+      if (td.length) out.push(`<div class="sres-group"><h3>محتوای تدبر <span class="num">(${FA(td.length)})</span></h3>${td.slice(0, lim).map(x => `<button data-stad="${x.sn}:${x.q || 0}:${x.s || 0}"><span><b class="small">${S[x.sn].name}${x.s ? " " + FA(x.s) + (x.e && x.e !== x.s ? "-" + FA(x.e) : "") : ""} · ${x.kind}</b><br><span class="small">${snippet(x.text, q)}</span></span></button>`).join("")}${td.length > lim ? `<p class="small muted">${FA(td.length - lim)} مورد دیگر؛ عبارت را دقیق‌تر کنید${sc === "tad" ? "" : " یا «تدبر و یادداشت» را بزنید"}.</p>` : ""}</div>`);
+    }
+    const vc = sc === "tad" ? [] : Object.entries(st.vocab || {}).filter(([, v]) => normFa(v.fa || "").includes(q) || arNorm(v.ar || "").includes(arNorm(raw.trim()))).slice(0, 5);
     if (vc.length) out.push(`<div class="sres-group"><h3>لغت‌نامه من</h3>${vc.map(([, v]) => `<button data-svocab><span class="ar">${esc(v.ar)}</span> <span class="small">${esc(v.fa)}</span></button>`).join("")}</div>`);
   }
   return out.join("");
@@ -2808,14 +3042,24 @@ function wireGroups(out, q) {
   out.querySelectorAll("[data-sopen]").forEach(b => b.addEventListener("click", () => { document.getElementById("sheet").innerHTML = ""; openSurah(+b.dataset.sopen); }));
   out.querySelectorAll("[data-snote]").forEach(b => b.addEventListener("click", () => { nbQuery = q; openNotebook(); }));
   out.querySelectorAll("[data-svocab]").forEach(b => b.addEventListener("click", () => openVocab()));
+  out.querySelectorAll("[data-svnote]").forEach(b => b.addEventListener("click", () => openVnote(b.dataset.svnote, openSearch)));
+  out.querySelectorAll("[data-stad]").forEach(b => b.addEventListener("click", () => {
+    const [sn, qn, a] = b.dataset.stad.split(":").map(Number);
+    if (qn) { const k = key(sn, qn); startSession(k, ["solid", "due"].includes(status(k)) ? "review" : "learn"); }
+    else if (a) goVerse(sn, a);
+    else { document.getElementById("sheet").innerHTML = ""; openSurah(sn); }
+  }));
+  out.querySelectorAll("[data-ssiyaq]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.ssiyaq; startSession(k, ["solid", "due"].includes(status(k)) ? "review" : "learn"); }));
 }
 function drawResults(box) {
   const out = box.querySelector("#sres"); if (!out) return;
   const q = searchState.q.trim();
-  if (!q) { out.innerHTML = `<p class="small muted">در متن عربی آیات (بدون نیاز به اعراب) و در ترجمه «${transName()}» جستجو می‌شود. برای رفتن به یک آیه، نام یا شماره سوره و شماره آیه را بنویسید، مثل «بقره ۲۵۵» یا «۲:۲۵۵».</p>`; return; }
+  if (!q) { out.innerHTML = `<p class="small muted">در متن عربی آیات (بدون نیاز به اعراب)، ترجمه «${transName()}»، پیام و گام‌های سیاق‌ها، جهت هدایتی و نقشه تدبر سوره‌ها، فصل‌ها، دفتر تدبر و یادداشت‌های آیه‌ها جستجو می‌شود. با «محدوده» جستجو را به سوره‌های یک سطح محدود کنید. برای رفتن به یک آیه، نام یا شماره سوره و شماره آیه را بنویسید، مثل «بقره ۲۵۵» یا «۲:۲۵۵».</p>`; return; }
   const grp = searchGroups(q);
   if (!QTEXT) { out.innerHTML = grp + `<p class="small muted">در حال بارگیری متن قرآن…</p>`; wireGroups(out, q); return; }
   const r = searchQuran(q), sc = searchState.scope;
+  if (sc === "tad") { out.innerHTML = grp || `<p class="small">در محتوای تدبر و یادداشت‌ها چیزی پیدا نشد.</p>`; wireGroups(out, q); return; }
+  ["ref", "ar", "tr"].forEach(k => { r[k] = r[k].filter(([sn]) => inLv(sn)); });
   const seen = new Set(), list = [];
   const add = (arr, kind) => arr.forEach(([sn, ay]) => { const k = key(sn, ay); if (!seen.has(k)) { seen.add(k); list.push({sn, ay, kind}); } });
   add(r.ref, "ref"); if (sc !== "tr") add(r.ar, "ar"); if (sc !== "ar") add(r.tr, "tr");
@@ -2831,7 +3075,6 @@ function drawResults(box) {
       : `<p class="small">چیزی پیدا نشد.${trWait ? " ترجمه هنوز بارگیری نشده؛ چند لحظه بعد دوباره امتحان کنید." : ""}</p>`}`;
   out.querySelectorAll("[data-sgo]").forEach(b => b.addEventListener("click", () => { const [sn, ay] = parseVk(b.dataset.sgo); goVerse(sn, ay); }));
   out.querySelectorAll("[data-splay]").forEach(b => b.addEventListener("click", () => { const [sn, ay] = parseVk(b.dataset.splay); play(sn, ay); }));
-  out.querySelectorAll("[data-ssiyaq]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.ssiyaq; startSession(k, ["solid", "due"].includes(status(k)) ? "review" : "learn"); }));
   wireGroups(out, q);
   const mo = out.querySelector("#smore"); if (mo) mo.addEventListener("click", () => { searchState.more += 40; drawResults(box); });
 }
@@ -3538,6 +3781,9 @@ function updateNative() {
   const all = siyaqs(), md = all.filter(x => status(x.k) === "due").length, td = all.filter(x => tadDue(x.k)).length, L = currentLevel(), nx = nextToLearn();
   const line = [md ? FA(md) + " مرور حفظ" : "", td ? FA(td) + " مرور تدبر" : "", nx ? "قدم بعد: " + nx.s.name + " · سیاق " + FA(nx.q.n) : passed(L.id) ? "" : L.t].filter(Boolean).join(" · ") || "امروز کاری نمانده";
   try { if (Android.setReminder) Android.setReminder(!!cfg.remind, +(cfg.remindAt || "20:00").split(":")[0], +(cfg.remindAt || "20:00").split(":")[1], (myName() ? myName() + "، " : "") + "وقت حفظ تدبری است", line); } catch (e) {}
+  // The assistant's daily message as a notification: the phone fetches it at the chosen time with this picture of the progress
+  try { if (Android.setDailyTip) { const [th, tm] = (cfg.aiTipAt || "08:00").split(":").map(Number);
+    Android.setDailyTip(!!cfg.aiTip, th, tm, AI_URL, aiDevice(), JSON.stringify(aiContext()), aiLocalBrief(), myName() || ""); } } catch (e) {}
   const [vs, va] = verseOfDay();
   loadText().then(() => { try { if (Android.setWidget) Android.setWidget((myName() ? "سلام " + myName() + " · " : "") + "حفظ تدبری", line, vplain(vs, va), (trans(vs, va) || "") + " (" + S[vs].name + " " + FA(va) + ")"); } catch (e) {} }).catch(() => {});
 }
@@ -3595,6 +3841,7 @@ function menuGroups() {
       {id: "progress", l: "پیشرفت", d: "روزانه، ماهانه و سالانه", ic: MI(`<path d="M5 20V11M12 20V5M19 20v-7"/>`), go: () => goTab("progress")}]},
     {t: "دفترها", items: [
       {l: "دفتر تدبر من", d: "برداشت‌ها و پاسخ‌ها", ic: MI(`<path d="M5 4h14v16H5zM9 9h6M9 13h6"/>`), go: openNotebook, b: notes},
+      {l: "یادداشت‌ها و نشانک‌ها", d: "یادداشت آیه‌ها، نشانک‌ها، علاقه‌مندی‌ها", ic: MI(`<path d="M7 4h10v16l-5-3.5L7 20z"/>`), go: () => openMyVerses("all"), b: Object.keys(st.vnote || {}).length + Object.keys(st.bm || {}).length},
       {l: "دفتر اشتباهات", d: "آیه‌های نیازمند تثبیت", ic: MI(`<path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2-.5-.5-2z"/>`), go: openWeak, b: weak},
       {l: "لغت‌نامه من", d: "کلمه‌ها و تمرین کارتی", ic: MI(`<path d="M4 7h16M4 12h10M4 17h6"/>`), go: () => openVocab(), b: vocab}]},
     {t: "تمرین و برنامه", items: [
@@ -3607,7 +3854,7 @@ function menuGroups() {
       {l: "ترتیل‌ها", d: "قاری‌ها و دانلود ترتیل", ic: MI(`<path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v5H4zM17 14h3v5h-3z"/>`), go: () => openReciters()},
       {l: "دانلودها", d: "وضعیت ذخیره روی دستگاه", ic: MI(`<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>`), go: () => openDownloads()},
       {l: "کتاب‌های تدبر", d: "کتاب هر سطح و تدبر سوره‌ها", ic: MI(`<path d="M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z"/>`), go: openBooks},
-      {l: "جستجو", d: "آیه، سوره، سیاق، دفتر تدبر", ic: ICON_SEARCH, go: openSearch},
+      {l: "جستجو", d: "آیه، ترجمه، محتوای تدبر، یادداشت‌ها", ic: ICON_SEARCH, go: openSearch},
       {l: "دستیار هوشمند", d: "پرسش درباره قرآن و یادگیری", ic: MI(`<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/>`), go: () => openAiChat()}]},
     {t: "برنامه و حساب", items: [
       {l: "تنظیمات", d: ACCT_ON && acct ? acct.email : "قلم، رنگ، ترجمه، پشتیبان", ic: ICON_GEAR, go: openSettings},
@@ -3694,7 +3941,13 @@ function aiLocalBrief() {
   return lines.join(" ");
 }
 const aiBriefKey = () => today() + ":" + dayPart();
+// The notification may already have fetched this part of the day's message: show the same one
+function aiFromNotification() {
+  try { if (!IS_APP || !Android.lastTip) return; const t = JSON.parse(Android.lastTip() || "{}"), c = load("tadabbor-ai-brief", null);
+    if (t.k === aiBriefKey() && t.text && !(c && c.k === t.k)) store("tadabbor-ai-brief", {k: t.k, text: t.text, at: Date.now()}); } catch (e) {}
+}
 function aiCard() {
+  aiFromNotification();
   const c = load("tadabbor-ai-brief", null), fresh = c && c.k === aiBriefKey();
   const text = fresh ? c.text : aiLocalBrief();
   if (AI_ON() && !fresh && !ai.busy && !ai.off) setTimeout(() => aiBrief(false), 0);
@@ -3703,7 +3956,8 @@ function aiCard() {
       ${AI_ON() ? `<button class="icon-btn btn-ghost" data-aibrief aria-label="پیام تازه"${ai.busy ? " disabled" : ""}>↻</button>` : ""}</div>
     <div class="ai-text" id="ai-brief">${ai.busy && !fresh ? `<span class="small muted">دستیار دارد وضعیت شما را می‌خواند…</span><br>` : ""}${aiFmt(text)}</div>
     ${ai.err ? `<span class="small muted">${esc(ai.err)}</span>` : ""}
-    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button></div></section>`;
+    <div class="row"><button class="small btn-main" data-aichat>💬 از دستیار بپرسید</button></div>
+    ${IS_APP && !cfg.aiTip && !(cfg.tips || {}).aitip ? `<div class="row between small" style="border-top:1px solid var(--line);padding-top:8px"><span>🔔 هر روز این پیام را به‌صورت اعلان بفرستم؟</span><span class="row" style="gap:6px"><button class="small btn-main" data-aitip="on">بله، ساعت ${FA(cfg.aiTipAt || "08:00")}</button><button class="small btn-ghost" data-aitip="no">نه</button></span></div>` : ""}</section>`;
 }
 // Safe formatting of the model's text: escape everything, then allow **bold**, line breaks and "- " lists
 function aiFmt(t) {
@@ -3752,6 +4006,7 @@ async function aiBrief(force) {
   try {
     const j = await aiCall({mode: "daily", ctx: aiContext()});
     store("tadabbor-ai-brief", {k, text: j.text, at: Date.now()});
+    try { if (IS_APP && Android.tipToday) Android.tipToday(k, j.text); } catch (e) {}
   } catch (e) {
     ai.err = aiErrText(e); if (e.status === 503) ai.off = true;
     store("tadabbor-ai-brief", {k, text: aiLocalBrief(), at: Date.now(), local: true});   // no retry loop within this part of the day
@@ -3766,6 +4021,11 @@ function paintAiCard() {
 function wireAi(root) {
   root.querySelectorAll("[data-aichat]").forEach(el => el.addEventListener("click", () => openAiChat()));
   root.querySelectorAll("[data-aibrief]").forEach(el => el.addEventListener("click", () => aiBrief(true)));
+  root.querySelectorAll("[data-aitip]").forEach(el => el.addEventListener("click", () => {
+    cfg.tips = cfg.tips || {}; cfg.tips.aitip = true;
+    if (el.dataset.aitip === "on") { cfg.aiTip = true; toast("هر روز ساعت " + FA(cfg.aiTipAt) + " پیام دستیار اعلان می‌شود؛ ساعت را در تنظیمات ← یادآور روزانه عوض کنید", 5000); }
+    saveCfg(); updateNative(); paintAiCard();
+  }));
 }
 const AI_SUGGEST = ["امروز از کجا شروع کنم؟", "مرورهای عقب‌افتاده‌ام را چطور جبران کنم؟", "سیاق بعدی من درباره چیست؟", "پیام اصلی سوره‌ای که می‌خوانم چیست؟", "چطور تدبر را با حفظ هماهنگ کنم؟"];
 function openAiChat(q) {
@@ -3863,7 +4123,7 @@ const acctErr = e => {
 };
 // A saved copy "differs" only when its content differs, so merely opening the app never causes a false conflict
 const sigNow = () => { const t = JSON.stringify([st, syncSettings()]); let h = 5381; for (let i = 0; i < t.length; i++) h = (h * 33 ^ t.charCodeAt(i)) >>> 0; return h + ":" + t.length; };
-const hasData = p => !!p && (p.streak > 0 || ["notes", "items", "watched", "passed", "found", "err"].some(k => p[k] && Object.keys(p[k]).length));
+const hasData = p => !!p && (p.streak > 0 || ["notes", "items", "watched", "passed", "found", "err", "fav", "vnote", "bm"].some(k => p[k] && Object.keys(p[k]).length));
 function acctSet(a) { acct = a; if (a) store("tadabbor-account", a); else { try { localStorage.removeItem("tadabbor-account"); } catch (e) {} } }
 function applyRemote(rec) {
   syncApplying = true;
@@ -4179,6 +4439,8 @@ function openSettings() {
     <section class="card"><h3>یادآور روزانه</h3>
       ${IS_APP ? `<label class="switch small"><span>هر روز یادآوری کن<br><span class="muted">با تعداد مرورهای امروز و قدم بعدی شما</span></span><input type="checkbox" id="rm-on" ${cfg.remind ? "checked" : ""}></label>
       <div class="field"><label for="rm-at" class="small">ساعت</label><input type="time" id="rm-at" value="${esc(cfg.remindAt || "20:00")}" dir="ltr"></div>
+      <label class="switch small"><span>پیام روزانه دستیار هوشمند<br><span class="muted">«پیام امروز» دستیار، بر پایه پیشرفت شما، هر روز به‌صورت اعلان؛ بدون اینترنت، خلاصه همان پیام از روی گوشی</span></span><input type="checkbox" id="tip-on" ${cfg.aiTip ? "checked" : ""}></label>
+      <div class="field"><label for="tip-at" class="small">ساعت پیام دستیار</label><input type="time" id="tip-at" value="${esc(cfg.aiTipAt || "08:00")}" dir="ltr"></div>
       <p class="small muted">برای ویجت صفحه اصلی: صفحه اصلی گوشی را نگه دارید، «ابزارک‌ها» را بزنید و «حفظ تدبری» را بکشید.</p>` : `<p class="small muted">یادآور و ویجت فقط در برنامه اندروید است.</p>`}
     </section>
     <section class="card"><h3>روش حفظ</h3>
@@ -4246,6 +4508,8 @@ function openSettings() {
   IDB.keys("wbw:").then(k => { const el = box.querySelector("#wbw-st"); if (el && !wbwAll) el.textContent = `${FA(k.length)} از ۱۱۴ سوره روی دستگاه`; });
   box.querySelector("#wbw-all").addEventListener("click", e => { e.target.disabled = true; downloadAllWbw(); });
   const rmOn = box.querySelector("#rm-on"); if (rmOn) rmOn.addEventListener("change", e => { cfg.remind = e.target.checked; saveCfg(); updateNative(); toast(cfg.remind ? "یادآور روزانه روشن شد" : "یادآور خاموش شد"); });
+  const tipOn = box.querySelector("#tip-on"); if (tipOn) tipOn.addEventListener("change", e => { cfg.aiTip = e.target.checked; cfg.tips = cfg.tips || {}; cfg.tips.aitip = true; saveCfg(); updateNative(); toast(cfg.aiTip ? "پیام روزانه دستیار روشن شد" : "پیام روزانه دستیار خاموش شد"); });
+  const tipAt = box.querySelector("#tip-at"); if (tipAt) tipAt.addEventListener("change", e => { cfg.aiTipAt = e.target.value || "08:00"; saveCfg(); updateNative(); });
   const rmAt = box.querySelector("#rm-at"); if (rmAt) rmAt.addEventListener("change", e => { cfg.remindAt = e.target.value || "20:00"; saveCfg(); updateNative(); });
   const ab = box.querySelector("#ab-on"); if (ab) ab.addEventListener("change", e => { cfg.autoBackup = e.target.checked; saveCfg(); if (cfg.autoBackup) { cfg.lastAutoDay = null; autoBackupDaily(); openSettingsKeep(); } });
   box.querySelector("#freepath").addEventListener("change", e => set("freePath", e.target.checked));
@@ -4324,6 +4588,9 @@ function openGuide(section) {
     </ul></div></details>
 
     <details ${open("mushaf")}><summary>مصحف، پخش و درس‌ها</summary><div>
+      <p><b>یادداشت و نشانک:</b> در مصحف روی هر آیه بزنید و «✎ یادداشت» یا «🔖 نشانک» را انتخاب کنید. نشانک‌ها چهار نوع دارند: ادامه خواندن (فقط یک جا)، برای تدبر، برای حفظ و پرسش دارم. همه را در منو ← «یادداشت‌ها و نشانک‌ها» یا دکمه 🔖 بالای مصحف می‌بینید؛ با پشتیبان و حساب کاربری همراه می‌شوند.</p>
+      <p><b>جستجو:</b> در متن عربی، ترجمه، پیام و گام‌های سیاق‌ها، جهت هدایتی و نقشه تدبر سوره‌ها، دفتر تدبر و یادداشت‌های آیه‌ها؛ با «محدوده» فقط سوره‌های یک سطح را بگردید.</p>
+      <p><b>بدون اینترنت:</b> در صفحه هر سوره «⬇ ذخیره سوره» ترتیل، معنای کلمه‌ها و تفسیر آن سوره را (و در سایت، صفحه‌های مصحف و ترجمه را هم) نگه می‌دارد. سایت را هم می‌توانید مثل برنامه روی گوشی نصب کنید: تنظیمات ← «بدون اینترنت».</p>
       <p><b>مصحف:</b> صفحه‌های مصحف به خط عثمان طه. با کشیدن صفحه ورق بزنید. روی هر کلمه بزنید تا معنا، ریشه، تفسیر، آیات مشابه و ترتیل را ببینید، آیه را به اشتراک بگذارید یا با ☆ به علاقه‌مندی‌ها (★ بالای مصحف) اضافه کنید.</p>
       <p><b>پخش‌کننده:</b> از آیه انتخاب‌شده تا آخر صفحه، سیاق، فصل، سوره یا قرآن؛ تکرار هر آیه و کل بازه از ۱ تا بی‌نهایت؛ ترجمه گویا بعد از هر آیه؛ صفحه‌ها خودکار ورق می‌خورند. دکمه 🎧 در داشبورد سیاق امروز را با ترجمه گویا پخش می‌کند.</p>
       <p><b>ترتیل:</b> ${FA(RECITERS.filter(r => r[3] !== "fa").length)} قاری (پیش‌فرض شهریار پرهیزگار)؛ «⬇ دانلود ترتیل» برای انتخاب سوره‌ها، جزء یا کل قرآن.</p>
@@ -4333,6 +4600,7 @@ function openGuide(section) {
 
     <details ${open("ai")}><summary>دستیار هوشمند</summary><div>
       <p><b>پیام امروز:</b> کادر بالای صفحه «امروز» هر روز با توجه به ساعت به شما سلام می‌کند و مرورهای عقب‌مانده و قدم بعدی را می‌گوید.</p>
+      <p><b>اعلان روزانه:</b> در برنامه اندروید، تنظیمات ← «یادآور روزانه» ← «پیام روزانه دستیار هوشمند» را روشن کنید تا همین پیام هر روز در ساعتی که انتخاب می‌کنید (پیش‌فرض ۸ صبح) به‌صورت اعلان بیاید.</p>
       <p><b>گفتگو:</b> از منو ← «دستیار هوشمند» درباره آیات، روش تدبر، برنامه حفظ و پیشرفت خودتان بپرسید.</p>
       <p>پاسخ‌ها را یک مدل هوش مصنوعی می‌نویسد و ممکن است خطا داشته باشد؛ فتوای شرعی نیست و جای تفسیر و استاد را نمی‌گیرد. اطلاعات شخصی در پرسش‌ها ننویسید. اگر اینترنت نباشد، پیام امروز از خلاصه‌ای که روی خود گوشی ساخته می‌شود نشان داده می‌شود.</p></div></details>
 

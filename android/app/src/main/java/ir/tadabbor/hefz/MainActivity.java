@@ -390,6 +390,22 @@ public class MainActivity extends Activity {
             Reminder.save(MainActivity.this, on, hour, minute, title, text);
         }
 
+        /** The assistant's daily message as a notification at hour:minute (see DailyTip); asks for the notification permission on Android 13+. */
+        @JavascriptInterface
+        public void setDailyTip(boolean on, int hour, int minute, String url, String device, String ctx, String fallback, String name) {
+            if (on && Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+                runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 52));
+            DailyTip.save(MainActivity.this, on, hour, minute, url, device, ctx, fallback, name);
+        }
+
+        /** Today's message as the page showed it, so the notification repeats it instead of asking again. */
+        @JavascriptInterface
+        public void tipToday(String key, String text) { DailyTip.saveToday(MainActivity.this, key, text); }
+
+        /** The message the notification fetched (JSON {k, text}), so the home card can show the same one. */
+        @JavascriptInterface
+        public String lastTip() { return DailyTip.lastTip(MainActivity.this); }
+
         /** Fill the home-screen widget. */
         @JavascriptInterface
         public void setWidget(String title, String line, String verse, String meaning) { Widget.save(MainActivity.this, title, line, verse, meaning); }
