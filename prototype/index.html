@@ -738,7 +738,7 @@ const EMPTY = () => ({streak: 0, lastActive: null, notes: {}, items: {}, watched
 let st = Object.assign(EMPTY(), load("tadabbor-progress", {}));
 const save = () => { store("tadabbor-progress", st); touch(); };
 // ---------- optional account (own server, PocketBase): state used by save()/saveCfg() ----------
-const ACCT_FLAG = "";
+const ACCT_FLAG = "1";
 const ACCT_ON = ACCT_FLAG === "1";
 let acct = load("tadabbor-account", null);                       // {token, id, email} when signed in
 const syncMeta = Object.assign({localAt: 0, syncAt: 0, recId: null, remoteVer: "", cfgSig: "", sig: ""}, load("tadabbor-sync", {}));
@@ -4334,7 +4334,7 @@ function restoreFrom(file) {
 // beyond being sent over HTTPS to it. The app works fully without an account; with one, progress and settings
 // are kept in one record per user (rules on the server let a user read and write only their own).
 const sync = {busy: false, msg: "", conflict: null, expired: false, at: 0};
-const ACCT_URL = "";     // set when the account server is on another address (Cloudflare Worker); empty = /api/ next to the app
+const ACCT_URL = "https://api.ganjineh-tadabbor.ir/";     // set when the account server is on another address (Cloudflare Worker); empty = /api/ next to the app
 const ACCT_API = ACCT_ON ? ((ACCT_URL ? ACCT_URL.replace(/\/*$/, "/") : SITE_BASE) + "api/") : "";
 async function pb(path, opts = {}) {
   const r = await fetch(ACCT_API + path, {method: opts.method || "GET", cache: "no-store",

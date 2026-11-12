@@ -55,10 +55,9 @@ sudo -u tadabbor /opt/tadabbor/bin/pocketbase superuser upsert you@example.com '
 
 ## وصل کردن برنامه به این سرور
 
-```sh
-ACCOUNT_URL=https://api.ganjineh-tadabbor.ir/ python3 scripts/build_web.py
-```
-با این کار نسخه وب و برنامه اندروید به این سرور وصل می‌شوند و صفحه ورود هر روشی را که سرور روشن کرده نشان می‌دهد (`/api/hefz/methods`).
+آدرس سرور در فایل `deploy/vps/ACCOUNT_URL` نوشته شده و `scripts/build_web.py` به‌طور پیش‌فرض از آن استفاده می‌کند. پس هر ساخت (سایت، برنامه اندروید، ساخت خودکار) به این سرور وصل است و صفحه ورود هر روشی را که سرور روشن کرده نشان می‌دهد (`/api/hefz/methods`). ورود برای استفاده از برنامه اجباری است.
+
+برای ساخت یک نسخه بدون حساب: `ACCOUNT_URL= python3 scripts/build_web.py`
 
 ## به‌روزرسانی و نگهداری
 

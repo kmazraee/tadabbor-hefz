@@ -6,7 +6,7 @@
 Run from the repo root after scripts/build_quran.py:  python3 scripts/build_web.py
 The app downloads translations and content updates from SITE_BASE (set it to your own server's address
 to move the app off GitHub Pages):  SITE_BASE=https://example.com/ python3 scripts/build_web.py
-Accounts (sign-in and sync): ACCOUNT_URL=https://your-worker.workers.dev/ turns them on in the GitHub Pages copy and the Android app (Cloudflare Worker, deploy/cloudflare-accounts);
+Accounts (sign-in and sync) are on by default and use the server in deploy/vps/ACCOUNT_URL; ACCOUNT_URL= (empty) builds a copy without them. ACCOUNT_URL=https://your-worker.workers.dev/ points them at another server in the GitHub Pages copy and the Android app (Cloudflare Worker, deploy/cloudflare-accounts);
 or, with PocketBase on your own server (deploy/vps: also SMS-code and Google sign-in), ACCOUNT_URL=https://api.your-domain/ or ACCOUNT_API=1 when it is served next to the app;
 scripts/build_server.py always includes them in the web copy it builds. See deploy/pocketbase/README.md.
 A web copy always reads from the server it is served from. For your own server see scripts/build_server.py.
@@ -14,7 +14,9 @@ A web copy always reads from the server it is served from. For your own server s
 import hashlib, json, os, pathlib, re, shutil
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-ACCOUNT_URL = os.environ.get("ACCOUNT_URL", "").strip()          # account server on another address, e.g. the Cloudflare Worker
+# Account server (sign-in and sync): the address in deploy/vps/ACCOUNT_URL unless ACCOUNT_URL is set; ACCOUNT_URL= (empty) builds a copy without accounts
+_acct_file = ROOT / "deploy/vps/ACCOUNT_URL"
+ACCOUNT_URL = os.environ.get("ACCOUNT_URL", _acct_file.read_text().strip() if _acct_file.exists() else "").strip()
 ACCOUNT_API = os.environ.get("ACCOUNT_API") == "1" or bool(ACCOUNT_URL)
 # Address of the AI assistant Worker (deploy/cloudflare/README.md). Empty: the app shows only its local daily summary.
 AI_API = os.environ.get("AI_API", (ROOT / "deploy/cloudflare/AI_API").read_text().strip() if (ROOT / "deploy/cloudflare/AI_API").exists() else "")
