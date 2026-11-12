@@ -7,7 +7,7 @@ Run from the repo root after scripts/build_quran.py:  python3 scripts/build_web.
 The app downloads translations and content updates from SITE_BASE (set it to your own server's address
 to move the app off GitHub Pages):  SITE_BASE=https://example.com/ python3 scripts/build_web.py
 Accounts (sign-in and sync): ACCOUNT_URL=https://your-worker.workers.dev/ turns them on in the GitHub Pages copy and the Android app (Cloudflare Worker, deploy/cloudflare-accounts);
-or, with PocketBase on your own server, add ACCOUNT_API=1 for the Android app;
+or, with PocketBase on your own server (deploy/vps: also SMS-code and Google sign-in), ACCOUNT_URL=https://api.your-domain/ or ACCOUNT_API=1 when it is served next to the app;
 scripts/build_server.py always includes them in the web copy it builds. See deploy/pocketbase/README.md.
 A web copy always reads from the server it is served from. For your own server see scripts/build_server.py.
 """
@@ -83,6 +83,7 @@ meta = json.dumps(_m, ensure_ascii=False, separators=(",", ":"))
 (ROOT / "data/meta.json").write_text(meta, encoding="utf-8")
 # Feature modules kept in their own files and inlined into the page script
 tpl = tpl.replace("/*HEFZQUIZ*/", (ROOT / "scripts/quiz_hefz.js").read_text(encoding="utf-8"))
+tpl = tpl.replace("/*ACCTALT*/", (ROOT / "scripts/acct_alt.js").read_text(encoding="utf-8"))
 for ph in ("/*DATA*/", "/*DATABASE*/", "/*SITEBASE*/", "/*ACCOUNTURL*/"):
     assert ph in tpl, ph
 

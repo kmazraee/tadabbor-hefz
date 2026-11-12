@@ -522,6 +522,9 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 .gate .gfeat li::before{content:"✓ ";font-weight:800}
 .gate .gform{background:var(--paper);color:var(--ink);border-radius:28px 28px 0 0;padding:26px 24px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
 .gate .gform h2{font-size:20px}
+.gate .lg-or{display:flex;align-items:center;gap:10px;color:var(--muted,inherit);font-size:13px;margin:2px 0}
+.gate .lg-or::before,.gate .lg-or::after{content:"";flex:1;border-top:1px solid currentColor;opacity:.35}
+.gate .lg-way{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;background:transparent;color:inherit;border:1px solid currentColor;border-radius:99px;padding:11px 14px;font:inherit}
 .gate .gtabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--tonal);border-radius:99px;padding:4px}
 .gate .gtabs button{border:none;border-radius:99px;background:none;color:var(--muted);min-height:42px;font-weight:700;margin:0}
 .gate .gtabs button[aria-selected="true"]{background:var(--surface);color:var(--lapis);box-shadow:0 1px 3px rgba(0,0,0,.12)}
@@ -4367,7 +4370,7 @@ async function syncNow(manual) {
   try {
     try {
       const a = await pb("collections/users/auth-refresh", {method: "POST"});
-      acctSet({token: a.token, id: a.record.id, email: a.record.email}); sync.expired = false;
+      acctSet({token: a.token, id: a.record.id, email: a.record.email || "", phone: a.record.phone || "", via: acct.via}); sync.expired = false;
     } catch (e) {
       if (e.status === 401 || e.status === 400 || e.status === 403) { sync.expired = true; sync.msg = "نشست شما تمام شده؛ دوباره وارد شوید."; if (!document.querySelector("[data-gate]")) showLogin(sync.msg); return; }
       throw e;
@@ -4435,7 +4438,7 @@ async function syncResolve(how) {
 async function acctSignIn(email, pass, create) {
   if (create) await pb("collections/users/records", {method: "POST", anon: true, body: {email, password: pass, passwordConfirm: pass, emailVisibility: false}});
   const a = await pb("collections/users/auth-with-password", {method: "POST", anon: true, body: {identity: email, password: pass}});
-  acctSet({token: a.token, id: a.record.id, email: a.record.email});
+  acctSet({token: a.token, id: a.record.id, email: a.record.email || "", phone: a.record.phone || "", via: "password"});
 }
 function acctSignOut() { acctSet(null); Object.assign(syncMeta, {recId: null, remoteVer: "", syncAt: 0}); syncSave(); sync.conflict = null; sync.msg = ""; sync.expired = false; }
 const refreshAcct = () => { if (document.getElementById("acct-box")) openSettingsKeep(); };
@@ -4444,12 +4447,13 @@ function acctHtml() {
   if (!acct) return acctFormHtml();
   const when = sync.at ? FA(new Date(sync.at).toLocaleTimeString("fa-IR", {hour: "2-digit", minute: "2-digit"})) : "";
   return `<section class="card" id="acct-box"><h3>حساب کاربری و همگام‌سازی</h3>
-    <p class="small">وارد شده با <bdi dir="ltr"><b>${esc(acct.email)}</b></bdi></p>
+    <p class="small">وارد شده با <bdi dir="ltr"><b>${esc(acct.email || FA(acct.phone || ""))}</b></bdi></p>
     <p class="small muted">${sync.busy ? "در حال همگام‌سازی…" : sync.conflict ? "" : sync.expired ? "" : when ? "آخرین همگام‌سازی امروز ساعت " + when : "پیشرفت و تنظیمات شما روی سرور هم ذخیره می‌شود."}</p>
     ${sync.conflict ? `<div class="help small"><b>داده‌های این دستگاه با داده‌های حساب شما فرق دارد.</b> با «ادغام هر دو» چیزی از دست نمی‌رود.</div>
       <div class="row"><button class="btn-main" id="ac-merge">ادغام هر دو</button><button id="ac-pull">فقط داده‌های حساب</button><button id="ac-push">فقط این دستگاه</button></div>` : ""}
     ${sync.msg ? `<p class="small" role="alert">${esc(sync.msg)}</p>` : ""}
-    ${sync.expired ? `<div class="field"><label for="ac-pass" class="small">رمز عبور</label><input type="password" id="ac-pass" dir="ltr" autocomplete="current-password"></div><div class="row"><button class="btn-main" id="ac-relogin">ورود دوباره</button></div>` : ""}
+    ${sync.expired && (acct.via === "otp" || acct.via === "google") ? `<div class="row"><button class="btn-main" id="ac-gate">ورود دوباره</button></div>` : ""}
+    ${sync.expired && acct.via !== "otp" && acct.via !== "google" ? `<div class="field"><label for="ac-pass" class="small">رمز عبور</label><input type="password" id="ac-pass" dir="ltr" autocomplete="current-password"></div><div class="row"><button class="btn-main" id="ac-relogin">ورود دوباره</button></div>` : ""}
     <div class="row"><button id="ac-sync" ${sync.busy ? "disabled" : ""}>همگام‌سازی حالا</button><button id="ac-out">خروج</button></div>
     <details><summary class="small">حذف حساب</summary><p class="small muted">حساب و همه داده‌های شما روی سرور برای همیشه پاک می‌شود. داده‌های همین دستگاه می‌ماند.</p><button id="ac-del">حذف حساب و داده‌های سرور</button></details>
   </section>`;
@@ -4477,6 +4481,7 @@ function wireAcct(box) {
     const pass = box.querySelector("#ac-pass").value;
     try { await acctSignIn(acct.email, pass, false); sync.expired = false; await syncNow(); } catch (e) { sync.msg = acctErr(e); refreshAcct(); }
   });
+  on("#ac-gate", () => showLogin(sync.msg));
   on("#ac-sync", () => syncNow(true)); on("#ac-pull", () => syncResolve("pull")); on("#ac-merge", () => syncResolve("merge")); on("#ac-push", () => syncResolve("push"));
   on("#ac-out", async () => {
     await syncNow();
@@ -4493,6 +4498,7 @@ function wireAcct(box) {
     catch (e) { sync.msg = acctErr(e); refreshAcct(); }
   });
 }
+/*ACCTALT*/
 if (ACCT_ON) {
   setTimeout(() => syncNow(), 2500);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNow(); });
@@ -4897,8 +4903,9 @@ function showLogin(err, email, mode, prof) {
         ${err ? `<p class="werr" role="alert">${esc(err)}</p>` : ""}
         <button type="submit" id="lg-go">${up ? "ساخت حساب و ورود" : "ورود"}</button>
       </form>
+      <div id="lg-alt"></div>
       <p class="gnote">${up ? "حساب دارید؟" : "حساب ندارید؟"} <a href="#" id="lg-switch">${up ? "وارد شوید" : "یک حساب تازه بسازید"}</a></p>
-      <p class="gnote">برای استفاده از برنامه داشتن حساب لازم است. رمز عبور روی سرور به‌صورت رمزگذاری‌شده ذخیره می‌شود و شماره همراه شما فقط روی همین دستگاه می‌ماند.</p>
+      <p class="gnote">برای استفاده از برنامه داشتن حساب لازم است. رمز عبور روی سرور به‌صورت رمزگذاری‌شده ذخیره می‌شود. شماره همراهی که در مشخصات می‌نویسید فقط روی همین دستگاه می‌ماند، مگر با همان شماره وارد شوید.</p>
     </div></div>`;
   const val = () => box.querySelector("#lg-email").value.trim();
   const go = async () => {
@@ -4908,16 +4915,20 @@ function showLogin(err, email, mode, prof) {
     if (up && pw.length < 8) return showLogin("رمز عبور باید دست‌کم ۸ نویسه باشد.", em, mode, pr && pr.d);
     sync.draft = em; box.querySelectorAll("button").forEach(b => { b.disabled = true; });
     try { await acctSignIn(em, pw, up); if (pr) { Object.assign(cfg, pr.d); saveCfg(); } } catch (e) { return showLogin(acctErr(e), em, mode, pr && pr.d); }
-    sync.expired = false; sync.msg = "";
-    await syncNow();
-    if (sync.conflict) await syncResolve("merge");       // this device has data and so does the account: keep both
-    box.innerHTML = ""; render(); startFlow();
+    await acctAfterLogin(box);
   };
   box.querySelector("#lg").addEventListener("submit", e => { e.preventDefault(); go(); });
   box.querySelector("#lg-tin").addEventListener("click", () => { if (up) showLogin("", val(), "in"); });
   box.querySelector("#lg-tup").addEventListener("click", () => { if (!up) showLogin("", val(), "up"); });
   box.querySelector("#lg-switch").addEventListener("click", e => { e.preventDefault(); showLogin("", val(), up ? "in" : "up"); });
   setTimeout(() => { const i = box.querySelector(up && !(prof && prof.name) ? "#lg-name" : val() ? "#lg-pass" : "#lg-email"); if (i) i.focus(); }, 50);
+  if (typeof acctAltWire === "function") acctAltWire(box);
+}
+async function acctAfterLogin(box) {
+  sync.expired = false; sync.msg = "";
+  await syncNow();
+  if (sync.conflict) await syncResolve("merge");       // this device has data and so does the account: keep both
+  box.innerHTML = ""; render(); startFlow();
 }
 const profileCore = () => myName() && (cfg.family || "").trim() && cfg.byear && cfg.bmonth && cfg.bday && (cfg.gender === "m" || cfg.gender === "f");
 const profileDone = () => profileCore() && PHONE_OK(cfg.phone);
