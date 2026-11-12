@@ -37,7 +37,7 @@ const codeHash = (phone, code) => $security.hs256(phone + ":" + code, secret());
 // and which works on numbers that block advertising SMS.
 function sendSms(phone, code) {
   const c = cfg(), key = env("SMS_API_KEY"), tpl = env("SMS_TEMPLATE");
-  if (c.provider === "log") { $app.logger().warn("SMS_PROVIDER=log: code not sent, shown here only", "phone", phone, "code", code); return; }
+  if (c.provider === "log") { console.log("[hefz] SMS_PROVIDER=log, not sent: phone " + phone + " code " + code); return; }   // shows in journalctl
   let r, ok = false;
   if (c.provider === "kavenegar") {
     r = $http.send({method: "GET", timeout: 15,
