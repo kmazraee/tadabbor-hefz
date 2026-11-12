@@ -72,20 +72,9 @@ routerAdd("POST", "/api/hefz/otp/verify", (e) => {
 });
 
 // Google -> here (redirect_uri). Works for the web copy (new tab) and the Android app (system browser).
-const oauthDone = (e) => {
-  const L = require(`${__hooks}/hefz_lib.js`);
-  const info = e.requestInfo(), q = Object.assign({}, info.query || {}, info.body || {});
-  const state = String(q.state || "").slice(0, 100);
-  if (!state) return e.html(400, L.page("خطا", "درخواست ورود ناقص است. دوباره از برنامه امتحان کنید."));
-  let rec = L.findOne("hefz_oauth", "state", state);
-  if (!rec) { rec = new Record($app.findCollectionByNameOrId("hefz_oauth")); rec.set("state", state); }
-  rec.set("code", String(q.code || "").slice(0, 2000)); rec.set("error", String(q.error || "").slice(0, 200)); rec.set("at", Date.now());
-  $app.save(rec);
-  return q.error ? e.html(200, L.page("ورود انجام نشد", "ورود با گوگل لغو شد. به برنامه برگردید و دوباره امتحان کنید."))
-                 : e.html(200, L.page("ورود با گوگل انجام شد", "به برنامه «حفظ تدبری قرآن» برگردید؛ ورود شما آنجا کامل می‌شود."));
-};
-routerAdd("GET", "/api/hefz/oauth-done", (e) => oauthDone(e));
-routerAdd("POST", "/api/hefz/oauth-done", (e) => oauthDone(e));
+// (The handler body lives in hefz_lib.js: PocketBase runs each handler in its own context, so it cannot see variables defined in this file.)
+routerAdd("GET", "/api/hefz/oauth-done", (e) => require(`${__hooks}/hefz_lib.js`).oauthDone(e));
+routerAdd("POST", "/api/hefz/oauth-done", (e) => require(`${__hooks}/hefz_lib.js`).oauthDone(e));
 
 routerAdd("GET", "/api/hefz/oauth-claim", (e) => {
   const L = require(`${__hooks}/hefz_lib.js`);

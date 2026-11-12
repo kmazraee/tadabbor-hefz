@@ -75,4 +75,17 @@ const page = (title, text) => `<!doctype html><html lang="fa" dir="rtl"><head><m
 @media(prefers-color-scheme:dark){body{background:#16181b;color:#eee}}main{max-width:420px}h1{font-size:1.3em}</style></head>
 <body><main><h1>${title}</h1><p>${text}</p></main><script>setTimeout(function(){try{window.close()}catch(e){}},1500)</script></body></html>`;
 
-module.exports = {env, digits, normPhone, cfg, codeHash, sendSms, dailyOk, findOne, googleOn, smsOn, page};
+// Google redirects the browser here after sign-in; the code waits for the app to collect it (oauth-claim)
+function oauthDone(e) {
+  const info = e.requestInfo(), q = Object.assign({}, info.query || {}, info.body || {});
+  const state = String(q.state || "").slice(0, 100);
+  if (!state) return e.html(400, page("خطا", "درخواست ورود ناقص است. دوباره از برنامه امتحان کنید."));
+  let rec = findOne("hefz_oauth", "state", state);
+  if (!rec) { rec = new Record($app.findCollectionByNameOrId("hefz_oauth")); rec.set("state", state); }
+  rec.set("code", String(q.code || "").slice(0, 2000)); rec.set("error", String(q.error || "").slice(0, 200)); rec.set("at", Date.now());
+  $app.save(rec);
+  return q.error ? e.html(200, page("ورود انجام نشد", "ورود با گوگل لغو شد. به برنامه برگردید و دوباره امتحان کنید."))
+                 : e.html(200, page("ورود با گوگل انجام شد", "به برنامه «حفظ تدبری قرآن» برگردید؛ ورود شما آنجا کامل می‌شود."));
+}
+
+module.exports = {env, digits, normPhone, cfg, codeHash, sendSms, dailyOk, findOne, googleOn, smsOn, page, oauthDone};
