@@ -73,4 +73,9 @@ cd /opt/tadabbor/src && sudo git pull && sudo sh deploy/vps/install.sh
 ## نکته‌ها
 
 - حساب‌ها جدا از هم‌اند: کسی که یک بار با شماره و یک بار با گوگل وارد شود، دو حساب جدا دارد. ورود با گوگل و ایمیل یکسان (ایمیل تأییدشده گوگل) به همان حساب ایمیلی وصل می‌شود.
-- اگر کاربران ایرانی بدون فیلترشکن به زیردامنه نرسیدند، می‌توان آن را پشت Cloudflare (پروکسی نارنجی) گذاشت؛ در آن صورت در nginx به‌جای `$remote_addr` از `CF-Connecting-IP` استفاده کنید.
+- پشت Cloudflare (ابر نارنجی، پیشنهادی؛ IP سرور پنهان می‌ماند): در Cloudflare، SSL/TLS را روی **Full (strict)** بگذارید و این را یک بار روی سرور اجرا کنید تا IP واقعی کاربران به سرور برسد:
+  ```sh
+  (for ip in $(curl -s https://www.cloudflare.com/ips-v4) $(curl -s https://www.cloudflare.com/ips-v6); do echo "set_real_ip_from $ip;"; done; echo "real_ip_header CF-Connecting-IP;") > /etc/nginx/tadabbor-cloudflare.conf
+  sed -i 's|# include /etc/nginx/tadabbor-cloudflare.conf;|include /etc/nginx/tadabbor-cloudflare.conf;|' /etc/nginx/sites-available/tadabbor-api
+  nginx -t && systemctl reload nginx
+  ```
