@@ -12,9 +12,9 @@ onBootstrap((e) => {
   const L = require(`${__hooks}/hefz_lib.js`);
   const users = e.app.findCollectionByNameOrId("users");
   const want = L.googleOn();
-  const has = users.oauth2.enabled && users.oauth2.providers.some(p => p.name === "google" && p.clientId === L.env("GOOGLE_CLIENT_ID"));
+  const has = users.oauth2.enabled && users.oauth2.mappedFields.avatarURL === "avatar" && users.oauth2.providers.some(p => p.name === "google" && p.clientId === L.env("GOOGLE_CLIENT_ID"));
   if (want === has) return;
-  unmarshal({oauth2: want ? {enabled: true, mappedFields: {name: "name", avatarURL: ""},
+  unmarshal({oauth2: want ? {enabled: true, mappedFields: {name: "name", avatarURL: "avatar"},
     providers: [{name: "google", clientId: L.env("GOOGLE_CLIENT_ID"), clientSecret: L.env("GOOGLE_CLIENT_SECRET")}]}
     : {enabled: false, providers: []}}, users);
   e.app.save(users);
