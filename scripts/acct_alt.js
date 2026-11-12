@@ -22,7 +22,7 @@ const altErr = e => {
   if (e.status === 503) return "ارسال پیامک امروز به سقف رسیده؛ فردا یا با ایمیل وارد شوید.";
   return acctErr(e);
 };
-const altIn = (a, via) => acctSet({token: a.token, id: a.record.id, email: a.record.email || "", phone: a.record.phone || "", via});
+const altIn = (a, via) => acctSet({token: a.token, id: a.record.id, email: a.record.email || "", phone: a.record.phone || "", name: a.record.name || "", via});
 
 // Called by showLogin() after it draws the page
 function acctAltWire(box) {
