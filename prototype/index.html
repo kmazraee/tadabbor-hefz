@@ -4657,7 +4657,8 @@ function googleWait(box) {
       await acctAfterLogin(box);
     } catch (e) {
       if (e.status === 404) return;                     // not back from Google yet
-      clearInterval(acctAlt.timer); oauthClear(); showLogin(acctErr(e));
+      clearInterval(acctAlt.timer); oauthClear();
+      showLogin(e.status === 400 ? "ورود با گوگل کامل نشد (کد ورود منقضی یا مصرف‌شده بود). دوباره دکمه گوگل را بزنید." : acctErr(e));
     } finally { busy = false; }
   };
   acctAlt.timer = setInterval(check, 2500);
