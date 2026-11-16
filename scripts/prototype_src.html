@@ -398,13 +398,56 @@ footer.note{font-size:12px;color:var(--muted);text-align:center}
 .mw.sel,.me.sel{background:var(--gold-soft)}
 .mw.playing,.me.playing{background:var(--lapis-soft)}
 .me.cut{background:var(--gold);color:#fff}
-.mhead{border:1px solid var(--page-edge);border-radius:6px;padding:0 1em;background:var(--surface)}
-.mhead.txt{font-family:var(--f-ui);font-weight:700;font-size:.62em;padding:.15em 1.4em}
 .mfoot{text-align:center;font-size:12px;color:var(--muted);font-family:var(--f-ui);margin-top:4px}
 .mlabel{font-family:var(--f-ui);font-size:12px;font-weight:700;color:var(--lapis);display:flex;align-items:center;gap:6px;margin:4px 0 0}
 .mlabel::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--lapis)}
 .mnav{display:flex;align-items:center;gap:8px}
 .mnav .pg{flex:1;text-align:center;font-size:13px;color:var(--muted)}
+/* ---- Quran reader (the «مصحف» page): a full classic mushaf page, tools behind a tap ---- */
+:root{--rd-bg:#FFF8EA;--sb-bg:color-mix(in srgb,var(--acc-l) 78%,#000);--sb-gold:#C9A24A;--sb-cart:#FFFBF1;--sb-ink:#2A2216}
+:root[data-theme="sepia"]{--rd-bg:var(--page)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-theme="sepia"]){--rd-bg:var(--page);--sb-bg:color-mix(in srgb,var(--acc-l) 55%,#000);--sb-gold:#A88B4C;--sb-cart:#1E2925;--sb-ink:var(--ink)}}
+:root[data-theme="dark"]{--rd-bg:var(--page);--sb-bg:color-mix(in srgb,var(--acc-l) 55%,#000);--sb-gold:#A88B4C;--sb-cart:#1E2925;--sb-ink:var(--ink)}
+body.reading{background:var(--rd-bg)}
+body.reading main{padding-inline:10px;padding-top:6px;gap:6px}
+.reader{display:flex;flex-direction:column;gap:4px}
+.rbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:48px;color:var(--muted)}
+.rbar button{border:none;background:none;color:inherit;padding:0;min-height:44px}
+.rb-sura{justify-self:start;display:flex;align-items:center;gap:4px;font-weight:700;font-size:15px;padding-inline:4px!important;max-width:100%;overflow:hidden;white-space:nowrap}
+.rb-sura svg{width:14px;height:14px;opacity:.6;flex:none}
+.rb-end{justify-self:end;display:flex;gap:2px}
+.rb-ic{width:44px;height:44px;display:grid;place-items:center;border-radius:50%}
+.rb-ic svg{width:26px;height:26px}
+.rb-ic[aria-pressed="true"]{color:var(--gold)}
+.rbar .rb-home svg{width:32px;height:32px}
+body.reading .mpage{background:var(--rd-bg);border:none;box-shadow:none;border-radius:0;padding:4px 0 0}
+body.reading .mrow{grid-template-columns:3px minmax(0,1fr);gap:4px}
+body.reading .mmark{opacity:.75}
+body.reading .mpage.nomarks .mrow{grid-template-columns:minmax(0,1fr);gap:0}
+body.reading .mpage.nomarks .mmark{display:none}
+/* surah title banner: framed ornament in the accent colour, the surah name in a light cartouche */
+.mline.hd{padding-block:.12em}
+.sban{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:1.7em;box-sizing:border-box;border:.07em solid var(--sb-gold);outline:.04em solid var(--sb-gold);outline-offset:.06em;
+  background-color:var(--sb-bg);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23C9A24A' stroke-width='1' opacity='.75'%3E%3Crect x='7' y='7' width='10' height='10'/%3E%3Crect x='7' y='7' width='10' height='10' transform='rotate(45 12 12)'/%3E%3Ccircle cx='12' cy='12' r='2'/%3E%3C/g%3E%3Cg fill='%23C9A24A' opacity='.6'%3E%3Ccircle cx='0' cy='0' r='1.4'/%3E%3Ccircle cx='24' cy='0' r='1.4'/%3E%3Ccircle cx='0' cy='24' r='1.4'/%3E%3Ccircle cx='24' cy='24' r='1.4'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:.62em .62em;background-position:center}
+.sban::before,.sban::after{content:"";position:absolute;top:50%;width:1.25em;height:1.25em;transform:translateY(-50%);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg fill='%23C9A24A'%3E%3Cpath d='M20 1l4.2 8.8 9.2-3.2-3.2 9.2L39 20l-8.8 4.2 3.2 9.2-9.2-3.2L20 39l-4.2-8.8-9.2 3.2 3.2-9.2L1 20l8.8-4.2-3.2-9.2 9.2 3.2z'/%3E%3C/g%3E%3Ccircle cx='20' cy='20' r='9' fill='%23FFFBF1'/%3E%3Ccircle cx='20' cy='20' r='5.5' fill='none' stroke='%23C9A24A' stroke-width='2'/%3E%3Ccircle cx='20' cy='20' r='2' fill='%23C9A24A'/%3E%3C/svg%3E") center/contain no-repeat}
+.sban::before{inset-inline-start:.3em}.sban::after{inset-inline-end:.3em}
+.sb-cart{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;height:1.2em;min-width:56%;font-size:1.08em;padding:0 1em;background:var(--sb-cart);color:var(--sb-ink);border:.05em solid var(--sb-gold);border-radius:999px;box-shadow:0 0 0 .07em var(--sb-bg),0 0 0 .11em var(--sb-gold);line-height:1}
+.sb-cart.txt{font-family:var(--f-ui);font-weight:700;font-size:.62em;height:1.9em}
+/* page footer: juz · page number pill · hizb */
+.mfoot2{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;font-family:var(--f-ui);font-size:13px;color:var(--muted);margin-top:10px;padding-inline:6px}
+.mfoot2>span:last-child{justify-self:end}
+.pgpill{min-width:68px;min-height:34px;padding:2px 16px;border:1.5px solid var(--page-edge);border-radius:999px;background:none;color:var(--ink);font-size:15px;font-weight:600;display:grid;place-items:center}
+.mnav2{display:none;justify-content:space-between}
+@media (hover:hover) and (pointer:fine){.mnav2{display:flex}}
+/* phone layout: the bottom bar and the player hide while reading; a tap on the page brings them back */
+.tabs{transition:transform .2s ease}
+body.reading:not(.chrome) .tabs{transform:translateY(110%)}
+body.reading:not(.chrome) main{padding-bottom:24px}
+body.reading:not(.chrome) .wordbar{bottom:12px}
+body.reading:not(.chrome) .player:not(:has(#mp-play[aria-label="توقف"])):not(:has(.pl-set)){display:none}
+body.reading:not(.chrome) .player{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+@media (prefers-reduced-motion:reduce){.tabs{transition:none}}
 .wordbar{position:fixed;inset-inline:0;bottom:64px;max-width:480px;margin-inline:auto;padding:0 12px;z-index:6}
 .wordbar .card{box-shadow:0 6px 24px rgba(0,0,0,.18);gap:8px}
 /* lessons */
@@ -576,6 +619,8 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
   html.site .tabs button[aria-current="page"] svg{background:none;color:var(--lapis)}
   html.site .tabs button[aria-current="page"]{background:var(--lapis-soft)}
   html.site .tabs{overflow-y:auto;padding-bottom:24px}
+  html.site body.reading .tabs{transform:none!important}
+  html.site body.reading .player{display:flex!important}
   html.site .tabs>button svg{width:24px;height:24px;padding:0;flex:none}
   html.site .navmore{display:flex;flex-direction:column;gap:2px;margin-top:6px;border-top:1px solid var(--line);padding-top:4px}
   html.site .navmore .mitem{min-height:40px;font-size:14px;padding:6px 10px;gap:10px}
@@ -603,8 +648,31 @@ select,input[type=text],input[type=search],input[type=tel],textarea{border:none;
 .ai-input{display:flex;gap:8px;align-items:flex-end;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
 .ai-input textarea{flex:1;min-height:44px;max-height:140px;resize:vertical;border-radius:18px;padding:10px 14px;font:inherit}
 .ai-input .btn-main{min-height:44px}
+/* ---- splash: shown each time the app starts (and after a long time in the background) ---- */
+.splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:max(40px,env(safe-area-inset-top,0px)) 24px max(36px,env(safe-area-inset-bottom,0px));
+  --sp-bg:#FCF3E2;--sp-gold:#AE8740;--sp-disc:#FFFDF7;--sp-ring:#1B7A4E;--sp-ink:#14325A;--sp-ink2:#C9A24A;background:var(--sp-bg);color:var(--sp-gold);transition:opacity .45s ease,visibility .45s;text-align:center;cursor:pointer}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-theme="sepia"]) .splash{--sp-bg:#0F1715;--sp-gold:#C9A24A;--sp-disc:#17221F;--sp-ring:#4DB37A;--sp-ink:#E7EEEB;--sp-ink2:#E3B65C}}
+:root[data-theme="dark"] .splash{--sp-bg:#0F1715;--sp-gold:#C9A24A;--sp-disc:#17221F;--sp-ring:#4DB37A;--sp-ink:#E7EEEB;--sp-ink2:#E3B65C}
+.splash.out{opacity:0;visibility:hidden;pointer-events:none}
+.splash[hidden]{display:none}
+.sp-verse{font-family:"Amiri Quran","Amiri",serif;font-size:clamp(24px,7.4vw,34px);line-height:1.9;direction:rtl}
+.sp-verse small{display:block;font-size:13px;line-height:1.4;opacity:.85;font-family:var(--f-ui)}
+.sp-orn{width:min(74vw,330px,50vh);height:auto;flex:none}
+.sp-name{font-family:var(--f-ui);font-weight:800;font-size:clamp(28px,8vw,38px);line-height:1.4}
+.sp-tag{font-family:var(--f-ui);font-weight:600;font-size:15px;opacity:.9;margin-top:6px}
+.splash>*{animation:spIn .9s ease both}
+.splash .sp-orn{animation:spOrn 1.2s cubic-bezier(.2,.7,.2,1) both}
+.splash>div:last-child{animation-delay:.25s}
+@keyframes spIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes spOrn{from{opacity:0;transform:scale(.88) rotate(-6deg)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.splash,.splash>*,.splash .sp-orn{animation:none;transition:none}}
 </style>
 
+<div class="splash" id="splash" role="img" aria-label="حفظ تدبری؛ إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ">
+  <div class="sp-verse" aria-hidden="true">إِنَّ هَٰذَا ٱلْقُرْءَانَ يَهْدِى لِلَّتِى هِىَ أَقْوَمُ<small>(الإسراء: ۹)</small></div>
+  <svg class="sp-orn" viewBox="-20 0 340 540" aria-hidden="true"><g fill="none" stroke="var(--sp-gold)" stroke-width="2.4" stroke-linecap="round"><path d="M150,40 C152,65 165,80 182,98 C215,130 270,150 280,230 C286,270 286,270 280,310 C270,390 215,410 182,442 C165,460 152,475 150,500" /><path d="M150,40 C148,65 135,80 118,98 C85,130 30,150 20,230 C14,270 14,270 20,310 C30,390 85,410 118,442 C135,460 148,475 150,500" /></g><g fill="none" stroke="var(--sp-gold)" stroke-width="1" opacity=".7" transform="translate(150 270) scale(.92) translate(-150 -270)"><path d="M150,40 C152,65 165,80 182,98 C215,130 270,150 280,230 C286,270 286,270 280,310 C270,390 215,410 182,442 C165,460 152,475 150,500" /><path d="M150,40 C148,65 135,80 118,98 C85,130 30,150 20,230 C14,270 14,270 20,310 C30,390 85,410 118,442 C135,460 148,475 150,500" /></g><path d="M150,40 C152,65 165,80 182,98 C215,130 270,150 280,230 C286,270 286,270 280,310 C270,390 215,410 182,442 C165,460 152,475 150,500 L150,40 C148,65 135,80 118,98 C85,130 30,150 20,230 C14,270 14,270 20,310 C30,390 85,410 118,442 C135,460 148,475 150,500" fill="var(--sp-gold)" opacity=".07"/><g transform="rotate(0.00 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(11.25 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(22.50 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(33.75 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(45.00 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(56.25 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(67.50 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(78.75 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(90.00 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(101.25 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(112.50 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(123.75 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(135.00 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(146.25 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(157.50 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(168.75 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(180.00 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(191.25 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(202.50 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(213.75 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(225.00 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(236.25 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(247.50 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(258.75 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(270.00 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(281.25 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(292.50 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(303.75 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(315.00 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(326.25 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><g transform="rotate(337.50 150 270)"><path transform="translate(150 198)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/></g><g transform="rotate(348.75 150 270)"><circle cx="150" cy="186" r="2.2" fill="var(--sp-gold)"/></g><path d="M150.0,156.0 A11.2,11.2 0 0 1 172.2,158.2 M172.2,158.2 A11.2,11.2 0 0 1 193.6,164.7 M193.6,164.7 A11.2,11.2 0 0 1 213.3,175.2 M213.3,175.2 A11.2,11.2 0 0 1 230.6,189.4 M230.6,189.4 A11.2,11.2 0 0 1 244.8,206.7 M244.8,206.7 A11.2,11.2 0 0 1 255.3,226.4 M255.3,226.4 A11.2,11.2 0 0 1 261.8,247.8 M261.8,247.8 A11.2,11.2 0 0 1 264.0,270.0 M264.0,270.0 A11.2,11.2 0 0 1 261.8,292.2 M261.8,292.2 A11.2,11.2 0 0 1 255.3,313.6 M255.3,313.6 A11.2,11.2 0 0 1 244.8,333.3 M244.8,333.3 A11.2,11.2 0 0 1 230.6,350.6 M230.6,350.6 A11.2,11.2 0 0 1 213.3,364.8 M213.3,364.8 A11.2,11.2 0 0 1 193.6,375.3 M193.6,375.3 A11.2,11.2 0 0 1 172.2,381.8 M172.2,381.8 A11.2,11.2 0 0 1 150.0,384.0 M150.0,384.0 A11.2,11.2 0 0 1 127.8,381.8 M127.8,381.8 A11.2,11.2 0 0 1 106.4,375.3 M106.4,375.3 A11.2,11.2 0 0 1 86.7,364.8 M86.7,364.8 A11.2,11.2 0 0 1 69.4,350.6 M69.4,350.6 A11.2,11.2 0 0 1 55.2,333.3 M55.2,333.3 A11.2,11.2 0 0 1 44.7,313.6 M44.7,313.6 A11.2,11.2 0 0 1 38.2,292.2 M38.2,292.2 A11.2,11.2 0 0 1 36.0,270.0 M36.0,270.0 A11.2,11.2 0 0 1 38.2,247.8 M38.2,247.8 A11.2,11.2 0 0 1 44.7,226.4 M44.7,226.4 A11.2,11.2 0 0 1 55.2,206.7 M55.2,206.7 A11.2,11.2 0 0 1 69.4,189.4 M69.4,189.4 A11.2,11.2 0 0 1 86.7,175.2 M86.7,175.2 A11.2,11.2 0 0 1 106.4,164.7 M106.4,164.7 A11.2,11.2 0 0 1 127.8,158.2 M127.8,158.2 A11.2,11.2 0 0 1 150.0,156.0" fill="none" stroke="var(--sp-gold)" stroke-width="1.6"/><circle cx="150" cy="270" r="114" fill="none" stroke="var(--sp-gold)" stroke-width=".8" opacity=".6"/><g transform="rotate(20.00 150 270)"><path transform="translate(153 142) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(147 142) scale(-1 1) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/></g><g transform="rotate(50.00 150 270)"><path transform="translate(153 142) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(147 142) scale(-1 1) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/></g><g transform="rotate(310.00 150 270)"><path transform="translate(153 142) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(147 142) scale(-1 1) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/></g><g transform="rotate(340.00 150 270)"><path transform="translate(153 142) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(147 142) scale(-1 1) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/></g><g transform="rotate(130.00 150 270)"><path transform="translate(153 142) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(147 142) scale(-1 1) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/></g><g transform="rotate(160.00 150 270)"><path transform="translate(153 142) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(147 142) scale(-1 1) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/></g><g transform="rotate(200.00 150 270)"><path transform="translate(153 142) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(147 142) scale(-1 1) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/></g><g transform="rotate(230.00 150 270)"><path transform="translate(153 142) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(147 142) scale(-1 1) rotate(-60) scale(.95)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/></g><path transform="translate(150 134) scale(1.0 1.0)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/><path transform="translate(150 108) scale(0.8 0.8)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/><path transform="translate(150 86) scale(0.6 0.6)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/><path transform="translate(160 126) scale(1.3 1.3) rotate(-35)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(155 100) scale(1.05 1.05) rotate(-55)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(140 126) scale(-1.3 1.3) rotate(-35)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(145 100) scale(-1.05 1.05) rotate(-55)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(150 42) scale(.75 0.75)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/><circle cx="150" cy="10" r="3" fill="var(--sp-gold)"/><path d="M150,4 l6,-10 -6,-10 -6,10z" fill="var(--sp-gold)"/><path transform="translate(150 406) scale(1.0 -1.0)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/><path transform="translate(150 432) scale(0.8 -0.8)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/><path transform="translate(150 454) scale(0.6 -0.6)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/><path transform="translate(160 414) scale(1.3 -1.3) rotate(-35)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(155 440) scale(1.05 -1.05) rotate(-55)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(140 414) scale(-1.3 -1.3) rotate(-35)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(145 440) scale(-1.05 -1.05) rotate(-55)" d="M0,0 C6,-6 14,-8 22,-4 C16,-2 10,2 8,10 C6,5 3,2 0,0 Z" fill="var(--sp-gold)"/><path transform="translate(150 498) scale(.75 -0.75)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/><circle cx="150" cy="530" r="3" fill="var(--sp-gold)"/><path d="M150,536 l6,10 -6,10 -6,-10z" fill="var(--sp-gold)"/><path transform="translate(284 270) rotate(90) scale(.7)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/><path transform="translate(16 270) rotate(-90) scale(.7)" d="M0,-1 C9,-9 9,-22 0,-34 C-9,-22 -9,-9 0,-1 Z" fill="var(--sp-gold)"/><circle cx="150" cy="270" r="66" fill="var(--sp-disc)" stroke="var(--sp-gold)" stroke-width="1.2"/><circle cx="150" cy="270" r="60" fill="none" stroke="var(--sp-ring)" stroke-width="3"/><g transform="translate(150 278) scale(.34) translate(-256 -300)"><g fill="none" stroke-linecap="round"><path d="M136 300a120 120 0 0 1 240 0" stroke="var(--sp-gold)" stroke-width="22"/><path d="M176 300a80 80 0 0 1 160 0" stroke="var(--sp-ink2)" stroke-width="22"/><path d="M216 300a40 40 0 0 1 80 0" stroke="var(--sp-ring)" stroke-width="22"/></g><path d="M256 330c-40-24-90-30-140-22v62c50-8 100-2 140 22z" fill="var(--sp-ink)"/><path d="M256 330c40-24 90-30 140-22v62c-50-8-100-2-140 22z" fill="var(--sp-ink)" opacity=".82"/></g></svg>
+  <div aria-hidden="true"><div class="sp-name">حفظ تدبری</div><div class="sp-tag">حفظ قرآن با تدبر در سیاق‌ها</div></div>
+</div>
 <a class="skip" href="#view">رفتن به محتوای اصلی</a>
 <div class="app">
   <main id="view" tabindex="-1"></main>
@@ -916,6 +984,18 @@ function getPage(p) {
 }
 const pagesFor = (sn, a, b) => { const s = S[sn], set = new Set(); for (let i = a; i <= b; i++) { set.add(s.vp[i - 1]); (s.split[i] || []).forEach(x => set.add(x)); } return [...set].sort((x, y) => x - y); };
 const pageOfSurah = sn => S[sn].vp[0];
+// Start of each of the 240 hizb quarters, as the verse's number counted from the start of the Quran (Hafs; from quran-meta, MIT)
+const RUB = [1,33,51,67,82,99,113,131,149,165,184,196,210,226,240,250,260,270,279,290,308,326,345,368,386,406,426,446,464,479,494,505,517,529,551,567,581,593,607,628,641,656,670,681,696,710,720,736,751,766,778,802,825,848,863,884,900,916,930,940,955,985,1001,1019,1042,1071,1096,1110,1125,1143,1161,1182,1201,1221,1236,1254,1269,1281,1295,1310,1328,1346,1357,1375,1390,1417,1435,1454,1479,1497,1514,1534,1557,1581,1603,1626,1649,1673,1697,1712,1726,1742,1760,1778,1803,1852,1902,1931,1952,1976,1991,2012,2030,2052,2079,2099,2128,2157,2172,2191,2215,2239,2272,2309,2349,2403,2431,2459,2484,2512,2534,2566,2596,2614,2633,2655,2674,2709,2748,2792,2812,2826,2844,2856,2876,2908,2933,2984,3043,3113,3160,3186,3215,3241,3264,3281,3303,3328,3341,3366,3386,3410,3440,3463,3491,3514,3534,3551,3564,3584,3593,3616,3630,3652,3675,3701,3733,3765,3810,3871,3933,3991,4022,4066,4090,4111,4134,4154,4174,4199,4227,4243,4265,4285,4299,4323,4349,4382,4431,4485,4511,4531,4555,4578,4601,4613,4626,4657,4706,4759,4810,4855,4902,4980,5054,5091,5105,5118,5137,5157,5178,5192,5218,5230,5242,5272,5324,5394,5448,5495,5552,5610,5673,5759,5830,5885,5949,6024,6091,6155];
+let AYAH0 = null;
+const absAyah = (sn, ay) => { if (!AYAH0) { let a = 0; AYAH0 = {}; DATA.surahs.forEach(x => { AYAH0[x.n] = a; a += x.total; }); } return AYAH0[sn] + ay; };
+const ayahAt = a => { const s = DATA.surahs.find(x => absAyah(x.n, x.total) >= a); return [s.n, a - absAyah(s.n, 0)]; };
+const rubOf = (sn, ay) => { const a = absAyah(sn, ay); let n = 0; while (n < RUB.length && RUB[n] <= a) n++; return Math.max(1, n); };
+// Juz, hizb and quarter of the page's first verse, as printed at the foot of a Madinah mushaf page
+function pageInfo(p) {
+  const [sn, ay] = firstOnPage(p), r = rubOf(sn, ay), q = (r - 1) % 4;
+  return {sn, ay, juz: Math.ceil(r / 8), hizb: Math.ceil(r / 4), q, hizbName: (q ? FA(q + "/4") + " " : "") + "حزب " + FA(Math.ceil(r / 4))};
+}
+const juzPage = j => { const [sn, ay] = ayahAt(RUB[(j - 1) * 8]); return S[sn].vp[ay - 1]; };
 function vtext(sn, ay) {
   const p = S[sn].vp[ay - 1], pg = getPage(p);
   if (!pg) return "";
@@ -948,7 +1028,7 @@ function renderPages(pnums, opt = {}) {
       let pos = {};
       const words = ln.map(w => {
         const [t, ch, font, ref, text] = w;
-        if (t === "h") return qcf ? `<span class="mhead" style="font-family:'${font}'">${ch}</span>` : `<span class="mhead txt">سوره ${esc(S[+ref] ? S[+ref].name : text)}</span>`;
+        if (t === "h") return `<span class="sban" role="heading" aria-level="2" aria-label="سوره ${esc(S[+ref] ? S[+ref].name : "")}">${qcf ? `<span class="sb-cart" style="font-family:'${font}'" aria-hidden="true">${ch}</span>` : `<span class="sb-cart txt" aria-hidden="true">سوره ${esc(S[+ref] ? S[+ref].name : text)}</span>`}</span>`;
         if (t === "b") return qcf ? `<span style="font-family:'${font}'">${ch}</span>` : `<span style="font-family:var(--f-q)">${esc(text || "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ")}</span>`;
         const vk = ref, s8 = st8(vk);
         pos[vk] = (pos[vk] || 0) + (t === "w" ? 1 : 0);
@@ -970,9 +1050,11 @@ function renderPages(pnums, opt = {}) {
       const center = ln.length === 1 && (ln[0][0] === "h" || ln[0][0] === "b");
       const sy = opt.marks ? [...new Set(vks.map(v => { const [a, b] = parseVk(v); const q = siyaqOf(a, b); return q ? key(a, q.n) : null; }).filter(Boolean))] : [];
       const mark = opt.marks ? `<span class="mmark">${sy.map(k => `<i style="--c:${COLORS[status(k)]}"></i>`).join("")}</span>` : "<span></span>";
-      out.push(`${labels}<div class="mrow">${mark}<div class="mline${center ? " center" : ""}${qcf ? "" : " txt"}">${words}</div></div>`);
+      out.push(`${labels}<div class="mrow">${mark}<div class="mline${center ? " center" : ""}${center && ln[0][0] === "h" ? " hd" : ""}${qcf ? "" : " txt"}">${words}</div></div>`);
     });
-    return `<div class="mpage" data-p="${pn}">${out.join("")}<div class="mfoot num">${FA(pg.p)}</div></div>`;
+    const inf = opt.foot ? pageInfo(pn) : null;
+    const foot = inf ? `<div class="mfoot2 num"><span>جزء ${FA(inf.juz)}</span><button class="pgpill num" data-mupg aria-label="صفحه ${FA(pn)}؛ برای رفتن به صفحه یا سوره دیگر بزنید">${FA(pn)}</button><span>${inf.hizbName}</span></div>` : `<div class="mfoot num">${FA(pg.p)}</div>`;
+    return `<div class="mpage${opt.marks || !opt.foot ? "" : " nomarks"}" data-p="${pn}">${out.join("")}${foot}</div>`;
   }).join("");
 }
 function firstWordLine(pg, vk) { return pg.lines.findIndex(l => l.some(w => w[3] === vk && w[0] === "w")); }
@@ -993,6 +1075,16 @@ function fitPages(root) {
     });
   });
   pages.forEach(x => { if (x.maxW > 0 && x.avail > 0) x.p.style.fontSize = Math.min(base * x.avail / x.maxW * 0.97, 44) + "px"; });
+  // The reader page spreads its 15 lines over the screen height, like a printed page (never tighter than the line-height setting)
+  pages.forEach(x => {
+    x.p.style.removeProperty("--q-lh");
+    if (!x.p.closest(".reader")) return;
+    const rows = x.p.querySelectorAll(".mline").length, fs = parseFloat(x.p.style.fontSize) || base;
+    const bar = document.querySelector(".reader .rbar"), foot = x.p.querySelector(".mfoot2");
+    const room = window.innerHeight - (bar ? bar.offsetHeight : 48) - (foot ? foot.offsetHeight + 10 : 0) - 24;
+    const q = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--q-lh")) || 1.9;
+    if (rows >= 8 && room > 0) x.p.style.setProperty("--q-lh", Math.max(q, Math.min(room / rows / fs, 2.7)).toFixed(3));
+  });
 }
 
 // ---------- Persian translation (bundled with the app, loaded on demand) ----------
@@ -1475,6 +1567,7 @@ function render() {
   if (QUIET && same && render.html === html) return;
   render.tab = tab; render.html = html;
   v.innerHTML = html;
+  document.body.classList.toggle("reading", tab === "mushaf"); if (!same && tab !== "mushaf") document.body.classList.remove("chrome");
   if (same && y && Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
   v.querySelectorAll("[data-open]").forEach(el => el.addEventListener("click", () => openSurah(+el.dataset.open)));
   v.querySelectorAll("[data-start]").forEach(el => el.addEventListener("click", () => startSession(el.dataset.start, el.dataset.mode || "learn")));
@@ -1721,45 +1814,112 @@ function progress() {
   <p class="small muted">آمار از روزی که این بخش به برنامه اضافه شد جمع می‌شود؛ روزهای قبل از آن خالی دیده می‌شوند.</p>`;
 }
 
-// ---------- mushaf tab ----------
+// ---------- mushaf tab: a classic Madinah mushaf page; tools sit behind the top bar and a tap on the page ----------
 let mushafPage = 1, selVk = null;
+const ICON_HOME = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.2 2.6 11.3l1.2 1.4L5 11.7V20h5.2v-5.6h3.6V20H19v-8.3l1.2 1 1.2-1.4z" fill="currentColor"/><path d="M15.6 4.4h2.6v3.4l-2.6-2.2z" fill="currentColor"/></svg>`;
+const ICON_BMADD = on => `<svg viewBox="0 0 24 24" fill="${on ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3.5h9.5v15.8l-4.75-3.6L6 19.3z"/>${on ? "" : `<circle cx="17.5" cy="17.5" r="4.2" fill="var(--rd-bg)"/><path d="M17.5 15.4v4.2M15.4 17.5h4.2" stroke-linecap="round"/>`}</svg>`;
+const ICON_DOTS = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><circle cx="12" cy="5.5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="18.5" r="1.8"/></svg>`;
+const ICON_CHEV = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>`;
+const pageReadMark = () => { const r = readMark(); return r && S[r[0]].vp[r[1] - 1] === mushafPage ? r : null; };
 function mushaf() {
   noteLast({page: mushafPage});
-  const pg = getPage(mushafPage);
   [mushafPage - 1, mushafPage + 1].forEach(p => { if (p >= 1 && p <= 604) getPage(p); });
-  const here = pg ? pg.here : [];
-  const cur = here[0] || DATA.surahs.filter(s => s.vp[0] <= mushafPage).pop().n;
-  const juz = Math.min(30, Math.floor((mushafPage - 2) / 20) + 1);
-  return `${topBar(`<h1>قرآن</h1>`)}${quranNav()}${tipCard("mushaf")}
-  <div class="row" style="flex-wrap:nowrap"><select id="mushaf-surah" aria-label="رفتن به سوره">${DATA.surahs.map(x => `<option value="${x.n}" ${cur === x.n ? "selected" : ""}>${FA(x.n)}. ${x.name}</option>`).join("")}</select>
-  <select id="mushaf-juz" aria-label="رفتن به جزء" style="max-width:110px">${range(1, 30).map(j => `<option value="${j}" ${juz === j ? "selected" : ""}>جزء ${FA(j)}</option>`).join("")}</select>
-  <button class="icon-btn" id="mu-favs" aria-label="یادداشت‌ها، نشانک‌ها و علاقه‌مندی‌ها" style="flex:none;color:var(--gold)">🔖</button></div>
-  ${(() => { const r = readMark(); return r && S[r[0]].vp[r[1] - 1] !== mushafPage ? `<button class="small" id="mu-readmark" style="align-self:flex-start">🔖 ادامه خواندن: سوره ${S[r[0]].name} · آیه ${FA(r[1])}</button>` : ""; })()}
-  <div class="mnav"><button id="pg-next" aria-label="صفحه بعد" ${mushafPage >= 604 ? "disabled" : ""}>صفحه بعد</button><span class="pg num">صفحه ${FA(mushafPage)} از ۶۰۴</span><button id="pg-prev" aria-label="صفحه قبل" ${mushafPage <= 1 ? "disabled" : ""}>صفحه قبل</button></div>
-  <div id="mushaf-page">${renderPages([mushafPage], {marks: true, weak: cfg.showWeak})}</div>
+  const inf = pageInfo(mushafPage), s = S[inf.sn], bm = !!pageReadMark();
+  return `<div class="reader">
+  <div class="rbar">
+    <button class="rb-sura" id="mu-nav" aria-label="سوره ${s.name}، صفحه ${FA(mushafPage)}. رفتن به سوره، جزء یا صفحه دیگر"><span class="num">${FA(s.n)}.</span> ${s.name}${ICON_CHEV}</button>
+    <button class="rb-ic rb-home" data-goto="home" aria-label="صفحه اصلی برنامه">${ICON_HOME}</button>
+    <div class="rb-end"><button class="rb-ic" id="mu-bm" aria-pressed="${bm}" aria-label="${bm ? "برداشتن نشانک ادامه خواندن از این صفحه" : "گذاشتن نشانک ادامه خواندن روی این صفحه"}">${ICON_BMADD(bm)}</button><button class="rb-ic" id="mu-more" aria-label="ابزارهای مصحف: پخش، یادداشت‌ها، جستجو و تنظیمات">${ICON_DOTS}</button></div>
+  </div>
+  ${tipCard("mushaf")}
+  <div id="mushaf-page">${renderPages([mushafPage], {marks: cfg.mMarks !== false, weak: cfg.showWeak, foot: true})}</div>
+  <div class="mnav2"><button class="small btn-ghost" id="pg-next" ${mushafPage >= 604 ? "disabled" : ""}>→ صفحه بعد</button><button class="small btn-ghost" id="pg-prev" ${mushafPage <= 1 ? "disabled" : ""}>صفحه قبل ←</button></div>
   ${mpBar()}
-  ${Object.keys(st.err || {}).length ? `<label class="switch small"><span>نشان دادن آیه‌های نیازمند تثبیت<br><span class="muted">زیر آیه‌های اشتباه‌شده خط نقطه‌چین و کلمه‌های اشتباه رنگی می‌شوند.</span></span><input type="checkbox" id="showweak" ${cfg.showWeak ? "checked" : ""}></label>` : ""}
-  <p class="small muted">نوار رنگی کنار هر سطر، وضعیت سیاق همان سطر را نشان می‌دهد. روی هر کلمه بزنید تا آیه و سیاق آن را ببینید. با کشیدن صفحه به چپ و راست ورق بزنید.</p>
-  <button class="small" id="mu-audio">⬇ دانلود ترتیل برای پخش بدون اینترنت</button>
-  <p class="small muted">مصحف عثمان طه (QCF4، مجمع ملک فهد).</p>`;
+  </div>`;
 }
+const muGo = p => { if (p >= 1 && p <= 604 && p !== mushafPage) { mushafPage = p; closeWordbar(); render(); window.scrollTo(0, 0); } };
 function wireMushaf(v) {
-  v.querySelector("#mushaf-surah").addEventListener("change", e => { mushafPage = pageOfSurah(+e.target.value); closeWordbar(); render(); });
-  v.querySelector("#mushaf-juz").addEventListener("change", e => { const j = +e.target.value; mushafPage = j === 1 ? 1 : (j - 1) * 20 + 2; closeWordbar(); render(); });
-  const go = d => { const n = mushafPage + d; if (n >= 1 && n <= 604) { mushafPage = n; closeWordbar(); render(); } };
+  const go = d => muGo(mushafPage + d);
   v.querySelector("#pg-next").addEventListener("click", () => go(1));
   v.querySelector("#pg-prev").addEventListener("click", () => go(-1));
   const box = v.querySelector("#mushaf-page");
-  let x0 = null;
-  box.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, {passive: true});
-  box.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 60) go(dx > 0 ? 1 : -1); });
-  box.addEventListener("click", e => { const w = e.target.closest("[data-vk]"); if (w) openWordbar(w.dataset.vk, w.dataset.t === "w" ? +w.dataset.i : 0); });
-  v.querySelector("#mu-audio").addEventListener("click", () => openAudio());
-  v.querySelector("#mu-favs").addEventListener("click", () => openMyVerses("all"));
-  { const rm = v.querySelector("#mu-readmark"); if (rm) rm.addEventListener("click", () => { const r = readMark(); if (r) goVerse(r[0], r[1]); }); }
+  let x0 = null, y0 = 0;
+  box.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
+  box.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null; if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) { box.dataset.swiped = "1"; go(dx > 0 ? 1 : -1); } });
+  box.addEventListener("click", e => {
+    if (box.dataset.swiped) { delete box.dataset.swiped; return; }
+    if (e.target.closest("[data-mupg]")) { openMuNav(); return; }
+    const w = e.target.closest("[data-vk]");
+    if (w) { openWordbar(w.dataset.vk, w.dataset.t === "w" ? +w.dataset.i : 0); return; }
+    // a tap on the page outside the words shows or hides the bottom bar and the player
+    if (selVk) { closeWordbar(); return; }
+    document.body.classList.toggle("chrome");
+  });
+  v.querySelector("#mu-nav").addEventListener("click", openMuNav);
+  v.querySelector("#mu-more").addEventListener("click", openMuTools);
+  v.querySelector("#mu-bm").addEventListener("click", () => {
+    const r = pageReadMark();
+    if (r) { setBm(key(r[0], r[1]), null); toast("نشانک ادامه خواندن برداشته شد"); }
+    else { const [sn, ay] = firstOnPage(mushafPage); setBm(key(sn, ay), "read"); toast(`نشانک ادامه خواندن روی صفحه ${FA(mushafPage)} گذاشته شد`); }
+    render();
+  });
   wirePlayer(v);
-  const sw = v.querySelector("#showweak"); if (sw) sw.addEventListener("change", () => { cfg.showWeak = sw.checked; saveCfg(); render(); });
   if (selVk) markSel(selVk);
+  if (!(cfg.tips || {}).mchrome) { cfg.tips = cfg.tips || {}; cfg.tips.mchrome = true; saveCfg(); setTimeout(() => toast("برای نمایش پخش‌کننده و منوی پایین، روی فضای خالی صفحه بزنید", 4200), 600); }
+}
+// Left/right arrow keys turn pages on a keyboard (the mushaf is right-to-left: left is the next page)
+addEventListener("keydown", e => {
+  if (tab !== "mushaf" || e.altKey || e.ctrlKey || e.metaKey || document.getElementById("sheet").innerHTML) return;
+  const a = document.activeElement; if (a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)) return;
+  if (e.key === "ArrowLeft") muGo(mushafPage + 1); else if (e.key === "ArrowRight") muGo(mushafPage - 1);
+});
+// «رفتن به»: surah, juz or page, and the reading bookmark
+function openMuNav() {
+  const inf = pageInfo(mushafPage), r = readMark();
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="رفتن به">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>رفتن به</h2></header>
+    <div class="body">
+      <div class="field"><label class="small" for="go-s">سوره</label><select id="go-s">${DATA.surahs.map(x => `<option value="${x.n}" ${inf.sn === x.n ? "selected" : ""}>${FA(x.n)}. ${x.name}</option>`).join("")}</select></div>
+      <div class="pl-two">
+        <div class="field"><label class="small" for="go-j">جزء</label><select id="go-j">${range(1, 30).map(j => `<option value="${j}" ${inf.juz === j ? "selected" : ""}>جزء ${FA(j)}</option>`).join("")}</select></div>
+        <div class="field"><label class="small" for="go-p">صفحه (۱ تا ۶۰۴)</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input id="go-p" type="text" inputmode="numeric" value="${FA(mushafPage)}" style="min-width:0;flex:1"><button class="small btn-main" id="go-pb">برو</button></div></div>
+      </div>
+      ${r ? `<button id="go-rm">🔖 ادامه خواندن: سوره ${S[r[0]].name} · آیه ${FA(r[1])} · صفحه ${FA(S[r[0]].vp[r[1] - 1])}</button>` : ""}
+      <button id="go-map">فهرست سوره‌ها و سیاق‌ها</button>
+    </div></div>`);
+  const done = p => { box.innerHTML = ""; if (p === mushafPage) render(); else muGo(p); };
+  box.querySelector("#go-s").addEventListener("change", e => done(pageOfSurah(+e.target.value)));
+  box.querySelector("#go-j").addEventListener("change", e => done(juzPage(+e.target.value)));
+  const gp = () => { const n = parseInt(String(box.querySelector("#go-p").value).replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)), 10); if (n >= 1 && n <= 604) done(n); else toast("شماره صفحه باید بین ۱ تا ۶۰۴ باشد"); };
+  box.querySelector("#go-pb").addEventListener("click", gp);
+  box.querySelector("#go-p").addEventListener("keydown", e => { if (e.key === "Enter") gp(); });
+  { const b = box.querySelector("#go-rm"); if (b) b.addEventListener("click", () => { box.innerHTML = ""; goVerse(r[0], r[1]); }); }
+  box.querySelector("#go-map").addEventListener("click", () => { box.innerHTML = ""; tab = "map"; render(); window.scrollTo(0, 0); });
+}
+// Everything that used to sit around the page: player, my verses, audio download, display options, search and settings
+function openMuTools() {
+  const box = sheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="ابزارهای مصحف">
+    <header><button class="icon-btn btn-ghost" data-close aria-label="بستن">✕</button><h2>ابزارهای مصحف</h2></header>
+    <div class="body">
+      <button class="btn-main" id="mt-play">▶ پخش ترتیل از همین صفحه</button>
+      <button id="mt-mine">🔖 یادداشت‌ها، نشانک‌ها و علاقه‌مندی‌ها</button>
+      <button id="mt-audio">⬇ دانلود ترتیل برای پخش بدون اینترنت</button>
+      <div class="row" style="flex-wrap:nowrap"><button class="small" style="flex:1" id="mt-search">جستجو در قرآن</button><button class="small" style="flex:1" id="mt-dark">${applySettings.dark ? "حالت روز" : "حالت شب"}</button><button class="small" style="flex:1" id="mt-set">تنظیمات</button></div>
+      <label class="switch small"><span>نوار وضعیت سیاق کنار سطرها<br><span class="muted">رنگ هر سطر نشان می‌دهد سیاق آن تازه، در حال حفظ، تثبیت‌شده یا نیازمند مرور است.</span></span><input type="checkbox" id="mt-marks" ${cfg.mMarks !== false ? "checked" : ""}></label>
+      ${cfg.mMarks !== false ? legend() : ""}
+      ${Object.keys(st.err || {}).length ? `<label class="switch small"><span>نشان دادن آیه‌های نیازمند تثبیت<br><span class="muted">زیر آیه‌های اشتباه‌شده خط نقطه‌چین و کلمه‌های اشتباه رنگی می‌شوند.</span></span><input type="checkbox" id="showweak" ${cfg.showWeak ? "checked" : ""}></label>` : ""}
+      <p class="small muted">روی هر کلمه بزنید تا معنا، تفسیر، یادداشت و ترتیل آیه را ببینید. با کشیدن صفحه به چپ و راست ورق بزنید. یک لمس روی فضای خالی صفحه، پخش‌کننده و منوی پایین را نشان می‌دهد یا پنهان می‌کند.</p>
+      <p class="small muted">مصحف عثمان طه (QCF4، مجمع ملک فهد).</p>
+    </div></div>`);
+  const close = () => { box.innerHTML = ""; };
+  box.querySelector("#mt-play").addEventListener("click", () => { close(); document.body.classList.add("chrome"); render(); const [sn, ay] = selVk ? parseVk(selVk) : firstOnPage(mushafPage); mpStart(sn, ay); });
+  box.querySelector("#mt-mine").addEventListener("click", () => openMyVerses("all"));
+  box.querySelector("#mt-audio").addEventListener("click", () => openAudio());
+  box.querySelector("#mt-search").addEventListener("click", () => { close(); openSearch(); });
+  box.querySelector("#mt-dark").addEventListener("click", () => { toggleDark(); openMuTools(); });
+  box.querySelector("#mt-set").addEventListener("click", () => { close(); openSettings(); });
+  box.querySelector("#mt-marks").addEventListener("change", e => { cfg.mMarks = e.target.checked; saveCfg(); render(); openMuTools(); });
+  const sw = box.querySelector("#showweak"); if (sw) sw.addEventListener("change", () => { cfg.showWeak = sw.checked; saveCfg(); render(); openMuTools(); });
 }
 function markSel(vk) { document.querySelectorAll(".sel").forEach(e => e.classList.remove("sel")); document.querySelectorAll(`#mushaf-page [data-vk="${vk}"]`).forEach(e => e.classList.add("sel")); }
 function openWordbar(vk, wi) {
@@ -3938,7 +4098,7 @@ function openLessonLibrary() {
 // ---------- tips on first visit ----------
 const TIPS = {
   home: "داشبورد هر روز «قدم بعدی» شما را نشان می‌دهد. اگر «برنامه روزانه» را تنظیم کنید، کارهای همان روز به اندازه وقتتان چیده می‌شود.",
-  mushaf: "روی هر کلمه بزنید تا معنا، ریشه، تفسیر، آیات مشابه و ترتیل آن را ببینید. پخش‌کننده پایین صفحه از هر آیه تا آخر صفحه، سیاق یا سوره می‌خواند.",
+  mushaf: "روی هر کلمه بزنید تا معنا، ریشه، تفسیر، آیات مشابه و ترتیل آن را ببینید. با یک لمس روی فضای خالی صفحه، پخش‌کننده و منوی پایین ظاهر می‌شوند. نام سوره بالای صفحه برای رفتن به سوره، جزء یا صفحه دیگر است و دکمه ⋮ بقیه ابزارها را دارد.",
   map: "هر نوار یک سوره است و هر تکه آن یک سیاق. رنگ‌ها وضعیت حفظ را نشان می‌دهند؛ روی سوره بزنید تا اطلاعات و پیشرفت چهارمرحله‌ای آن را ببینید.",
   me: "خلاصه پیشرفت، دفترها، کلاس، دانلودها و تنظیمات اینجاست. اگر امکانی را پیدا نمی‌کنید، اسمش را در کادر «دنبال چه امکانی هستید؟» بنویسید.",
   review: "اول مرورهای حفظ و تدبر امروز آمده؛ بعد آزمون‌ها، دفتر اشتباهات و لغت‌نامه. دفتر تدبر و کارنامه هفته در بخش «من» است.",
@@ -5034,6 +5194,27 @@ if (window.__oldWebView) throw new Error("old webview");
 applySettings();
 purgeNoMedia();
 render();
+// Splash: stays at least ~1.6 s after the app starts, or until tapped; again when coming back after 10+ minutes away
+const splash = {el: document.getElementById("splash"), t0: performance.now(), away: 0};
+function hideSplash(min = 1600) {
+  const el = splash.el; if (!el || el.hidden) return;
+  clearTimeout(splash.t);
+  splash.t = setTimeout(() => { el.classList.add("out"); setTimeout(() => { if (el.classList.contains("out")) el.hidden = true; }, 500); }, Math.max(0, min - (performance.now() - splash.t0)));
+}
+function showSplash() {
+  const el = splash.el; if (!el) return;
+  el.hidden = false; el.classList.remove("out");
+  [...el.children].forEach(c => { c.style.animation = "none"; void c.offsetWidth; c.style.animation = ""; });
+  splash.t0 = performance.now(); hideSplash(1300);
+}
+if (splash.el) {
+  splash.el.addEventListener("click", () => hideSplash(0));
+  hideSplash();
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) splash.away = Date.now();
+    else if (splash.away && Date.now() - splash.away > 6e5) showSplash();
+  });
+}
 // Back in the app: the phone's dark mode or the hour may have changed
 document.addEventListener("visibilitychange", () => { if (!document.hidden) applySettings(); });
 setTimeout(autoBackupDaily, 3000);
