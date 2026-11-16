@@ -110,7 +110,9 @@ async function googleStart(box) {
     if (!p) return showLogin("ورود با گوگل روی سرور فعال نیست.");
     const redirect = ACCT_API + "hefz/oauth-done";
     store("tadabbor-oauth", {state: p.state, verifier: p.codeVerifier, redirect, t: Date.now()});
-    const url = p.authURL + encodeURIComponent(redirect);
+    // prompt=select_account: always show Google's account chooser, even with one signed-in account and earlier consent
+    // (otherwise Google signs straight in and the person cannot pick or switch accounts). Consent is not forced.
+    const url = p.authURL + encodeURIComponent(redirect) + "&prompt=select_account";
     if (IS_APP) location.href = url;                          // the app opens web addresses in the phone's browser
     else if (!window.open(url, "_blank")) location.href = url;
     googleWait(box);
