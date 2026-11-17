@@ -85,7 +85,6 @@ meta = json.dumps(_m, ensure_ascii=False, separators=(",", ":"))
 (ROOT / "data/meta.json").write_text(meta, encoding="utf-8")
 # Feature modules kept in their own files and inlined into the page script
 tpl = tpl.replace("/*HEFZQUIZ*/", (ROOT / "scripts/quiz_hefz.js").read_text(encoding="utf-8"))
-tpl = tpl.replace("/*HOMETILES*/", (ROOT / "scripts/home_tiles.js").read_text(encoding="utf-8"))
 tpl = tpl.replace("/*ACCTALT*/", (ROOT / "scripts/acct_alt.js").read_text(encoding="utf-8"))
 for ph in ("/*DATA*/", "/*DATABASE*/", "/*SITEBASE*/", "/*ACCOUNTURL*/"):
     assert ph in tpl, ph
