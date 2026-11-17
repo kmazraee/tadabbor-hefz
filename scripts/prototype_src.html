@@ -746,7 +746,7 @@ function jsonOf(url) {
   }
   return fetch(url).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
 }
-const VERSION = "0.17.1";
+const VERSION = "0.17.2";
 const IS_APP = !!(window.Android && window.Android.qcfReady);
 if (!IS_APP) document.documentElement.classList.add("site");
 // The app downloads content from the configured site; a web copy reads it from the server it is served from
@@ -1704,12 +1704,12 @@ function home() {
   const wdays = range(t0 - 6, t0), wvals = wdays.map(dayAct), wmax = Math.max(1, ...wvals);
   return `
   ${topBar(`<div class="hello"><span class="av" aria-hidden="true">${avInner()}</span><div><h1>${myName() ? "سلام " + esc(myName()) : "حفظ تدبری"}</h1><span class="small muted">${wdn} ${FA(tj.d)} ${JM[tj.m - 1]}</span></div></div>`)}
-  ${homeTiles()}
   ${journeyHero()}
   ${resumeCard()}
   ${dayGoalCard(fresh)}
   ${todayCard(all, due, tdDue, weak, fresh)}
   ${aiCard()}
+  <button class="searchbar" data-search aria-label="جستجو در همه‌جا"><span aria-hidden="true">${ICON_SEARCH}</span><span>جستجو: آیه، سوره، سیاق، دفتر تدبر…</span></button>
   ${upd.app ? `<section class="card">${appUpdHtml()}</section>` : ""}
   ${upd.meta ? `<section class="card"><div class="row between"><span class="small"><b>به‌روزرسانی آماده است:</b> محتوای تازه سیاق‌ها</span><button class="small btn-main" data-settings>مشاهده</button></div></section>` : ""}
   ${qcfCard()}
@@ -5282,7 +5282,6 @@ window.__back = () => {
 };
 
 /*HEFZQUIZ*/
-/*HOMETILES*/
 
 mushafPage = 1;
 if (window.__oldWebView) throw new Error("old webview");
