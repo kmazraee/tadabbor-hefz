@@ -4773,6 +4773,7 @@ if (ACCT_ON) {
   document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNow(); });
   addEventListener("online", () => syncNow());
 }
+/*USAGE*/
 
 // ---------- updates: new app version (GitHub Releases) and new siyaq content (GitHub Pages) ----------
 const upd = {state: "idle", app: null, meta: null, changed: [], err: false};

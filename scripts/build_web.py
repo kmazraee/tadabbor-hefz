@@ -83,9 +83,15 @@ _m["v"] = hashlib.sha1(json.dumps(_m["surahs"], ensure_ascii=False, sort_keys=Tr
 meta = json.dumps(_m, ensure_ascii=False, separators=(",", ":"))
 # The update check downloads data/meta.json, so it must be the same full copy the page carries
 (ROOT / "data/meta.json").write_text(meta, encoding="utf-8")
+# Siyaq sizes for the account server's per-user summary in the admin dashboard (surah names, ayat per siyaq)
+(ROOT / "deploy/pocketbase/pb_hooks/hefz_siyaq.js").write_text(
+    "// Made by scripts/build_web.py: [surah name, [ayat in each siyaq]] for surahs 1..114\nmodule.exports = "
+    + json.dumps([[s["name"], [q["e"] - q["s"] + 1 for q in s["siyaqs"]]] for s in sorted(_m["surahs"], key=lambda x: x["n"])], ensure_ascii=False, separators=(",", ":"))
+    + ";\n", encoding="utf-8")
 # Feature modules kept in their own files and inlined into the page script
 tpl = tpl.replace("/*HEFZQUIZ*/", (ROOT / "scripts/quiz_hefz.js").read_text(encoding="utf-8"))
 tpl = tpl.replace("/*ACCTALT*/", (ROOT / "scripts/acct_alt.js").read_text(encoding="utf-8"))
+tpl = tpl.replace("/*USAGE*/", (ROOT / "scripts/usage_ping.js").read_text(encoding="utf-8"))
 for ph in ("/*DATA*/", "/*DATABASE*/", "/*SITEBASE*/", "/*ACCOUNTURL*/"):
     assert ph in tpl, ph
 
