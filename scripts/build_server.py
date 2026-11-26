@@ -11,7 +11,7 @@ See deploy/nginx.conf for the matching server configuration.
 import gzip, pathlib, shutil, sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import build_web as web      # rebuilds prototype/ and the Android assets first
+import build_web as web      # rebuilds the web page (site root) and the Android assets first
 
 try:
     import brotli
