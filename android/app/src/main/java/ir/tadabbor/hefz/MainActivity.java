@@ -26,6 +26,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.FileProvider;
 
 import java.io.File;
@@ -95,6 +96,15 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** Back from Google sign-in (tadabborhefz://oauth): the page collects the code and finishes signing in. */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        Uri d = intent.getData();
+        if (d != null && "tadabborhefz".equals(d.getScheme())) js("window.__oauthBack && __oauthBack()");
+    }
+
     private volatile File pendingApk = null;
     private final AtomicInteger updGen = new AtomicInteger();
 
@@ -147,6 +157,20 @@ public class MainActivity extends Activity {
 
     /** Methods the page can call through window.Android. */
     class Bridge {
+        /** Google sign-in: open the address in a browser tab over the app (Custom Tab); Google does not allow sign-in inside a WebView. */
+        @JavascriptInterface
+        public void openAuth(final String url) {
+            runOnUiThread(() -> {
+                Uri u = Uri.parse(url);
+                if (!"https".equals(u.getScheme())) return;
+                try {
+                    new CustomTabsIntent.Builder().setShowTitle(true).build().launchUrl(MainActivity.this, u);
+                } catch (Exception e) {
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) { }
+                }
+            });
+        }
+
         /** POST JSON from native code (the assistant): used when the page's own fetch cannot reach the server. Answers through __nativePost(id, status, text). */
         @JavascriptInterface
         public void httpPost(final String id, final String url, final String device, final String body) {
