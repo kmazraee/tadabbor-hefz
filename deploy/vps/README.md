@@ -29,7 +29,7 @@ sudo sh /opt/tadabbor/src/deploy/vps/install.sh
 sudo -u tadabbor /opt/tadabbor/bin/pocketbase superuser upsert you@example.com 'یک-رمز-قوی' --dir=/opt/tadabbor/pb_data
 ```
 روی کامپیوتر خودتان: `ssh -L 8095:127.0.0.1:8095 کاربر@سرور` و سپس `http://localhost:8095/_/`.
-در پنل، Settings ← Backups ← پشتیبان‌گیری خودکار روزانه را روشن کنید.
+برای پشتیبان‌گیری خودکار شبانه روی گوگل درایو: [BACKUP.md](BACKUP.md) (`sudo sh /opt/tadabbor/src/deploy/vps/backup-setup.sh`).
 
 ## ورود با پیامک
 
@@ -66,8 +66,8 @@ cd /opt/tadabbor/src && sudo git pull && sudo sh deploy/vps/install.sh
 ```
 تنظیمات (`tadabbor.env`) و داده‌ها (`pb_data`) دست نمی‌خورند.
 - وضعیت: `systemctl status tadabbor-api` · گزارش‌ها: `journalctl -u tadabbor-api -n 100`
-- پشتیبان: پنل ← Backups، یا کپی پوشه `/opt/tadabbor/pb_data`
-- حذف کامل: `sudo systemctl disable --now tadabbor-api && sudo rm -rf /opt/tadabbor /etc/systemd/system/tadabbor-api.service /etc/nginx/sites-enabled/tadabbor-api && sudo userdel tadabbor`
+- پشتیبان: هر شب خودکار روی گوگل درایو، راهنما در [BACKUP.md](BACKUP.md) (`sudo tadabbor-backup status`، `restore`)
+- حذف کامل: `sudo systemctl disable --now tadabbor-api tadabbor-backup.timer && sudo rm -f /etc/systemd/system/tadabbor-backup.* /usr/local/bin/tadabbor-backup && sudo rm -rf /opt/tadabbor /etc/systemd/system/tadabbor-api.service /etc/nginx/sites-enabled/tadabbor-api && sudo userdel tadabbor`
 
 ## داشبورد مدیریتی
 
