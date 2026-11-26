@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>داشبورد حفظ تدبری</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f2ec; --card: #ffffff; --line: #e4e0d6; --grid: #ece9e1;
+  --text: #1d211f; --muted: #646b67; --acc: #2f6b4f; --acc-soft: #e3efe8;
+  --s1: #257de0; --s2: #f47230; --s3: #00b894; --s1-soft: rgba(37,125,224,.14);
+  --good: #0a7d2c; --bad: #c0392b; --warn: #b26a00;
+  --heat: 37,125,224;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #141716; --card: #1d2120; --line: #2e3432; --grid: #262b29;
+    --text: #eceeed; --muted: #9aa39f; --acc: #6fbf95; --acc-soft: #22352b;
+    --s1: #338ced; --s2: #e76624; --s3: #00a888; --s1-soft: rgba(51,140,237,.2);
+    --good: #4cc070; --bad: #ef6b5e; --warn: #e0a040;
+    --heat: 51,140,237;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #141716; --card: #1d2120; --line: #2e3432; --grid: #262b29;
+  --text: #eceeed; --muted: #9aa39f; --acc: #6fbf95; --acc-soft: #22352b;
+  --s1: #338ced; --s2: #e76624; --s3: #00a888; --s1-soft: rgba(51,140,237,.2);
+  --good: #4cc070; --bad: #ef6b5e; --warn: #e0a040;
+  --heat: 51,140,237;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.7 Vazirmatn, "Vazir", Tahoma, system-ui, sans-serif; }
+button, input, select { font: inherit; color: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+header.top { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); }
+.bar { max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.bar h1 { font-size: 17px; margin: 0; flex: 1 1 auto; }
+.tabs { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; overflow-x: auto; }
+.tab { border: 0; background: none; padding: 8px 12px; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; color: var(--muted); }
+.tab[aria-selected="true"] { color: var(--acc); border-color: var(--acc); font-weight: 700; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { border: 0; background: none; padding: 4px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--acc); color: #fff; }
+.btn { border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 5px 12px; cursor: pointer; }
+.btn.pri { background: var(--acc); border-color: var(--acc); color: #fff; }
+main { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.cols { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); margin-top: 12px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+.card h2 { font-size: 15px; margin: 0 0 4px; }
+.card .sub { font-size: 12.5px; color: var(--muted); margin: 0 0 10px; }
+.kpi .v { font-size: 26px; font-weight: 800; line-height: 1.3; }
+.kpi .l { font-size: 13px; color: var(--muted); }
+.kpi .d { font-size: 12.5px; }
+.up { color: var(--good); } .down { color: var(--bad); }
+.wide { grid-column: 1 / -1; }
+.note { background: var(--acc-soft); border-radius: 12px; padding: 10px 14px; font-size: 13.5px; margin-bottom: 12px; }
+.hbar { display: grid; grid-template-columns: minmax(90px, 38%) 1fr auto; gap: 8px; align-items: center; font-size: 13.5px; margin: 5px 0; }
+.hbar .t { height: 10px; background: var(--grid); border-radius: 4px; overflow: hidden; }
+.hbar .f { display: block; height: 100%; background: var(--s1); border-radius: 4px; }
+.hbar .k { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+.legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-left: 5px; }
+.tip { position: absolute; pointer-events: none; background: var(--text); color: var(--card); font-size: 12.5px; padding: 5px 9px; border-radius: 8px; white-space: nowrap; transform: translate(-50%, -110%); opacity: 0; transition: opacity .1s; z-index: 3; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th, td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+th[data-sort] { cursor: pointer; }
+tbody tr.click { cursor: pointer; }
+tbody tr.click:hover { background: var(--acc-soft); }
+.scroll { overflow-x: auto; }
+.heat td { text-align: center; min-width: 46px; }
+.pill { display: inline-block; padding: 0 8px; border-radius: 999px; font-size: 12px; background: var(--grid); }
+.tools { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+.tools input, .tools select { border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 5px 10px; min-width: 0; }
+.tools input { flex: 1 1 200px; }
+#login { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+#login form { width: min(380px, 100%); }
+#login label { display: block; margin: 10px 0 4px; font-size: 14px; }
+#login input { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--card); }
+.err { color: var(--bad); font-size: 13.5px; min-height: 1.6em; }
+dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--bg); color: var(--text); width: min(900px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0; }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+dialog .head { position: sticky; top: 0; background: var(--card); border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; gap: 10px; align-items: center; }
+dialog .head h2 { flex: 1; margin: 0; font-size: 16px; }
+dialog .body { padding: 16px; }
+.empty { color: var(--muted); font-size: 13.5px; padding: 8px 0; }
+@media (max-width: 520px) { .cols { grid-template-columns: 1fr; } .kpi .v { font-size: 22px; } main { padding: 12px; } }
+</style>
+</head>
+<body>
+<div id="login" hidden>
+  <form class="card" id="lf">
+    <h2 style="font-size:18px">داشبورد مدیریتی حفظ تدبری</h2>
+    <p class="sub">با ایمیل و رمز حساب مدیر PocketBase (superuser) وارد شوید.</p>
+    <label for="em">ایمیل</label><input id="em" type="email" autocomplete="username" dir="ltr" required>
+    <label for="pw">رمز</label><input id="pw" type="password" autocomplete="current-password" dir="ltr" required>
+    <p class="err" id="lerr" role="alert"></p>
+    <button class="btn pri" style="width:100%" type="submit">ورود</button>
+  </form>
+</div>
+<div id="app" hidden>
+  <header class="top">
+    <div class="bar">
+      <h1>داشبورد حفظ تدبری</h1>
+      <div class="seg" role="group" aria-label="بازه">
+        <button data-days="7">۷ روز</button><button data-days="30">۳۰ روز</button><button data-days="90">۹۰ روز</button><button data-days="365">یک سال</button>
+      </div>
+      <button class="btn" id="reload" title="به‌روزرسانی">↻</button>
+      <button class="btn" id="out">خروج</button>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="sum">خلاصه</button>
+      <button class="tab" role="tab" data-tab="users">کاربران</button>
+      <button class="tab" role="tab" data-tab="learn">یادگیری</button>
+      <button class="tab" role="tab" data-tab="geo">مکان و دستگاه</button>
+      <button class="tab" role="tab" data-tab="ret">ماندگاری</button>
+    </nav>
+  </header>
+  <main id="main" aria-live="polite"></main>
+</div>
+<dialog id="dlg"><div class="head"><h2 id="dt"></h2><button class="btn" id="dx">بستن</button></div><div class="body" id="db"></div></dialog>
+<script>
+"use strict";
+const API = "/api/hefz/admin/";
+const $ = s => document.querySelector(s);
+const S = {tok: "", days: 30, tab: "sum", data: null, users: null, q: "", via: "", sort: "created", dir: -1};
+try { S.tok = sessionStorage.getItem("hefz-admin") || ""; S.days = +localStorage.getItem("hefz-admin-days") || 30; S.tab = localStorage.getItem("hefz-admin-tab") || "sum"; } catch (e) {}
+
+// ---------- formatting ----------
+const fa = n => (+n || 0).toLocaleString("fa-IR");
+const pct = (a, b) => b ? (a / b * 100).toLocaleString("fa-IR", {maximumFractionDigits: a / b < .1 ? 1 : 0}) + "٪" : "—";
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+function dur(s) {
+  s = Math.round(+s || 0);
+  if (s < 60) return fa(s) + " ثانیه";
+  const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60);
+  if (!h) return fa(m) + " دقیقه";
+  return fa(h) + " ساعت" + (m ? " و " + fa(m) + " دقیقه" : "");
+}
+const hrs = s => (s / 3600).toLocaleString("fa-IR", {maximumFractionDigits: s < 36000 ? 1 : 0});
+const dIso = d => new Date(d + "T12:00:00Z");
+const shamsi = (d, o) => { try { return dIso(d).toLocaleDateString("fa-IR", o || {month: "short", day: "numeric"}); } catch (e) { return d; } };
+const shamsiFull = d => shamsi(d, {year: "numeric", month: "long", day: "numeric"});
+const created = c => String(c || "").replace(" ", "T");
+const createdDay = c => { const t = Date.parse(created(c)); return isNaN(t) ? "" : new Date(t + 210 * 60000).toISOString().slice(0, 10); };
+function ago(ms) {
+  if (!ms) return "—";
+  const m = Math.round((Date.now() - ms) / 60000);
+  if (m < 2) return "همین حالا"; if (m < 60) return fa(m) + " دقیقه پیش";
+  const h = Math.round(m / 60); if (h < 24) return fa(h) + " ساعت پیش";
+  const d = Math.round(h / 24); return d < 60 ? fa(d) + " روز پیش" : shamsi(new Date(ms).toISOString().slice(0, 10), {year: "numeric", month: "short", day: "numeric"});
+}
+let RN = null; try { RN = new Intl.DisplayNames(["fa"], {type: "region"}); } catch (e) {}
+const flag = c => /^[A-Z]{2}$/.test(c) ? String.fromCodePoint(...[...c].map(x => 0x1F1A5 + x.charCodeAt(0))) : "";
+const country = c => !c || c === "?" ? "نامشخص" : c === "T1" ? "شبکه Tor" : (flag(c) + " " + (RN ? (RN.of(c) || c) : c));
+const PLAT = {android: "برنامه اندروید", web: "سایت (مرورگر)", pwa: "سایت نصب‌شده (PWA)", "?": "نامشخص"};
+const VIA = {google: "گوگل", phone: "پیامک (موبایل)", email: "ایمیل و رمز"};
+const WD = ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"];
+const MAST = ["تازه‌حفظ", "در حال تثبیت", "تثبیت‌شده", "مسلط", "ملکه"];
+const unk = k => !k || k === "?" ? "نامشخص" : k;
+
+// ---------- network ----------
+async function api(path) {
+  const r = await fetch(API + path, {headers: {"X-Admin-Token": S.tok}, cache: "no-store"});
+  if (r.status === 401) { signOut(); throw new Error("auth"); }
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+function signOut() { S.tok = ""; try { sessionStorage.removeItem("hefz-admin"); } catch (e) {} $("#app").hidden = true; $("#login").hidden = false; }
+$("#lf").addEventListener("submit", async ev => {
+  ev.preventDefault(); $("#lerr").textContent = "";
+  try {
+    const r = await fetch(API + "login", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({email: $("#em").value, password: $("#pw").value})});
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 429) { $("#lerr").textContent = "تلاش‌های اشتباه زیاد بود؛ " + (j.data && j.data.wait ? fa(Math.ceil(j.data.wait / 60)) + " دقیقه" : "کمی") + " بعد دوباره امتحان کنید."; return; }
+    if (!r.ok) { $("#lerr").textContent = "ایمیل یا رمز اشتباه است."; return; }
+    S.tok = j.token; try { sessionStorage.setItem("hefz-admin", S.tok); } catch (e) {}
+    $("#pw").value = ""; start();
+  } catch (e) { $("#lerr").textContent = "اتصال به سرور ممکن نشد."; }
+});
+$("#out").onclick = signOut;
+$("#reload").onclick = () => load(true);
+document.querySelectorAll("[data-days]").forEach(b => b.onclick = () => { S.days = +b.dataset.days; try { localStorage.setItem("hefz-admin-days", S.days); } catch (e) {} load(); });
+document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { S.tab = b.dataset.tab; try { localStorage.setItem("hefz-admin-tab", S.tab); } catch (e) {} draw(); });
+$("#dx").onclick = () => $("#dlg").close();
+
+async function load(force) {
+  document.querySelectorAll("[data-days]").forEach(b => b.setAttribute("aria-pressed", +b.dataset.days === S.days));
+  $("#main").innerHTML = `<p class="muted">در حال خواندن آمار…</p>`;
+  try {
+    const [d, u] = await Promise.all([api("stats?days=" + S.days), force || !S.users ? api("users") : Promise.resolve({items: S.users})]);
+    S.data = d; S.users = u.items; draw();
+  } catch (e) { if (e.message !== "auth") $("#main").innerHTML = `<p class="err">خواندن آمار ممکن نشد (${esc(e.message)}).</p>`; }
+}
+function start() { $("#login").hidden = true; $("#app").hidden = false; load(true); }
+
+// ---------- charts ----------
+const tipEl = () => { const t = document.createElement("div"); t.className = "tip"; return t; };
+// Charts are drawn after the card is on the page, at the card's real width, so text keeps its size on any screen
+function grid(W, H, L, R, T, B, nice, fmt) {
+  const steps = [4, 5, 2, 1].find(k => Number.isInteger(nice / k)) || 4, y = v => T + (H - T - B) * (1 - v / nice);
+  let g = "";
+  for (let i = 0; i <= steps; i++) { const v = nice * i / steps, yy = y(v); g += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="var(--grid)"/><text x="${L - 6}" y="${yy + 4}" font-size="11" fill="var(--muted)" text-anchor="end">${fmt ? fmt(v, true) : fa(v)}</text>`; }
+  return g;
+}
+const chartId = () => "c" + Math.random().toString(36).slice(2);
+// Lines over days. series: [{k, label, color}]; hover shows every series for that day
+function lineChart(rows, series, fmt) {
+  const id = chartId();
+  later(() => {
+    const box = document.getElementById(id); if (!box) return;
+    const W = Math.max(260, box.clientWidth), H = 220, L = 34, R = 8, T = 10, B = 26, n = rows.length;
+    const nice = niceMax(Math.max(1, ...rows.flatMap(r => series.map(s => r[s.k]))));
+    const x = i => L + (n < 2 ? 0 : i * (W - L - R) / (n - 1)), y = v => T + (H - T - B) * (1 - v / nice);
+    let g = grid(W, H, L, R, T, B, nice);
+    const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(W / 80))));
+    rows.forEach((r, i) => { if (i % step === 0) g += `<text x="${x(i)}" y="${H - 6}" font-size="11" fill="var(--muted)" text-anchor="middle">${shamsi(r.d)}</text>`; });
+    g += series.map((s, si) => {
+      const pts = rows.map((r, i) => `${x(i).toFixed(1)},${y(r[s.k]).toFixed(1)}`).join(" ");
+      return (si === 0 ? `<polygon points="${x(0)},${y(0)} ${pts} ${x(n - 1)},${y(0)}" fill="var(--s1-soft)"/>` : "") + `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }).join("");
+    box.insertAdjacentHTML("beforeend", `<svg viewBox="0 0 ${W} ${H}" direction="ltr" role="img" aria-label="${esc(series.map(s => s.label).join("، "))}">${g}<line class="xh" y1="${T}" y2="${H - B}" stroke="var(--muted)" stroke-dasharray="3 3" opacity="0"/>${series.map(s => `<circle class="dot" r="4" fill="${s.color}" stroke="var(--card)" stroke-width="2" opacity="0"/>`).join("")}<rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent"/></svg>`);
+    const svg = box.querySelector("svg"), xh = svg.querySelector(".xh"), dots = svg.querySelectorAll(".dot"), tp = tipEl(); box.appendChild(tp);
+    const move = ev => {
+      const bb = svg.getBoundingClientRect(), px = (ev.clientX - bb.left) * W / bb.width;
+      const i = Math.max(0, Math.min(n - 1, Math.round((px - L) / ((W - L - R) / Math.max(1, n - 1))))), r = rows[i];
+      xh.setAttribute("x1", x(i)); xh.setAttribute("x2", x(i)); xh.setAttribute("opacity", 1);
+      dots.forEach((d, si) => { d.setAttribute("cx", x(i)); d.setAttribute("cy", y(r[series[si].k])); d.setAttribute("opacity", 1); });
+      tp.innerHTML = `<b>${shamsiFull(r.d)}</b><br>` + series.map(s => `${s.label}: ${fmt ? fmt(r[s.k]) : fa(r[s.k])}`).join("<br>");
+      const left = Math.max(70, Math.min(bb.width - 70, x(i) * bb.width / W));
+      tp.style.left = left + "px"; tp.style.top = (svg.offsetTop + Math.min(...series.map(s => y(r[s.k]))) * bb.height / H) + "px"; tp.style.opacity = 1;
+    };
+    svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move);
+    svg.addEventListener("pointerleave", () => { tp.style.opacity = 0; xh.setAttribute("opacity", 0); dots.forEach(d => d.setAttribute("opacity", 0)); });
+  });
+  return `<div class="chart" id="${id}">${series.length > 1 ? `<div class="legend">${series.map(s => `<span><i style="background:${s.color}"></i>${s.label}</span>`).join("")}</div>` : ""}</div>`;
+}
+// Vertical bars with a tooltip per bar
+function colChart(vals, labels, fmt, tipLabels) {
+  const id = chartId();
+  later(() => {
+    const box = document.getElementById(id); if (!box) return;
+    const W = Math.max(260, box.clientWidth), H = 190, L = 34, R = 4, T = 10, B = 26, n = vals.length, nice = niceMax(Math.max(1, ...vals));
+    const bw = (W - L - R) / n, y = v => T + (H - T - B) * (1 - v / nice);
+    let g = grid(W, H, L, R, T, B, nice, fmt);
+    const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(W / 44))));
+    vals.forEach((v, i) => {
+      const x0 = L + i * bw + 1, w = Math.max(1, bw - 2), h = Math.max(0, y(0) - y(v)), r = Math.min(4, w / 2, h);
+      if (h > 0) g += `<path d="M${x0},${y(0)} V${y(v) + r} q0,-${r} ${r},-${r} H${x0 + w - r} q${r},0 ${r},${r} V${y(0)} Z" fill="var(--s1)"/>`;
+      g += `<rect x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T - B}" fill="transparent" data-i="${i}"/>`;
+      if (i % step === 0) g += `<text x="${x0 + w / 2}" y="${H - 6}" font-size="11" fill="var(--muted)" text-anchor="middle">${labels[i]}</text>`;
+    });
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" direction="ltr" role="img">${g}</svg>`;
+    const svg = box.querySelector("svg"), tp = tipEl(); box.appendChild(tp);
+    const show = ev => { const t = ev.target.closest("[data-i]"); if (!t) return; const i = +t.dataset.i, bb = svg.getBoundingClientRect();
+      tp.innerHTML = `<b>${(tipLabels || labels)[i]}</b><br>${fmt ? fmt(vals[i]) : fa(vals[i])}`; tp.style.left = Math.max(60, Math.min(bb.width - 60, (L + i * bw + bw / 2) * bb.width / W)) + "px"; tp.style.top = (y(vals[i]) * bb.height / H) + "px"; tp.style.opacity = 1; };
+    svg.addEventListener("pointerover", show); svg.addEventListener("pointerdown", show); svg.addEventListener("pointerleave", () => { tp.style.opacity = 0; });
+  });
+  return `<div class="chart" id="${id}"></div>`;
+}
+function niceMax(v) { const p = Math.pow(10, Math.floor(Math.log10(v))), m = v / p; return Math.max(1, (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p); }
+// Horizontal bars (a ranked list): label, bar, count and share
+function hbars(list, total, label) {
+  if (!list || !list.length) return `<p class="empty">هنوز داده‌ای نیست.</p>`;
+  const max = Math.max(...list.map(x => x.n), 1), sum = total || list.reduce((a, x) => a + x.n, 0);
+  return list.map(x => `<div class="hbar"><span class="k" title="${esc(label ? label(x) : x.k)}">${label ? label(x) : esc(x.k)}</span><span class="t"><span class="f" style="width:${(x.n / max * 100).toFixed(1)}%"></span></span><span class="num small">${fa(x.n)} <span class="muted">(${pct(x.n, sum)})</span></span></div>`).join("");
+}
+let LATER = [];
+const later = f => LATER.push(f);
+const kpi = (v, l, d) => `<div class="card kpi"><div class="v num">${v}</div><div class="l">${l}</div>${d ? `<div class="d">${d}</div>` : ""}</div>`;
+function delta(a, b, word) {
+  if (!b && !a) return `<span class="muted">—</span>`;
+  if (!b) return `<span class="up">تازه</span> <span class="muted">${word || ""}</span>`;
+  const p = (a - b) / b * 100, up = p >= 0;
+  return `<span class="${up ? "up" : "down"}">${up ? "▲" : "▼"} ${fa(Math.abs(Math.round(p)))}٪</span> <span class="muted">${word || "نسبت به هفته قبل"}</span>`;
+}
+const card = (title, sub, body, cls) => `<section class="card ${cls || ""}"><h2>${title}</h2>${sub ? `<p class="sub">${sub}</p>` : ""}${body}</section>`;
+
+// ---------- tabs ----------
+function draw() {
+  document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === S.tab));
+  if (!S.data) return;
+  LATER = [];
+  const html = {sum: tabSum, users: tabUsers, learn: tabLearn, geo: tabGeo, ret: tabRet}[S.tab]();
+  $("#main").innerHTML = html;
+  LATER.forEach(f => f()); LATER = [];
+  if (S.tab === "users") wireUsers();
+}
+function trackNote() {
+  const t = S.data.tracking;
+  if (!t.n) return `<div class="note">ثبت زمان استفاده و مکان از وقتی شروع می‌شود که کاربران نسخه تازه برنامه را باز کنند. تا آن موقع، تعداد کاربران، روش ورود و آمار یادگیری (از داده‌های همگام‌شده) نشان داده می‌شود.</div>`;
+  return t.d > S.data.from ? `<div class="note">ثبت زمان استفاده و مکان از ${shamsiFull(t.d)} شروع شده؛ روزهای قبل از آن در نمودارهای استفاده صفر است.</div>` : "";
+}
+function tabSum() {
+  const d = S.data, u = d.users, a = d.active, sr = d.series;
+  const rng = S.days === 365 ? "یک سال" : fa(S.days) + " روز";
+  return trackNote() + `<div class="grid">
+    ${kpi(fa(u.total), "کل کاربران", `${fa(u.newToday)} نفر امروز`)}
+    ${kpi(fa(u.new7), "کاربر جدید در ۷ روز", delta(u.new7, u.newPrev7))}
+    ${kpi(fa(a.today), "فعال امروز")}
+    ${kpi(fa(a.d7), "فعال در ۷ روز", delta(a.d7, a.prev7))}
+    ${kpi(fa(a.d30), "فعال در ۳۰ روز", `چسبندگی (فعال روزانه ÷ ماهانه): ${pct(avg(sr.slice(-30).map(r => r.dau)), a.d30)}`)}
+    ${kpi(dur(d.time.perUserDay), "زمان استفاده هر کاربر در روز", `میانگین ${rng} اخیر`)}
+    ${kpi(hrs(d.time.secs), "ساعت استفاده در " + rng, `${fa(d.time.sessions)} جلسه`)}
+    ${kpi(dur(d.time.perSession), "طول متوسط هر جلسه")}
+  </div>
+  <div class="cols">
+    ${card("کاربران فعال روزانه", "«باز کردن برنامه» از ثبت جلسه‌ها؛ «یادگیری» روزهایی که کاربر حفظ، مرور، تدبر یا آزمون ثبت کرده (از داده همگام‌شده، از قبل از شروع ثبت جلسه‌ها هم هست).",
+      lineChart(sr, [{k: "dau", label: "باز کردن برنامه", color: "var(--s1)"}, {k: "learn", label: "یادگیری", color: "var(--s2)"}]), "wide")}
+    ${card("ثبت‌نام روزانه", "", colChart(sr.map(r => r.nu), sr.map(r => shamsi(r.d)), null, sr.map(r => shamsiFull(r.d))))}
+    ${card("زمان استفاده روزانه (دقیقه)", "مجموع زمان همه کاربران؛ فقط وقتی برنامه روی صفحه و در حال استفاده است.", colChart(sr.map(r => Math.round(r.secs / 60)), sr.map(r => shamsi(r.d)), (v, ax) => ax ? fa(v) : dur(v * 60), sr.map(r => shamsiFull(r.d))))}
+    ${card("روش ورود", "", hbars([{k: "google", n: u.google}, {k: "phone", n: u.phone}, {k: "email", n: u.email}].filter(x => x.n), u.total, x => VIA[x.k]))}
+    ${card("قیف کاربران", "", hbars([{k: "ثبت‌نام کرده", n: u.total}, {k: "داده همگام کرده", n: u.synced}, {k: "شروع به یادگیری کرده", n: u.learners}, {k: "یادگیری در ۳۰ روز اخیر", n: a.learn30}, {k: "یادگیری در ۷ روز اخیر", n: a.learn7}], u.total))}
+    ${card("ساعت‌های استفاده (به وقت ایران)", "تعداد جلسه‌ها بر اساس ساعت شروع", colChart(d.hours, d.hours.map((_, i) => fa(i)), null, d.hours.map((_, i) => "ساعت " + fa(i) + " تا " + fa(i + 1))))}
+    ${card("روزهای هفته", "تعداد جلسه‌ها", colChart(d.weekdays, ["ش", "۱ش", "۲ش", "۳ش", "۴ش", "۵ش", "ج"], null, WD))}
+  </div>`;
+}
+const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+function tabGeo() {
+  const d = S.data, act = d.active.range;
+  return trackNote() + `<div class="note">کشور و شهر را Cloudflare از روی اتصال کاربر تشخیص می‌دهد و IP روی سرور ذخیره نمی‌شود. کاربرانی که با VPN وصل می‌شوند، کشور VPN را نشان می‌دهند؛ برای همین «کشور بر اساس منطقه زمانی گوشی» هم کنارش آمده که معمولاً محل واقعی را نشان می‌دهد.</div>
+  <div class="cols">
+    ${card("کشور (بر اساس اتصال)", "کاربران یکتا در بازه", hbars(d.countries, act, x => country(x.k)))}
+    ${card("کشور (بر اساس منطقه زمانی گوشی)", "کاربران یکتا در بازه", hbars(d.tzCountries, act, x => country(x.k)))}
+    ${card("شهرها", d.cities.length && d.cities.every(c => c.city === "?") ? "شهر خالی است: در Cloudflare گزینه «Add visitor location headers» را روشن کنید (راهنمای README)." : "کاربران یکتا در بازه",
+      d.cities.length ? `<div class="scroll"><table><thead><tr><th>شهر</th><th>استان/منطقه</th><th>کشور</th><th>کاربر</th></tr></thead><tbody>${d.cities.map(c => `<tr><td>${esc(unk(c.city))}</td><td class="muted">${esc(c.region)}</td><td>${country(c.c)}</td><td class="num">${fa(c.n)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="empty">هنوز داده‌ای نیست.</p>`, "wide")}
+    ${card("بستر", "", hbars(d.platforms, act, x => PLAT[x.k] || esc(x.k)))}
+    ${card("نسخه برنامه", "", hbars(d.versions, act, x => esc(unk(x.k))))}
+    ${card("سیستم‌عامل", "", hbars(d.os, act, x => esc(unk(x.k))))}
+    ${card("مرورگر (نسخه سایت)", "", hbars(d.browsers.filter(x => x.k !== "?"), 0, x => esc(x.k)))}
+    ${card("مدل گوشی (اندروید)", "", hbars(d.devices.filter(x => x.k !== "?"), 0, x => esc(x.k)))}
+  </div>`;
+}
+function tabLearn() {
+  const L = S.data.learning, bucket = (rows, names) => names.map((k, i) => ({k, n: (rows.find(r => r.b === i) || {n: 0}).n}));
+  const P = {reciter: "قاری", trans: "ترجمه", tafsir: "تفسیر", theme: "پوسته"};
+  return `<div class="note">این بخش از داده‌های همگام‌شده کاربران ساخته می‌شود (هر بار که برنامه همگام می‌کند به‌روز می‌شود) و همه کاربران از ابتدا را در بر می‌گیرد.</div>
+  <div class="grid">
+    ${kpi(fa(L.mem_ayat), "آیه حفظ‌شده (مجموع)", `${fa(L.mem_siyaq)} سیاق`)}
+    ${kpi(fa(L.tad_siyaq), "سیاق تدبرشده", `${fa(L.tad_ayat)} آیه`)}
+    ${kpi(fa(L.surahs_mem), "سوره کامل حفظ‌شده")}
+    ${kpi(fa(L.surahs_tad), "سوره کامل تدبرشده")}
+    ${kpi(fa(L.reviews), "مرور حفظ", `${fa(L.rev_ayat)} آیه مرورشده`)}
+    ${kpi(fa(L.tad_rev), "مرور تدبر")}
+    ${kpi(fa(L.quizzes), "آزمون", L.quiz_avg ? `میانگین نمره آزمون حفظ ${fa(L.quiz_avg)}٪` : "")}
+    ${kpi(fa(L.vnotes), "یادداشت آیه", `${fa(L.bms)} نشانه‌گذاری`)}
+    ${kpi(fa(L.lessons), "درس دیده‌شده")}
+    ${kpi(fa(L.best), "طولانی‌ترین زنجیره روزهای پیاپی")}
+  </div>
+  <div class="cols">
+    ${card("سطح تسلط سیاق‌های حفظ‌شده", "همه کاربران", hbars(MAST.map((k, i) => ({k, n: L.mastery[i] || 0})), 0))}
+    ${card("کاربران بر اساس مقدار حفظ", "", hbars(bucket(L.memBuckets, ["هنوز هیچ", "۱ تا ۱۹ آیه", "۲۰ تا ۹۹ آیه", "۱۰۰ تا ۴۹۹ آیه", "۵۰۰ آیه و بیشتر"]), L.users))}
+    ${card("زنجیره روزهای پیاپی (فعلی)", "", hbars(bucket(L.streaks, ["بدون زنجیره", "۱ تا ۲ روز", "۳ تا ۶ روز", "۷ تا ۲۹ روز", "۳۰ روز و بیشتر"]), L.users))}
+    ${card("هدف روزانه", `${fa(L.goals)} نفر هدف روزانه گذاشته‌اند؛ ${fa(L.flags.goal)} نفر هدف تاریخ‌دار؛ یادآور مرور روشن: ${fa(L.flags.remind)}؛ اعلان پیام روز: ${fa(L.flags.tip)}`, hbars(L.goalDist.map(g => ({k: fa(g.k) + " آیه در روز", n: g.n})), L.goals))}
+    ${card("سوره‌های پرطرفدار", "کاربرانی که در سوره حفظ یا تدبر کرده‌اند",
+      L.surahs.length ? `<div class="scroll"><table><thead><tr><th>سوره</th><th>کاربر</th><th>حفظ</th><th>تدبر</th><th>کامل حفظ</th></tr></thead><tbody>${L.surahs.map(s => `<tr><td>${fa(s.n)}. ${esc(s.name)}</td><td class="num">${fa(s.users)}</td><td class="num">${fa(s.mem)}</td><td class="num">${fa(s.tad)}</td><td class="num">${fa(s.full)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="empty">هنوز داده‌ای نیست.</p>`, "wide")}
+    ${Object.keys(P).map(k => card(P[k], "انتخاب کاربران", hbars(L.prefs[k], 0, x => esc(x.k)))).join("")}
+  </div>`;
+}
+function tabRet() {
+  const r = S.data.retention, c = S.data.cohorts;
+  const row = (l, x) => `<tr><td>${l}</td><td class="num">${fa(x.n)}</td><td class="num">${fa(x.back)}</td><td class="num"><b>${pct(x.back, x.n)}</b></td></tr>`;
+  const maxW = Math.max(0, ...c.map(x => x.w.length));
+  return trackNote() + `<div class="cols">
+    ${card("بازگشت کاربران", "از کاربرانی که بعد از شروع ثبت جلسه‌ها ثبت‌نام کرده‌اند: چند نفر N روز بعد از ثبت‌نام یا دیرتر دوباره برنامه را باز کرده‌اند.",
+      `<table><thead><tr><th>بعد از</th><th>ثبت‌نام</th><th>برگشته</th><th>درصد</th></tr></thead><tbody>${row("۱ روز", r.d1)}${row("۷ روز", r.d7)}${row("۳۰ روز", r.d30)}</tbody></table>`)}
+    ${card("گروه‌های هفتگی", "هر ردیف کاربرانی که در یک هفته (شنبه تا جمعه) ثبت‌نام کرده‌اند؛ هر خانه درصدی که در هفته‌های بعد برنامه را باز کرده‌اند.",
+      c.length ? `<div class="scroll"><table class="heat"><thead><tr><th>هفته ثبت‌نام</th><th>نفر</th>${Array.from({length: maxW}, (_, i) => `<th>${i ? "هفته " + fa(i) : "همان هفته"}</th>`).join("")}</tr></thead><tbody>${c.map(x => `<tr><td style="text-align:right">${shamsi(x.week)}</td><td class="num">${fa(x.size)}</td>${Array.from({length: maxW}, (_, i) => i < x.w.length ? heat(x.w[i], x.size) : "<td></td>").join("")}</tr>`).join("")}</tbody></table></div>` : `<p class="empty">هنوز داده‌ای نیست.</p>`, "wide")}
+  </div>`;
+}
+function heat(n, size) {
+  const p = size ? n / size : 0;
+  return `<td class="num" title="${fa(n)} از ${fa(size)}" style="background:rgba(var(--heat),${(0.08 + p * 0.82).toFixed(2)});color:${p > .55 ? "#fff" : "inherit"}">${pct(n, size)}</td>`;
+}
+
+// ---------- users ----------
+const ucols = [["name", "نام"], ["contact", "ایمیل / موبایل"], ["via", "ورود"], ["created", "ثبت‌نام"], ["last", "آخرین استفاده"], ["place", "مکان"], ["plat", "بستر"], ["secs", "زمان استفاده"], ["days", "روزهای استفاده"], ["mem_ayat", "آیه حفظ"], ["tad_siyaq", "سیاق تدبر"], ["streak", "زنجیره"]];
+function filtered() {
+  const q = S.q.trim().toLowerCase();
+  let list = S.users.filter(u => (!S.via || u.via === S.via) && (!q || [u.name, u.email, u.phone, u.city, country(u.country)].join(" ").toLowerCase().includes(q)));
+  const k = S.sort, key = u => k === "contact" ? (u.email || u.phone) : k === "place" ? country(u.country) + u.city : k === "last" ? (u.last || Date.parse(u.last_day || 0) || 0) : u[k];
+  list.sort((a, b) => { const x = key(a), y = key(b); return (x > y ? 1 : x < y ? -1 : 0) * S.dir; });
+  return list;
+}
+function tabUsers() {
+  const list = filtered();
+  return `<div class="card"><div class="tools">
+      <input id="uq" type="search" placeholder="جستجو: نام، ایمیل، موبایل، شهر…" value="${esc(S.q)}">
+      <select id="uv"><option value="">همه روش‌های ورود</option>${Object.keys(VIA).map(k => `<option value="${k}" ${S.via === k ? "selected" : ""}>${VIA[k]}</option>`).join("")}</select>
+      <button class="btn" id="csv">خروجی CSV</button>
+      <span class="small muted">${fa(list.length)} از ${fa(S.users.length)} کاربر</span>
+    </div>
+    <div class="scroll"><table><thead><tr>${ucols.map(([k, l]) => `<th data-sort="${k}">${l}${S.sort === k ? (S.dir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr></thead>
+    <tbody>${list.slice(0, 500).map(u => `<tr class="click" data-u="${esc(u.id)}">
+      <td>${esc(u.name) || "<span class='muted'>—</span>"}</td><td dir="ltr" style="text-align:right">${esc(u.email || u.phone)}</td><td><span class="pill">${VIA[u.via]}</span></td>
+      <td>${shamsi(createdDay(u.created), {year: "2-digit", month: "short", day: "numeric"})}</td><td>${u.last ? ago(u.last) : u.last_day ? shamsi(u.last_day) : "—"}</td>
+      <td>${u.country ? country(u.country) + (u.city ? " · " + esc(u.city) : "") : "—"}</td><td>${PLAT[u.plat] || "—"}</td>
+      <td class="num">${u.secs ? dur(u.secs) : "—"}</td><td class="num">${fa(u.days)}</td><td class="num">${fa(u.mem_ayat)}</td><td class="num">${fa(u.tad_siyaq)}</td><td class="num">${fa(u.streak)}</td></tr>`).join("")}</tbody></table></div>
+    ${list.length > 500 ? `<p class="small muted">۵۰۰ ردیف اول نشان داده شد؛ جستجو کنید یا خروجی CSV بگیرید.</p>` : ""}</div>`;
+}
+function wireUsers() {
+  const q = $("#uq");
+  q.oninput = () => { S.q = q.value; const pos = q.selectionStart; draw(); const n = $("#uq"); n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} };
+  $("#uv").onchange = e => { S.via = e.target.value; draw(); };
+  document.querySelectorAll("th[data-sort]").forEach(th => th.onclick = () => { const k = th.dataset.sort; if (S.sort === k) S.dir = -S.dir; else { S.sort = k; S.dir = ["name", "contact", "place", "via", "plat"].includes(k) ? 1 : -1; } draw(); });
+  document.querySelectorAll("tr[data-u]").forEach(tr => tr.onclick = () => openUser(tr.dataset.u));
+  $("#csv").onclick = () => {
+    const head = ["id", "name", "email", "phone", "sign_in", "signed_up", "last_used", "country", "city", "tz_country", "platform", "version", "usage_minutes", "days_used", "sessions", "ayat_memorized", "siyaq_tadabbur", "reviews", "streak"];
+    const rows = filtered().map(u => [u.id, u.name, u.email, u.phone, u.via, createdDay(u.created), u.last ? new Date(u.last).toISOString() : u.last_day, u.country, u.city, u.tzc, u.plat, u.ver, Math.round(u.secs / 60), u.days, u.sessions, u.mem_ayat, u.tad_siyaq, u.reviews, u.streak]);
+    const csv = "﻿" + [head].concat(rows).map(r => r.map(v => { v = String(v == null ? "" : v); if (/^[=+\-@]/.test(v)) v = "'" + v; return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(",")).join("\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: "text/csv;charset=utf-8"})); a.download = "tadabbor-users-" + S.data.today + ".csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+}
+async function openUser(id) {
+  const dlg = $("#dlg"); $("#dt").textContent = "…"; $("#db").innerHTML = `<p class="muted">در حال خواندن…</p>`; if (!dlg.open) dlg.showModal();
+  let u; try { u = await api("user?id=" + encodeURIComponent(id)); } catch (e) { $("#db").innerHTML = `<p class="err">خواندن ممکن نشد.</p>`; return; }
+  const s = u.stats || {}, t = S.data.today, days = [];
+  for (let i = 59; i >= 0; i--) { const d = new Date(Date.parse(t + "T00:00:00Z") - i * 864e5).toISOString().slice(0, 10); days.push(d); }
+  const use = {}; (u.sessions || []).forEach(x => { use[x.day] = (use[x.day] || 0) + x.secs; });
+  const sd = s.days || {};
+  LATER = [];
+  $("#dt").textContent = u.name || u.email || u.phone || "کاربر";
+  const total = (u.sessions || []).reduce((a, x) => a + x.secs, 0);
+  $("#db").innerHTML = `<div class="grid">
+      ${kpi(VIA[u.via], "روش ورود", `<span dir="ltr">${esc(u.email || u.phone)}</span>`)}
+      ${kpi(shamsi(createdDay(u.created), {year: "numeric", month: "short", day: "numeric"}), "ثبت‌نام")}
+      ${kpi(fa(s.mem_ayat || 0), "آیه حفظ‌شده", `${fa(s.mem_siyaq || 0)} سیاق · ${fa(s.surahs_mem || 0)} سوره کامل`)}
+      ${kpi(fa(s.tad_siyaq || 0), "سیاق تدبرشده", `${fa(s.surahs_tad || 0)} سوره کامل`)}
+      ${kpi(fa(s.reviews || 0), "مرور حفظ", `${fa(s.quizzes || 0)} آزمون`)}
+      ${kpi(fa(s.streak || 0), "زنجیره فعلی", `بهترین: ${fa(s.best || 0)} روز`)}
+      ${kpi(dur(total), "زمان استفاده ثبت‌شده", `${fa((u.sessions || []).length)} جلسه اخیر`)}
+      ${kpi(s.last_day ? shamsi(s.last_day) : "—", "آخرین روز یادگیری", s.day_goal ? `هدف روزانه ${fa(s.day_goal)} آیه` : "")}
+    </div>
+    <div class="cols">
+      ${card("۶۰ روز اخیر", "", lineChart(days.map(d => ({d, use: Math.round((use[d] || 0) / 60), learn: sd[d] || 0})), [{k: "use", label: "دقیقه استفاده", color: "var(--s1)"}, {k: "learn", label: "فعالیت یادگیری (تعداد)", color: "var(--s2)"}]), "wide")}
+      ${card("سوره‌ها", "سیاق‌های حفظ‌شده و تدبرشده در هر سوره", (s.surahs || []).length ? `<div class="scroll"><table><thead><tr><th>سوره</th><th>حفظ</th><th>تدبر</th><th>سیاق‌ها</th></tr></thead><tbody>${s.surahs.sort((a, b) => a[0] - b[0]).map(a => `<tr><td>${fa(a[0])}. ${esc(a[4])}</td><td class="num">${fa(a[1])}</td><td class="num">${fa(a[2])}</td><td class="num">${fa(a[3])}</td></tr>`).join("")}</tbody></table></div>` : `<p class="empty">هنوز چیزی ثبت نشده.</p>`)}
+      ${card("تسلط و تنظیمات", "", hbars(MAST.map((k, i) => ({k, n: (s.mastery || [])[i] || 0})), 0) + (s.prefs ? `<p class="small muted" style="margin-top:10px">قاری: ${esc(s.prefs.reciter)} · ترجمه: ${esc(s.prefs.trans)} · تفسیر: ${esc(s.prefs.tafsir)} · پوسته: ${esc(s.prefs.theme)} · یادآور: ${s.prefs.remind ? "روشن" : "خاموش"}</p>` : ""))}
+      ${card("جلسه‌های اخیر", "", (u.sessions || []).length ? `<div class="scroll"><table><thead><tr><th>روز</th><th>ساعت</th><th>مدت</th><th>بستر</th><th>نسخه</th><th>دستگاه</th><th>مکان</th></tr></thead><tbody>${u.sessions.slice(0, 60).map(x => `<tr><td>${shamsi(x.day)}</td><td class="num">${fa(x.hour)}</td><td>${dur(x.secs)}</td><td>${PLAT[x.plat] || "—"}</td><td>${esc(x.ver)}</td><td class="small">${esc([x.os, x.br, x.dev].filter(Boolean).join(" · "))}</td><td>${country(x.country)}${x.city ? " · " + esc(x.city) : ""}</td></tr>`).join("")}</tbody></table></div>` : `<p class="empty">هنوز جلسه‌ای ثبت نشده (برنامه کاربر باید به‌روز شود).</p>`, "wide")}
+    </div>`;
+  LATER.forEach(f => f()); LATER = [];
+}
+
+if (S.tok) start(); else signOut();
+</script>
+</body>
+</html>
