@@ -4789,9 +4789,12 @@ function wireAcct(box) {
 // ---------- sign-in with an SMS code and with Google (server side: deploy/pocketbase/pb_hooks/hefz.pb.js) ----------
 // The login page asks the server which ways it offers (GET /api/hefz/methods) and adds a button for each.
 // The Cloudflare Worker and older servers answer 404 there, so only email + password shows, as before.
-// Google: the server hands out the Google address (with PKCE); the page opens it in a new tab (web) or the phone's
-// browser (app); Google sends the browser back to /api/hefz/oauth-done, and this page collects the code from
-// /api/hefz/oauth-claim and finishes with the usual auth-with-oauth2 call. Nothing depends on popups or deep links.
+// Google: the server hands out the Google address (with PKCE); the page tells the server where to come back to
+// (/api/hefz/oauth-ret: "app" or this page's address) and opens Google in the same tab (web) or in a browser tab
+// over the app (Android). The person picks an account and allows access; Google sends the browser to
+// /api/hefz/oauth-done, which keeps the code and sends the browser straight back (the web page, or the app through
+// an intent link). This page then collects the code from /api/hefz/oauth-claim and finishes with auth-with-oauth2.
+// If the way back fails, the person can still come back by hand: the page keeps checking while it waits.
 const acctAlt = {m: (() => { try { return JSON.parse(localStorage.getItem("tadabbor-signin-ways")) || {}; } catch (e) { return {}; } })(), timer: 0};
 async function acctWays() {
   try { const m = await pb("hefz/methods", {anon: true}); acctAlt.m = m || {}; store("tadabbor-signin-ways", acctAlt.m); }
@@ -4901,16 +4904,19 @@ async function googleStart(box) {
     // prompt=select_account: always show Google's account chooser, even with one signed-in account and earlier consent
     // (otherwise Google signs straight in and the person cannot pick or switch accounts). Consent is not forced.
     const url = p.authURL + encodeURIComponent(redirect) + "&prompt=select_account";
-    if (IS_APP) location.href = url;                          // the app opens web addresses in the phone's browser
-    else if (!window.open(url, "_blank")) location.href = url;
+    let back = false;                                         // false: an older server that cannot send the browser back
+    try { await pb("hefz/oauth-ret", {method: "POST", anon: true, body: {state: p.state, ret: IS_APP ? "app" : location.href.split("#")[0]}}); back = true; } catch (e) {}
     googleWait(box);
+    if (IS_APP) { if (window.Android && Android.openAuth) Android.openAuth(url); else location.href = url; }   // browser tab over the app
+    else if (back) location.href = url;                       // same tab: Google brings the person back to this page
+    else if (!window.open(url, "_blank")) location.href = url;
   } catch (e) { showLogin(acctErr(e)); }
 }
 function googleWait(box) {
   const f = gformOf(box); clearInterval(acctAlt.timer);
   f.innerHTML = `<h2>ورود با گوگل</h2>
-    <p>در صفحه‌ای که باز شد وارد حساب گوگل خود شوید، بعد به همین‌جا برگردید.</p>
-    <p class="small muted" role="status" id="lg-gst">منتظر تأیید گوگل…</p>
+    <p>حساب گوگل خود را انتخاب کنید و اجازه دهید؛ بعد خودکار وارد برنامه می‌شوید.</p>
+    <p class="small muted" role="status" id="lg-gst">در حال تکمیل ورود با گوگل…</p>
     <p class="gnote"><a href="#" id="lg-back">انصراف و بازگشت</a></p>`;
   backLink(f, box);
   let busy = false;
@@ -4934,7 +4940,13 @@ function googleWait(box) {
   acctAlt.timer = setInterval(check, 2500);
   check();
 }
-document.addEventListener("visibilitychange", () => { if (!document.hidden && oauthPending() && document.getElementById("lg-gst")) { const b = document.getElementById("intro"); if (b) googleWait(b); } });
+// Back from Google (the app is brought to the front by the intent link, or the tab is shown again): check at once
+window.__oauthBack = () => {
+  if (!oauthPending() || (typeof acct !== "undefined" && acct)) return;
+  const b = document.getElementById("intro"); if (!b) return;
+  if (document.getElementById("lg-gst")) googleWait(b); else showLogin();   // showLogin() picks the waiting sign-in up
+};
+document.addEventListener("visibilitychange", () => { if (!document.hidden) window.__oauthBack(); });
 
 if (ACCT_ON) {
   setTimeout(() => syncNow(), 2500);

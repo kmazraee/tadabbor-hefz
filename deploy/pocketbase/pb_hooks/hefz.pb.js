@@ -3,6 +3,7 @@
 //   GET  /api/hefz/methods            which sign-in ways this server offers: {email, phone, google}
 //   POST /api/hefz/otp/request        {phone}        -> sends a one-time code by SMS
 //   POST /api/hefz/otp/verify         {phone, code}  -> the usual PocketBase auth response {token, record}
+//   POST /api/hefz/oauth-ret          {state, ret}   -> where oauth-done sends the browser afterwards ("app" or the web page)
 //   GET  /api/hefz/oauth-done         Google sends the browser back here; the code is kept for the app to collect
 //   GET  /api/hefz/oauth-claim?state= the app collects that code (then calls auth-with-oauth2 itself, with its PKCE verifier)
 // Google is set up from GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET on every start.
@@ -76,6 +77,14 @@ routerAdd("POST", "/api/hefz/otp/verify", (e) => {
 routerAdd("GET", "/api/hefz/oauth-done", (e) => require(`${__hooks}/hefz_lib.js`).oauthDone(e));
 routerAdd("POST", "/api/hefz/oauth-done", (e) => require(`${__hooks}/hefz_lib.js`).oauthDone(e));
 
+routerAdd("POST", "/api/hefz/oauth-ret", (e) => {
+  const L = require(`${__hooks}/hefz_lib.js`);
+  const b = e.requestInfo().body || {}, state = String(b.state || ""), ret = String(b.ret || "");
+  if (state.length < 20 || state.length > 100 || !L.retOk(ret)) return e.json(400, {status: 400, message: "bad return address", data: {}});
+  L.retSet(state, ret);
+  return e.json(200, {ok: true});
+});
+
 routerAdd("GET", "/api/hefz/oauth-claim", (e) => {
   const L = require(`${__hooks}/hefz_lib.js`);
   const state = String(e.request.url.query().get("state") || "");
@@ -83,6 +92,7 @@ routerAdd("GET", "/api/hefz/oauth-claim", (e) => {
   if (!rec || Date.now() - rec.getInt("at") > 600000) return e.json(404, {status: 404, message: "not yet", data: {}});
   const out = {code: rec.getString("code"), error: rec.getString("error")};
   $app.delete(rec);
+  try { $app.store().remove(L.retKey(state)); } catch (err) {}
   return e.json(200, out);
 });
 
