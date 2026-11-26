@@ -6,6 +6,7 @@
 //   GET  /api/hefz/admin/stats?days=  everything on the dashboard's summary tabs
 //   GET  /api/hefz/admin/users        all users with their summary
 //   GET  /api/hefz/admin/user?id=     one user: summary and last sessions
+// On the server it is served at https://dashboard.<domain>/ by deploy/vps/dashboard-site.sh (nginx maps / to /api/hefz/admin).
 // ADMIN_WEB=0 in tadabbor.env closes the dashboard to the internet (then it opens only through an SSH tunnel).
 // (Handler bodies live in hefz_statlib.js: PocketBase runs each handler in its own context.)
 
