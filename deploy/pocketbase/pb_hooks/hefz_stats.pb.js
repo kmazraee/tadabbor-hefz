@@ -6,6 +6,7 @@
 //   GET  /api/hefz/admin/stats?days=  everything on the dashboard's summary tabs
 //   GET  /api/hefz/admin/users        all users with their summary
 //   GET  /api/hefz/admin/user?id=     one user: summary and last sessions
+// On the server it is served at https://dashboard.<domain>/ by deploy/vps/dashboard-site.sh (nginx maps / to /api/hefz/admin).
 // ADMIN_WEB=0 in tadabbor.env closes the dashboard to the internet (then it opens only through an SSH tunnel).
 // (Handler bodies live in hefz_statlib.js: PocketBase runs each handler in its own context.)
 
@@ -15,9 +16,17 @@ routerAdd("GET", "/api/hefz/admin", (e) => {
   const S = require(`${__hooks}/hefz_statlib.js`);
   if (!S.allowed(e)) return e.json(404, {status: 404, message: "not found", data: {}});
   const h = e.response.header();
-  h.set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+  h.set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
   h.set("X-Frame-Options", "DENY"); h.set("Referrer-Policy", "no-referrer"); h.set("X-Robots-Tag", "noindex, nofollow"); h.set("Cache-Control", "no-store");
   return e.html(200, toString($os.readFile(`${__hooks}/admin.html`)));
+});
+
+// The dashboard's font (Vazirmatn, SIL Open Font License), served from here so the page needs nothing from outside
+routerAdd("GET", "/api/hefz/admin/font/{name}", (e) => {
+  const name = e.request.pathValue("name");
+  if (!/^vazirmatn-(arabic|latin)-(400|700)-normal\.woff2$/.test(name)) return e.json(404, {status: 404, message: "not found", data: {}});
+  e.response.header().set("Cache-Control", "public, max-age=2592000, immutable");
+  return e.blob(200, "font/woff2", $os.readFile(`${__hooks}/fonts/${name}`));
 });
 
 routerAdd("POST", "/api/hefz/admin/login", (e) => require(`${__hooks}/hefz_statlib.js`).login(e));
